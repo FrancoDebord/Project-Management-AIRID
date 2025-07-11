@@ -75,6 +75,8 @@
     <!-- endinject -->
     <!-- Custom js for this page -->
     <!-- End custom js for this page -->
+
+    <script src="{{ asset("storage/assets/js/javascript-custom.js") }}"></script>
 </body>
 
 <!-- Mirrored from themewagon.github.io/connect-plus/pages/samples/blank-page.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 11 Jul 2025 12:11:50 GMT -->
