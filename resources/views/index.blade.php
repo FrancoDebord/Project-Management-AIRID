@@ -9,12 +9,16 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Connect Plus</title>
+    <title>@yield('title',"AIRID Project Management")</title>
     <!-- plugins:css -->
     <link rel="stylesheet" href="{{ asset('storage/assets_vendor/vendors/mdi/css/materialdesignicons.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('storage/assets_vendor/vendors/flag-icon-css/css/flag-icons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('storage/assets_vendor/vendors/css/vendor.bundle.base.css') }}">
+
+    <link rel="stylesheet" href="{{ asset("storage/assets/bootstrap-5.1.3-dist/css/bootstrap.min.css") }}">
+    {{-- <link rel="stylesheet" href="{{ asset("storage/assets/select2/select2.min.css") }}"> --}}
+    {{-- <link rel="stylesheet" href="{{ asset("storage/assets/select2-bootstrap-theme/select2-bootstrap.min.css") }}"> --}}
     <!-- endinject -->
     <!-- Plugin css for this page -->
     <!-- End plugin css for this page -->
@@ -63,6 +67,7 @@
     <!-- container-scroller -->
     <!-- plugins:js -->
     <script src="{{ asset('storage/assets_vendor/vendors/js/vendor.bundle.base.js') }}"></script>
+    {{-- <script src="{{ asset("storage/assets/js/jquery.3.7.1.min.js") }}"></script> --}}
     <!-- endinject -->
     <!-- Plugin js for this page -->
     <!-- End plugin js for this page -->
@@ -76,6 +81,8 @@
     <!-- Custom js for this page -->
     <!-- End custom js for this page -->
 
+    <script src="{{ asset("storage/assets/bootstrap-5.1.3-dist/js/bootstrap.bundle.min.js") }}"></script>
+    {{-- <script src="{{ asset("storage/assets/select2/select2.min.js") }}"></script> --}}
     <script src="{{ asset("storage/assets/js/javascript-custom.js") }}"></script>
 </body>
 
