@@ -1,4 +1,4 @@
-@extends('index')
+@extends('index-3')
 
 @section('title',"Projects' Activities schedules")
     

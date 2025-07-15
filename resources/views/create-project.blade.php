@@ -1,4 +1,4 @@
-@extends('index')
+@extends('index-3')
 
 @section('title', 'Create a new Project')
 
@@ -100,7 +100,7 @@
                                 @endphp
                                 <select name="study_director" id="study_director"
                                     class="form-control form-select selectpicker show-tick @error('study_director') is-invalid @enderror"
-                                    allow-live-search="true">
+                                    data-live-search="true">
                                     <option value=""></option>
 
                                     @forelse ($all_personnels as $personnel)
@@ -127,7 +127,7 @@
                                 @endphp
                                 <select name="project_manager" id="project_manager"
                                     class="form-control form-select selectpicker show-tick @error('project_manager') is-invalid @enderror"
-                                    allow-live-search="true">
+                                    data-live-search="true">
                                     <option value=""></option>
 
                                     @forelse ($all_personnels as $personnel)
@@ -231,7 +231,7 @@
                                 @endphp
                                 <select name="project_stage" id="project_stage"
                                     class="form-control form-select selectpicker show-tick @error('project_stage') is-invalid @enderror"
-                                    allow-live-search="true">
+                                    data-live-search="true">
                                     <option value="not_started" {{ $project_stage == 'not_started' ? 'selected' : '' }}>Not
                                         started</option>
                                     <option value="in progress" {{ $project_stage == 'in progress' ? 'selected' : '' }}>In
