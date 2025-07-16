@@ -1,7 +1,7 @@
   <nav class="pcoded-navbar">
       <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
       <div class="pcoded-inner-navbar main-menu">
-          <div class="">
+          {{-- <div class="">
               <div class="main-menu-header">
                   <img class="img-80 img-radius" src="{{ asset('storage/assets_vendor3/images/avatar-4.jpg') }}"
                       alt="User-Profile-Image">
@@ -28,11 +28,11 @@
                       <label class="float-label"><i class="fa fa-search m-r-10"></i>Search Friend</label>
                   </div>
               </form>
-          </div>
+          </div> --}}
           <div class="pcoded-navigation-label" data-i18n="nav.category.navigation">Layout</div>
           <ul class="pcoded-item pcoded-left-item">
               <li class="">
-                  <a href="index{{ route("indexPage") }}" class="waves-effect waves-dark">
+                  <a href="{{ route('indexPage') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.dash.main">Dashboard</span>
                       <span class="pcoded-mcaret"></span>
@@ -123,24 +123,24 @@
           <div class="pcoded-navigation-label" data-i18n="nav.category.forms">Project Management</div>
           <ul class="pcoded-item pcoded-left-item">
               <li>
-                  <a href="{{ route("project.index") }}" class="waves-effect waves-dark">
+                  <a href="{{ route('project.index') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.form-components.main">Manage Project Info</span>
                       <span class="pcoded-mcaret"></span>
                   </a>
               </li>
-              
+
               <li>
-                  <a href="{{ route("activityPage") }}" class="waves-effect waves-dark">
+                  <a href="{{ route('activityPage') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.form-components.main">Master schedule</span>
                       <span class="pcoded-mcaret"></span>
                   </a>
               </li>
               <li>
-                  <a href="{{ route("scheduleActivityForProject") }}" class="waves-effect waves-dark">
+                  <a href="{{ route('scheduleActivityForProject') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
-                      <span class="pcoded-mtext" data-i18n="nav.form-components.main">Schedule Activity for Project</span>
+                      <span class="pcoded-mtext" data-i18n="nav.form-components.main">Project Tracking Sheet</span>
                       <span class="pcoded-mcaret"></span>
                   </a>
               </li>

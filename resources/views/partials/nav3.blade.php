@@ -15,12 +15,12 @@
                             </div>
                         </div>
                     </div>
-                    <a href="index-2.html">
-                        <img class="img-fluid" src="{{ asset("storage/assets_vendor3/images/logo.png")}}" alt="Theme-Logo" />
+                    {{-- <a href="index-2.html">
+                        <img class="img-fluid" src="{{ asset('storage/assets/logo/airid1.jpg') }}" alt="Theme-Logo" />
                     </a>
                     <a class="mobile-options waves-effect waves-light">
                         <i class="ti-more"></i>
-                    </a>
+                    </a> --}}
                 </div>
             
                 <div class="navbar-container container-fluid">

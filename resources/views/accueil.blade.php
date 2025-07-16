@@ -1,64 +1,38 @@
 @extends('index-3')
 
 @section('breadcrumb')
-    {{-- <div class="page-header card">
-        <div class="row align-items-end">
-            <div class="col-lg-8">
-                <div class="page-header-title">
-                    <i class="feather icon-watch bg-c-blue"></i>
-                    <div class="d-inline">
-                        <h5>Sample page</h5>
-                        <span>lorem ipsum dolor sit amet, consectetur adipisicing elit</span>
+    <div class="page-header">
+        <div class="page-block">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">Sample Page</h5>
+                        <p class="m-b-0">Lorem Ipsum is simply dummy text of the printing</p>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="page-header-breadcrumb">
-                    <ul class=" breadcrumb breadcrumb-title breadcrumb-padding">
+                <div class="col-md-4">
+                    <ul class="breadcrumb-title">
                         <li class="breadcrumb-item">
-                            <a href="index.html"><i class="feather icon-home"></i></a>
+                            <a href="index-2.html"> <i class="fa fa-home"></i> </a>
                         </li>
-                        <li class="breadcrumb-item">
-                            <a href="#!">Sample page</a>
+                        <li class="breadcrumb-item"><a href="#!">Pages</a>
+                        </li>
+                        <li class="breadcrumb-item"><a href="#!">Sample Page</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
-    </div> --}}
-
-        <div class="page-header">
-                        <div class="page-block">
-                            <div class="row align-items-center">
-                                <div class="col-md-8">
-                                    <div class="page-header-title">
-                                        <h5 class="m-b-10">Sample Page</h5>
-                                        <p class="m-b-0">Lorem Ipsum is simply dummy text of the printing</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <ul class="breadcrumb-title">
-                                        <li class="breadcrumb-item">
-                                            <a href="index-2.html"> <i class="fa fa-home"></i> </a>
-                                        </li>
-                                        <li class="breadcrumb-item"><a href="#!">Pages</a>
-                                        </li>
-                                        <li class="breadcrumb-item"><a href="#!">Sample Page</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    </div>
 @endsection
 
 
 @section('content')
     <section class="">
-        <div class="container ">
+        <div class="container-fluid ">
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 mt-2">
                     <h3 class="title-section">Overview of all projects</h3>
                 </div>
 

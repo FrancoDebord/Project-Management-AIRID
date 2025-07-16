@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
+use App\Models\Pro_Project_Team;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -40,6 +41,11 @@ class ProjectController extends Controller
         $rules = [
             "project_code" => "required|string|unique:pro_projects,project_code",
             "project_title" => "string|required",
+            "project_status" => "string|required",
+            "project_nature" => "string|required",
+            "test_system" => "string|required",
+            "key_personnel" => "array|nullable",
+            "project_title" => "string|required",
             "protocol_code" => "string|required",
             "study_director" => "integer|nullable|exists:personnels,id",
             "project_manager" => "integer|nullable|exists:personnels,id",
@@ -55,8 +61,23 @@ class ProjectController extends Controller
         $request->validate($rules);
 
 
-        $project = Pro_Project::create($request->except(["_method", "_token"]));
+        $project = Pro_Project::create($request->except(["_method", "_token", "key_personnel"]));
 
+        if ($project) {
+
+            if ($request->key_personnel) {
+
+                foreach ($request->key_personnel as $key => $staff_id) {
+                    # code...
+
+                    $project_team = Pro_Project_Team::create([
+                        "project_id" => $project->id,
+                        "staff_id" => $staff_id,
+                        "role" => "",
+                    ]);
+                }
+            }
+        }
         $message = "The new Project is created successfully...";
         $all_personnels = Pro_Personnel::all();
 
@@ -91,6 +112,10 @@ class ProjectController extends Controller
         $rules = [
             "project_code" => "required|string",
             "project_title" => "string|required",
+            "project_status" => "string|required",
+            "project_nature" => "string|required",
+            "test_system" => "string|required",
+            "key_personnel" => "array|nullable",
             "protocol_code" => "string|required",
             "study_director" => "integer|nullable|exists:personnels,id",
             "project_manager" => "integer|nullable|exists:personnels,id",
@@ -107,7 +132,25 @@ class ProjectController extends Controller
 
         $project = Pro_Project::findOrFail($project_id);
 
-        $update = $project->update($request->except(["_method", "_token"]));
+        $update = $project->update($request->except(["_method", "_token", "key_personnel"]));
+
+        if ($update) {
+
+            if ($request->key_personnel) {
+
+                //Supprimer les anciens Key Personnel
+                $delete_olds_key_personnels = Pro_Project_Team::where("project_id",$project_id)->delete();
+
+                foreach ($request->key_personnel as $key => $staff_id) {
+
+                    $project_team = Pro_Project_Team::create([
+                        "project_id" => $project->id,
+                        "staff_id" => $staff_id,
+                        "role" => "",
+                    ]);
+                }
+            }
+        }
 
         $message = "The new Project is updated successfully...";
         $all_personnels = Pro_Personnel::all();

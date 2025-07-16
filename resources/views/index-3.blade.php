@@ -33,6 +33,9 @@
     <!-- waves.css")}} -->
     <link rel="stylesheet" href="{{ asset('storage/assets_vendor3/pages/waves/css/waves.min.css') }}" type="text/css"
         media="all">
+
+        <link rel="stylesheet" href="{{ asset("storage/assets/datatable/datatables.min.css") }}">
+
     <!-- themify-icons line icon -->
     <link rel="stylesheet" type="text/css"
         href="{{ asset('storage/assets_vendor3/icon/themify-icons/themify-icons.css') }}">
@@ -129,59 +132,16 @@
                             </div>
                         </div>
                     </div>
-                    <div id="styleSelector">
+                    {{-- <div id="styleSelector">
 
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
     </div>
 
 
-    <!-- Warning Section Starts -->
-    <!-- Older IE warning message -->
-    <!--[if lt IE 10]>
-<div class="ie-warning">
-    <h1>Warning!!</h1>
-    <p>You are using an outdated version of Internet Explorer, please upgrade <br/>to any of the following web browsers
-        to access this website.</p>
-    <div class="iew-container">
-        <ul class="iew-download">
-            <li>
-                <a href="http://www.google.com/chrome/">
-                    <img src="{{ asset('storage/assets_vendor3/images/browser/chrome.png') }}" alt="Chrome">
-                    <div>Chrome</div>
-                </a>
-            </li>
-            <li>
-                <a href="https://www.mozilla.org/en-US/firefox/new/">
-                    <img src="{{ asset('storage/assets_vendor3/images/browser/firefox.png') }}" alt="Firefox">
-                    <div>Firefox</div>
-                </a>
-            </li>
-            <li>
-                <a href="http://www.opera.com">
-                    <img src="{{ asset('storage/assets_vendor3/images/browser/opera.png') }}" alt="Opera">
-                    <div>Opera</div>
-                </a>
-            </li>
-            <li>
-                <a href="https://www.apple.com/safari/">
-                    <img src="{{ asset('storage/assets_vendor3/images/browser/safari.png') }}" alt="Safari">
-                    <div>Safari</div>
-                </a>
-            </li>
-            <li>
-                <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">
-                    <img src="{{ asset('storage/assets_vendor3/images/browser/ie.png') }}" alt="">
-                    <div>IE (9 & above)</div>
-                </a>
-            </li>
-        </ul>
-    </div>
-    <p>Sorry for the inconvenience!</p>
-</div>
-<![endif]-->
+   
     <!-- Warning Section Ends -->
     <!-- Required Jquery -->
     <script type="text/javascript" src="{{ asset('storage/assets_vendor3/js/jquery/jquery.min.js') }}"></script>
@@ -203,6 +163,11 @@
     <script type="text/javascript" src="{{ asset('storage/assets_vendor3/js/script.js') }}"></script>
 
     <script src="{{ asset("storage/assets/js/bootstrap-select/js/bootstrap-select.min.js") }}"></script>
+
+    <script src="{{ asset("storage/assets/datatable/datatables.min.js") }}"></script>
+	<script src="{{ asset('storage/assets/alertifyjs/alertify.min.js') }}"></script>
+    <script src="{{ asset('storage/assets/notify/notify.min.js') }}"></script>
+    
 
 
       <script src="{{ asset("storage/assets/js/javascript-custom.js") }}"></script>
