@@ -1,7 +1,7 @@
 @extends('index-3')
 
 @section('breadcrumb')
-    <div class="page-header">
+    {{-- <div class="page-header">
         <div class="page-block">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -23,7 +23,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 @endsection
 
 
@@ -44,6 +44,7 @@
                         <button type="button" class="btn btn-outline-success in_progress_project">In progress</button>
                         <button type="button" class="btn btn-outline-primary suspended_projects">Suspended</button>
                         <button type="button" class="btn btn-outline-secondary completed_projects">Completed</button>
+                        <button type="button" class="btn btn-outline-dark archived_projects">Archived</button>
                     </div>
                 </div>
 
@@ -65,9 +66,14 @@
                                 } elseif ($phase == 'suspended') {
                                     $class_phase .= '  suspended';
                                     $progress_class = 'bg-primary';
-                                } elseif ($phase == 'completed') {
+                                } 
+                                elseif ($phase == 'completed') {
                                     $class_phase .= '  completed';
                                     $progress_class = 'bg-secondary';
+                                }
+                                elseif ($phase == 'archived') {
+                                    $class_phase .= '  archived';
+                                    $progress_class = 'bg-dark';
                                 }
 
                             @endphp
