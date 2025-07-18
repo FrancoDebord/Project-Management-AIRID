@@ -251,7 +251,7 @@
 
                                     @forelse ($all_personnels as $personnel)
                                         <option value="{{ $personnel->id }}"
-                                            {{ in_array($personnel->id,$project_teams) ? 'selected' : '' }}>
+                                            {{ in_array($personnel->id,$project_teams??[]) ? 'selected' : '' }}>
                                             {{ $personnel->titre_personnel . ' ' . $personnel->prenom . ' ' . $personnel->nom }}
                                         </option>
                                     @empty

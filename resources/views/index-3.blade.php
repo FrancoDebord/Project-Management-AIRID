@@ -36,6 +36,9 @@
 
         <link rel="stylesheet" href="{{ asset("storage/assets/datatable/datatables.min.css") }}">
 
+        <link rel="stylesheet" href="{{ asset("storage/assets/gigo-master/css/gijgo.min.css") }}">
+        <link rel="stylesheet" href="{{ asset("storage/assets/fileinput/css/fileinput.min.css") }}">
+
     <!-- themify-icons line icon -->
     <link rel="stylesheet" type="text/css"
         href="{{ asset('storage/assets_vendor3/icon/themify-icons/themify-icons.css') }}">
@@ -167,6 +170,8 @@
     <script src="{{ asset("storage/assets/datatable/datatables.min.js") }}"></script>
 	<script src="{{ asset('storage/assets/alertifyjs/alertify.min.js') }}"></script>
     <script src="{{ asset('storage/assets/notify/notify.min.js') }}"></script>
+    <script src="{{ asset("storage/assets/gigo-master/js/gijgo.min.js") }}"></script>
+    <script src="{{ asset("storage/assets/fileinput/js/fileinput.min.js") }}"></script>
     
 
 

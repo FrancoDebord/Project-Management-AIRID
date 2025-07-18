@@ -18,7 +18,7 @@
                     @csrf
 
                     <div class="row m-3 p-2" style="border: 1px dashed #c20102">
-                        <div class="col-12 col-sm-8 form-group mt-2">
+                        <div class="col-12 col-sm-6  form-group mt-2">
                             <label for="project_id">
                                 <strong>Select a Project / Study</strong>
                             </label>
@@ -36,7 +36,72 @@
 
 
                         </div>
-                        <div class="col-12 col-sm-4 " style="margin-top: 35px;">
+                        <div class="col-12 col-sm-6  form-group mt-2">
+                            <label for="study_phase_id">
+                                <strong>Select a study Phase</strong>
+                            </label>
+
+                            <select name="study_phase_id" id="study_phase_id"
+                                class="form-control selectpicker show-tick @error('study_phase_id') is-invalid @enderror"
+                                data-live-search="true">
+                                <option value="">Select</option>
+
+                                @forelse ($all_phases as $study_phase)
+                                    <option value="{{ $study_phase->id }}">{{ $study_phase->phase_title }}</option>
+                                @empty
+                                @endforelse
+                            </select>
+
+                        </div>
+
+                        <div class="col-12 col-sm-6  form-group mt-2">
+                            <label for="start_date">
+                                <strong>Start Date</strong> <br>
+
+                                <span id="start_date_evidence"></span>
+                            </label>
+
+                            <input type="date" name="start_date" id="start_date"
+                                class="form-control datepicker @error('start_date') is-invalid @enderror" />
+
+                        </div>
+
+                        <div class="col-12 col-sm-6  form-group mt-2">
+                            <label for="end_date">
+                                <strong>End Date</strong> <br>
+
+                                <span id="end_date_evidence"></span>
+                            </label>
+
+                            <input type="date" name="end_date" id="end_date"
+                                class="form-control datepicker @error('end_date') is-invalid @enderror" />
+
+                        </div>
+
+                        <div class="col-12 col-sm-6  form-group mt-2">
+                            <label for="file_evidence1">
+                                <strong>Evidence 1 (Upload file)</strong> <br>
+
+                            </label>
+
+                            <input type="file" name="file_evidence1" id="file_evidence1"
+                                class="form-control datepicker fileclass @error('file_evidence1') is-invalid @enderror" />
+
+                        </div>
+
+                        <div class="col-12 col-sm-6  form-group mt-2">
+                            <label for="file_evidence2">
+                                <strong>Evidence 2 (Upload file)</strong> <br>
+
+                            </label>
+
+                            <input type="file" name="file_evidence2" id="file_evidence2"
+                                class="form-control datepicker fileclass @error('file_evidence2') is-invalid @enderror" />
+
+                        </div>
+
+
+                        <div class="col-12  " style="margin-top: 35px;">
                             <button type="submit" class="btn  btn-outline-danger">
                                 <i class="fa fa-check-circle">&nbsp;</i>
                                 Submit
@@ -47,54 +112,5 @@
             </div>
         </div>
 
-        <div class="container-fluid mt-2">
-            <div class="row">
-                <form action="" class="col-12 p-2">
-                    @csrf
-
-                    <div class="row">
-                        <div class="col-12 table-responsive">
-                            <table class=" " style="border: 1px solid  #000; " id="table-project-tracking-sheet">
-                                <thead>
-                                    <tr>
-                                        <th>Phase</th>
-                                        <th>Description</th>
-                                        <th>Periods</th>
-                                        <th>Dates</th>
-                                        <th>Evidence</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @forelse ($all_phases as $study_phase)
-                                        <tr>
-                                            <td rowspan="2">{{ $study_phase->phase_title }}</td>
-                                            <td rowspan="2">{{ $study_phase->description }}</td>
-
-                                            <td>Start Date</td>
-                                            <td>
-                                                <input type="date" name="date_start[]" id="date_start"
-                                                class="form-control datepicker" />
-                                            </td>
-                                            <td>{{ $study_phase->evidence1 }}</td>
-                                            
-                                            <td>End Date</td>
-                                            <td>
-                                                <input type="date" name="date_end[]" id="date_end"
-                                                    class="form-control datepicker" />
-                                            </td>
-
-                                            <td>{{ $study_phase->evidence2 }}</td>
-                                        </tr>
-
-                                    @empty
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
     </section>
 @endsection
