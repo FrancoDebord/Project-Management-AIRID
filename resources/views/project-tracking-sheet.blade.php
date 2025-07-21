@@ -58,11 +58,11 @@
                             <label for="start_date">
                                 <strong>Start Date</strong> <br>
 
-                                <span id="start_date_evidence"></span>
+                                <span id="start_date_evidence" class="text-danger"></span>
                             </label>
 
-                            <input type="date" name="start_date" id="start_date"
-                                class="form-control datepicker @error('start_date') is-invalid @enderror" />
+                            <input type="text" name="start_date" id="start_date"
+                                class="form-control datepicker mt-1 @error('start_date') is-invalid @enderror" />
 
                         </div>
 
@@ -70,11 +70,11 @@
                             <label for="end_date">
                                 <strong>End Date</strong> <br>
 
-                                <span id="end_date_evidence"></span>
+                                <span id="end_date_evidence" class="text-danger"></span>
                             </label>
 
-                            <input type="date" name="end_date" id="end_date"
-                                class="form-control datepicker @error('end_date') is-invalid @enderror" />
+                            <input type="text" name="end_date" id="end_date"
+                                class="form-control mt-1 datepicker @error('end_date') is-invalid @enderror" />
 
                         </div>
 

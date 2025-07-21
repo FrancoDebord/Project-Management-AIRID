@@ -23,6 +23,9 @@
     <meta name="keywords"
         content="flat ui, admin Admin , Responsive, Landing, Bootstrap, App, Template, Mobile, iOS, Android, apple, creative app">
     <meta name="author" content="codedthemes" />
+    <meta name="csrf-token" content="{{ csrf_token() }}"/>
+    <meta name="theme-color" content="#c20102">
+    <meta name="app_url" content="{{ url('/') }}">
     <!-- Favicon icon -->
     <link rel="shortcut icon" href="{{ asset('storage/assets/logo/airid.png') }}" />
     <!-- Google font-->
@@ -147,6 +150,7 @@
    
     <!-- Warning Section Ends -->
     <!-- Required Jquery -->
+    {{-- <script type="text/javascript" src="{{ asset('storage/assets/js/jquery.3.7.1.min.js') }}"></script> --}}
     <script type="text/javascript" src="{{ asset('storage/assets_vendor3/js/jquery/jquery.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset("storage/assets_vendor3/js/jquery-ui/jquery-ui.min.js")}}"></script>
     <script type="text/javascript" src="{{ asset("storage/assets_vendor3/js/popper.js/popper.min.js")}}"></script>
@@ -172,10 +176,12 @@
     <script src="{{ asset('storage/assets/notify/notify.min.js') }}"></script>
     <script src="{{ asset("storage/assets/gigo-master/js/gijgo.min.js") }}"></script>
     <script src="{{ asset("storage/assets/fileinput/js/fileinput.min.js") }}"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sumeetghimire/AlertJs/Alert.js"></script>
     
 
 
       <script src="{{ asset("storage/assets/js/javascript-custom.js") }}"></script>
+      <script src="{{ asset("storage/assets/js/javascript_ajax.js") }}"></script>
 </body>
 
 

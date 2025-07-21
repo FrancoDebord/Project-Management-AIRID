@@ -10,3 +10,5 @@ Route::get('/master-schedule', [ProjectActivityScheduleController::class,"activi
 Route::get('/project-activity-schedule/{project_id?}', [ProjectActivityScheduleController::class,"scheduleActivityForProject"])->name("scheduleActivityForProject");
 
 Route::resource("project",ProjectController::class);
+
+require_once("route_ajax.php");
