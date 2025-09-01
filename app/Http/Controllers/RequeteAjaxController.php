@@ -21,15 +21,13 @@ class RequeteAjaxController extends Controller
 
         $studyPhaseInfo = Pro_Project_Phase::find($studyPhaseId);
             
-
-        $infos_study_phase_completed = \App\Models\Pro_Project_StudyPhaseCompleted::where('project_id', $projectId)
+        $infos_study_phase_completed = Pro_Project_StudyPhaseCompleted::where('project_id', $projectId)
             ->where('study_phase_id', $studyPhaseId)
             ->first();
 
-        if (!$infos_study_phase_completed) {
+        if ($infos_study_phase_completed) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'Study phase completion status checked successfully.',
                 'data' => [
                     'project_id' => $projectId,
                     'study_phase_id' => $studyPhaseId,
@@ -47,7 +45,13 @@ class RequeteAjaxController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Study phase completion not found for the given project and study phase.',
-            ], 404);
+                'data' => [
+                    'project_id' => $projectId,
+                    'study_phase_id' => $studyPhaseId,
+                    'studyPhaseInfo' => $studyPhaseInfo,
+                ]
+                    // Add more data as needed
+            ]);
         }
     }
 }

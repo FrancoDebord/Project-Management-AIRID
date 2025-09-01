@@ -123,6 +123,13 @@
           <div class="pcoded-navigation-label" data-i18n="nav.category.forms">Project Management</div>
           <ul class="pcoded-item pcoded-left-item">
               <li>
+                  <a href="{{ route("afficherManageProjectPage") }}" class="waves-effect waves-dark">
+                      <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
+                      <span class="pcoded-mtext" data-i18n="nav.form-components.main">Project Creation</span>
+                      <span class="pcoded-mcaret"></span>
+                  </a>
+              </li>
+              <li>
                   <a href="{{ route('project.index') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.form-components.main">Manage Project Info</span>
@@ -131,14 +138,14 @@
               </li>
 
               <li>
-                  <a href="{{ route('activityPage') }}" class="waves-effect waves-dark">
+                  <a href="{{ route('masterSchedule') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.form-components.main">Master schedule</span>
                       <span class="pcoded-mcaret"></span>
                   </a>
               </li>
               <li>
-                  <a href="{{ route('scheduleActivityForProject') }}" class="waves-effect waves-dark">
+                  <a href="{{ route('projectTrackingSheet') }}" class="waves-effect waves-dark">
                       <span class="pcoded-micon"><i class="ti-layers"></i><b>FC</b></span>
                       <span class="pcoded-mtext" data-i18n="nav.form-components.main">Project Tracking Sheet</span>
                       <span class="pcoded-mcaret"></span>

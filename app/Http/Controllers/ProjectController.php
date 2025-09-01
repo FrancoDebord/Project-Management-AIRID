@@ -6,6 +6,7 @@ use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
 use App\Models\Pro_Project_Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
@@ -30,7 +31,15 @@ class ProjectController extends Controller
         $project = new Pro_Project();
 
         $all_personnels = Pro_Personnel::all();
-        return view("create-project", compact("project", "all_personnels"));
+        $all_projects = Pro_Project::all();
+
+        $project_id =  $request->project_id;
+        
+        if ($project_id) {
+            $project = Pro_Project::find($project_id);
+        }
+
+        return view("study_management_design", compact("project", "all_personnels", "all_projects"));
     }
 
     /**
@@ -38,51 +47,39 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        $rules = [
-            "project_code" => "required|string|unique:pro_projects,project_code",
-            "project_title" => "string|required",
-            "project_status" => "string|required",
-            "project_nature" => "string|required",
-            "test_system" => "string|required",
-            "key_personnel" => "array|nullable",
-            "project_title" => "string|required",
-            "protocol_code" => "string|required",
-            "study_director" => "integer|nullable|exists:personnels,id",
-            "project_manager" => "integer|nullable|exists:personnels,id",
-            "date_debut_previsionnelle" => "date|nullable",
-            "date_debut_effective" => "date|nullable",
-            "date_fin_previsionnelle" => "date|nullable",
-            "date_fin_effective" => "date|nullable",
-            "project_stage" => "string|required",
-        ];
-
-        $message = "";
-
-        $request->validate($rules);
 
 
-        $project = Pro_Project::create($request->except(["_method", "_token", "key_personnel"]));
+        // $rules = [
+        //     "code" => "required|string|max:50|unique:pro_projects,project_code",
+        //     "title" => "required|string|max:255",
+        //     "is_glp" => "required|boolean",
+        // ];
 
-        if ($project) {
+        // $validator = Validator::make($request->all(), $rules);
 
-            if ($request->key_personnel) {
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors(), "code_erreur" => 1], 422);
+        // }
 
-                foreach ($request->key_personnel as $key => $staff_id) {
-                    # code...
+        // $project =  Pro_Project::create([
+        //     'project_code' => $request->code,
+        //     'project_title' => $request->title,
+        //     'is_glp' => (bool) $request->is_glp
+        // ]);
 
-                    $project_team = Pro_Project_Team::create([
-                        "project_id" => $project->id,
-                        "staff_id" => $staff_id,
-                        "role" => "",
-                    ]);
-                }
-            }
-        }
-        $message = "The new Project is created successfully...";
-        $all_personnels = Pro_Personnel::all();
+        // if ($request->ajax()) {
 
+        //     $data = [
+        //         'project_id' => $project->id,
+        //         'project_code' => $project->project_code,
+        //         'project_title' => $project->project_title,
+        //         'is_glp' => $project->is_glp
+        //     ];
+        //     return response()->json(['message' => 'Project successfully created.', 'data' => $data, "code_erreur" => 0], 201);
+        // } else {
 
-        return view("create-project", compact("project", "all_personnels"))->with("message", $message);
+        //     return redirect()->route('project.create')->with('success', 'Project successfully created.');
+        // }
     }
 
     /**
@@ -139,7 +136,7 @@ class ProjectController extends Controller
             if ($request->key_personnel) {
 
                 //Supprimer les anciens Key Personnel
-                $delete_olds_key_personnels = Pro_Project_Team::where("project_id",$project_id)->delete();
+                $delete_olds_key_personnels = Pro_Project_Team::where("project_id", $project_id)->delete();
 
                 foreach ($request->key_personnel as $key => $staff_id) {
 
