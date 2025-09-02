@@ -25,57 +25,100 @@
 
     <link rel="stylesheet" href="{{ asset('storage/assets/css/custom_style.css') }}" />
 
-    <style>
-
-    </style>
+   <style>
+    .custom-navbar {
+      background: linear-gradient(90deg, #c20102, #8b0001);
+      padding: 15px 30px;
+    }
+    .custom-navbar .nav-link {
+      color: #fff !important;
+      font-weight: 500;
+      font-size: 1.1rem;
+      margin: 0 12px;
+      transition: all 0.3s ease;
+    }
+    .custom-navbar .nav-link:hover {
+      color: #ffd4d4 !important;
+      transform: translateY(-2px);
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: #fff !important;
+    }
+    .btn-auth {
+      background-color: #fff;
+      color: #c20102;
+      border: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-auth:hover {
+      background-color: #ffd4d4;
+      color: #8b0001;
+    }
+    .dropdown-menu {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+  </style>
 </head>
 
 <body>
-    {{-- Barre supérieure rouge --}}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger px-4 shadow-sm">
-        <div class="container-fluid">
-            {{-- Logo / Titre --}}
-            <a class="navbar-brand fw-bold" href="/home">🌐 Project Tracking Sheet</a>
+    
+    <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg custom-navbar">
+    <div class="container-fluid">
+      <!-- Logo -->
+      <a class="navbar-brand" href="#">Project Tracking Sheet</a>
 
-            {{-- Section droite --}}
-            <div class="d-flex align-items-center ms-auto">
-                @auth
-                    {{-- Photo utilisateur --}}
-                    {{-- <img src="{{ 'https://via.placeholder.com/40' }}" alt="Photo"
-                        class="rounded-circle me-2" width="40" height="40"> --}}
+      <!-- Menu burger -->
+      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-                    {{-- Nom utilisateur --}}
-                    <span class="text-white me-3 fw-semibold">Bonjour, {{ Auth::user()->prenom." ".Auth::user()->nom }}</span>
+      <!-- Liens -->
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route("project.create") }}">Study Management</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Quality Assurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+        </ul>
+      </div>
 
-                    {{-- Bouton Déconnexion --}}
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button class="btn btn-light btn-sm">Déconnexion</button>
-                    </form>
-                @else
-                    {{-- Boutons Connexion / Inscription --}}
-                    <a href="{{ route('login') }}" class="btn btn-light btn-sm me-2">Connexion</a>
-                    <a href="{{ route('register') }}" class="btn btn-outline-light btn-sm">Inscription</a>
-                @endauth
-            </div>
+      <!-- Auth -->
+      <div class="d-flex align-items-center">
+        <!-- 🔹 Si NON connecté -->
+        <!--
+        <button class="btn btn-auth me-2">Login</button>
+        <button class="btn btn-light">Register</button>
+        -->
+
+        @auth
+            
+       <div class="dropdown">
+          <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle fs-4 me-2"></i> Welcome, {{ Auth::user()->prenom." ".Auth::user()->nom }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item" href="#">Profil</a></li>
+            <li><a class="dropdown-item" href="#">Paramètres</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#">Déconnexion</a></li>
+          </ul>
         </div>
-    </nav>
+        @endauth
+        <!-- 🔹 Si connecté -->
+        
+      </div>
+    </div>
+  </nav>
 
     <div class="container-fluid">
         <div class="row">
-            {{-- Sidebar --}}
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar py-4 px-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a href="/" class="active"><i class="bi bi-house"></i> Accueil</a></li>
-                    <li class="nav-item"><a href="{{ route("project.create") }}"><i class="bi bi-ui-checks"></i> Study Management</a></li>
-                    <li class="nav-item"><a href="/dashboard"><i class="bi bi-bar-chart"></i> Dashboard</a></li>
-                    <li class="nav-item"><a href="#"><i class="bi bi-gear"></i> Paramètres</a></li>
-                </ul>
-            </nav>
-
-            {{-- Contenu principal --}}
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-5 py-4">
-              
+            <main class="col-md-12 ms-sm-auto col-lg-12 px-md-5 py-4">
 
 
                 @yield('content')

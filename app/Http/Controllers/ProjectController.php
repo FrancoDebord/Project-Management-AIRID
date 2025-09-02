@@ -6,6 +6,8 @@ use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
 use App\Models\Pro_Project_Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
@@ -34,12 +36,48 @@ class ProjectController extends Controller
         $all_projects = Pro_Project::all();
 
         $project_id =  $request->project_id;
-        
+
         if ($project_id) {
             $project = Pro_Project::find($project_id);
         }
 
-        return view("study_management_design", compact("project", "all_personnels", "all_projects"));
+        $columns = Schema::getColumnListing('pro_projects');
+
+        $total_filled_percentage_projects = $this->computeCompleteness('pro_projects', $project->id ?? 0);
+        $total_filled_percentage_study_director_appointment = $this->computeCompleteness('pro_study_director_appointment_forms', $project->studyDirectorAppointmentForm->id ?? 0, ['id', 'replacement_date', 'created_at', 'updated_at',"study_director_signature","quality_assurance_signature","fm_signature","comments","sd_appointment_file"]);
+
+        return view("study_management_design", compact("project", "all_personnels", "all_projects", "total_filled_percentage_projects", "total_filled_percentage_study_director_appointment"));
+    }
+
+    // Calculer le pourcentage de complétude d'une table
+    private function computeCompleteness($table, $id, $exclude = ['id', 'created_at', 'updated_at'])
+    {
+        // Liste des colonnes
+        $columns = Schema::getColumnListing($table);
+
+        // Exclure les colonnes techniques
+        $columns = array_diff($columns, $exclude);
+
+
+        // Récupérer la ligne
+        $record = DB::table($table)->where('id', $id)->first();
+
+
+        if (!$record) {
+            return 0; // pas trouvé
+        }
+
+        $filled = 0;
+        $total = count($columns);
+
+        foreach ($columns as $col) {
+            if (!empty($record->$col)) {
+                $filled++;
+            }
+        }
+
+        // Pourcentage
+        return $total > 0 ? round(($filled / $total) * 100, 2) : 0;
     }
 
     /**

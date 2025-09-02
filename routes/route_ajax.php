@@ -9,4 +9,6 @@ Route::prefix('ajax')->group(function () {
     // Define other AJAX routes here
     Route::get('/check-project-study-phase', [RequeteAjaxController::class,"checkStudyPhaseCompleted"])->name("checkStudyPhaseCompleted");
     Route::post('/store-project', [ProjectAjaxController::class,"storeProject"])->name("storeProject");
+    Route::post('/store-detailed-information-project', [ProjectAjaxController::class,"saveOtherBasicInformationOnProject"])->name("saveOtherBasicInformationOnProject");
+    Route::post('/store-study-director-appointment-form', [ProjectAjaxController::class,"saveStudyDirectorAppointmentForm"])->name("saveStudyDirectorAppointmentForm");
 });

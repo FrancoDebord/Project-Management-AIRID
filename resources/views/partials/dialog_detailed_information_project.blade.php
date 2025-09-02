@@ -9,6 +9,10 @@
             </div>
             <div class="modal-body">
 
+                    {{-- Affichage des messages d'erreur --}}
+                    <div id="error-messages-detailed-information-project"></div>
+    
+                    {{-- Formulaire --}}
                 @php
                     $project_id = request()->get('project_id');
                     $project = null;
@@ -17,11 +21,11 @@
                     }
 
                 @endphp
-                <form action="#" method="POST" id="formDetailedInformationProject">
+                <form action="{{ route("saveOtherBasicInformationOnProject") }}" method="POST" id="formDetailedInformationProject">
                     {{-- CSRF Token --}}
                     @csrf
 
-                    <input type="hidden" name="project_id" value="{{ $project_id }}">
+                    <input type="hidden" name="project_id" id="project_id" value="{{ $project_id }}">
 
                     <div class="row">
                         <div class="col-12 col-sm-6 form-group-sm mt-2">
@@ -34,6 +38,12 @@
                             <label for="project_title" class="form-label">Project Title</label>
                             <input type="text" class="form-control" id="project_title" name="project_title"
                                 value="{{ $project->project_title ?? '' }}">
+                        </div>
+
+                        <div class="col-12 col-sm-6 form-group-sm mt-2">
+                            <label for="protocol_code" class="form-label">Protocol Code</label>
+                            <input type="text" class="form-control" id="protocol_code" name="protocol_code"
+                                value="{{ $project->protocol_code ?? '' }}">
                         </div>
 
                         <div class="col-12 col-sm-6 form-group-sm mt-2">

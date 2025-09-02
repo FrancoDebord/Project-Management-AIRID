@@ -253,6 +253,116 @@
         }
     </style>
 
+    <style>
+        .alert-success-custom {
+            background: linear-gradient(135deg, #9CDAAAFF, #9FDBACFF);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 18px 22px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success-custom .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .alert-success-custom .btn-close {
+            filter: brightness(0) invert(1);
+            margin-left: auto;
+        }
+    </style>
+
+     <style>
+    .action-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .btn-custom {
+      font-weight: 600;
+      padding: 12px 18px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      white-space: nowrap;
+    }
+
+    .btn-primary-custom {
+      background-color: #c20102;
+      color: #fff;
+      border: none;
+    }
+    .btn-primary-custom:hover {
+      background-color: #a10001;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-custom {
+      background-color: #e45c5d;
+      color: #fff;
+      border: none;
+    }
+    .btn-secondary-custom:hover {
+      background-color: #c94a4b;
+      transform: translateY(-2px);
+    }
+
+    .btn-tertiary-custom {
+      background-color: #f28b8c;
+      color: #fff;
+      border: none;
+    }
+    .btn-tertiary-custom:hover {
+      background-color: #d67374;
+      transform: translateY(-2px);
+    }
+
+    .btn-light-custom {
+      background-color: #f5b5b5;
+      color: #333;
+      border: none;
+    }
+    .btn-light-custom:hover {
+      background-color: #e49c9c;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .progress {
+      flex: 1;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #eee;
+    }
+
+    .progress-bar {
+      background-color: #c20102;
+    }
+
+    .check-icon {
+      font-size: 1.5rem;
+      color: #28a745;
+      display: none; /* caché tant que non complété */
+    }
+
+    .completed .check-icon {
+      display: inline-block;
+    }
+  </style>
+
     @section('content')
         <div class="row justify-content-center">
             <div class="col-lg-11 col-xl-11">
@@ -306,6 +416,16 @@
                     </div>
                 </div>
 
+                @if (session('success'))
+                    <div class="alert alert-success-custom alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-check-circle-fill icon"></i>
+                        <div>
+                            <strong>Success!</strong>  {{ session('success') }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                   
+                @endif
 
                 <ul class="wizard" id="myTab" role="tablist">
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study
@@ -314,7 +434,7 @@
                     <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Development</a>
                     </li>
                     <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase</a></li>
-                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experimental Phase</a></li>
+                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experiment. Phase</a></li>
                     <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Data Analysis</a></li>
                     <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase</a></li>
                     <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase</a></li>

@@ -42,4 +42,9 @@ class Pro_Project extends Model
     {
         return $this->belongsToMany(Pro_Personnel::class, 'pro_projects_team', 'project_id', 'staff_id');
     }
+
+    public function studyDirectorAppointmentForm()
+    {
+        return $this->hasOne(Pro_StudyDirectorAppointmentForm::class, 'project_id', 'id')->where('active', true);
+    }
 }
