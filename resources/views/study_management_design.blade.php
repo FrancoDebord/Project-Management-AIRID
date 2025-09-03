@@ -194,7 +194,7 @@
         }
 
         /* Pointe à droite */
-        .wizard li a::after {
+        /* .wizard li a::after {
             content: "";
             position: absolute;
             top: 0;
@@ -206,10 +206,10 @@
             border-left: 20px solid #f5b5b5;
             z-index: 1;
             transition: border-left-color 0.3s ease;
-        }
+        } */
 
         /* Pointe à gauche (fente arrière) */
-        .wizard li:not(:first-child) a::before {
+        /* .wizard li:not(:first-child) a::before {
             content: "";
             position: absolute;
             top: 0;
@@ -219,9 +219,8 @@
             border-top: 30px solid transparent;
             border-bottom: 30px solid transparent;
             border-left: 20px solid #fff;
-            /* couleur fond */
             z-index: 2;
-        }
+        } */
 
         /* Actif */
         .wizard li a.active {
@@ -431,10 +430,12 @@
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study
                             Creation</a></li>
                     <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details</a></li>
-                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Development</a>
+                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev.</a>
+                    {{-- <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Development</a> --}}
                     </li>
                     <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase</a></li>
-                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experiment. Phase</a></li>
+                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Exper. Phase</a></li>
+                    {{-- <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experiment. Phase</a></li> --}}
                     <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Data Analysis</a></li>
                     <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase</a></li>
                     <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase</a></li>

@@ -47,4 +47,13 @@ class Pro_Project extends Model
     {
         return $this->hasOne(Pro_StudyDirectorAppointmentForm::class, 'project_id', 'id')->where('active', true);
     }
+    public function studyDirectorReplacementHistory()
+    {
+        return $this->hasOne(Pro_StudyDirectorAppointmentForm::class, 'project_id', 'id')->where('active', false)->orderBy('replacement_date', 'desc') ;
+    }
+
+    public function otherBasicDocuments()
+    {
+        return $this->hasMany(Pro_OtherBasicDocument::class, 'project_id', 'id');
+    }
 }

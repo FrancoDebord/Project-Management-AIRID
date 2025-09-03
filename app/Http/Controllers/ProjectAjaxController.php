@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pro_OtherBasicDocument;
 use App\Models\Pro_Project;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectAjaxController extends Controller
@@ -69,11 +72,36 @@ class ProjectAjaxController extends Controller
             "description_project" => "nullable|string",
         ];
 
-        // $validator = Validator::make($request->all(), $rules);
 
-        // if ($validator->fails()) {
-        //     return response()->json(['errors' => $validator->errors(), "code_erreur" => 1], 200);
-        // }
+        if (!$request->input('project_code')) {
+            return response()->json(['message' => 'The project code is required.', "code_erreur" => 1], 200);
+        }
+        $checkUnique = Pro_Project::where("project_code", $request->input('project_code'))
+            ->where("id", "<>", $project_id)
+            ->first();
+        if ($checkUnique) {
+            return response()->json(['message' => 'The project code has already been taken.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('project_title')) {
+            return response()->json(['message' => 'The project title is required.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('date_debut_previsionnelle') && $request->input('date_debut_effective') && $request->input('date_debut_previsionnelle') > $request->input('date_debut_effective')) {
+            return response()->json(['message' => 'The planned start date cannot be later than the actual start date.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('date_fin_previsionnelle') && $request->input('date_fin_effective') && $request->input('date_fin_previsionnelle') > $request->input('date_fin_effective')) {
+            return response()->json(['message' => 'The planned end date cannot be later than the actual end date.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('date_debut_previsionnelle') && $request->input('date_fin_previsionnelle') && $request->input('date_debut_previsionnelle') > $request->input('date_fin_previsionnelle')) {
+            return response()->json(['message' => 'The planned start date cannot be later than the planned end date.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('date_debut_effective') && $request->input('date_fin_effective') && $request->input('date_debut_effective') > $request->input('date_fin_effective')) {
+            return response()->json(['message' => 'The actual start date cannot be later than the actual end date.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
+            return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
+        }
+
 
         $project = Pro_Project::find($project_id);
 
@@ -101,6 +129,9 @@ class ProjectAjaxController extends Controller
         return response()->json(['message' => 'Project information updated successfully.', "code_erreur" => 0], 200);
     }
 
+    /**
+     * Save Study Director Appointment Form
+     */
 
     public function saveStudyDirectorAppointmentForm(Request $request)
     {
@@ -114,10 +145,35 @@ class ProjectAjaxController extends Controller
             "sd_appointment_file" => "nullable|file|mimes:pdf",
         ];
 
-        $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors(), "code_erreur" => 1], 200);
+
+
+        if (!$request->input('study_director')) {
+            return response()->json(['message' => 'The study director is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('sd_appointment_date')) {
+            return response()->json(['message' => 'The study director appointment date is required.', "code_erreur" => 1], 200);
+        }
+
+
+        if ($request->hasFile('sd_appointment_file')) {
+            $file = $request->file('sd_appointment_file');
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
+            }
+        } else {
+            return response()->json(['message' => 'The signed Study Director Appointment Form (PDF) is required.', "code_erreur" => 1], 200);
+        }
+
+
+        if ($request->input('estimated_start_date') && $request->input('estimated_end_date') && $request->input('estimated_start_date') > $request->input('estimated_end_date')) {
+            return response()->json(['message' => 'The estimated start date cannot be later than the estimated end date.', "code_erreur" => 1], 200);
+        }
+
+
+        if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
+            return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
         }
 
         $project = Pro_Project::find($request->input('project_id'));
@@ -153,5 +209,165 @@ class ProjectAjaxController extends Controller
 
         session()->flash('success', 'Study Director Appointment Form saved successfully.');
         return response()->json(['message' => 'Study Director Appointment Form saved successfully.', "code_erreur" => 0], 200);
+    }
+
+
+    /**
+     * Save Study Director Replacement Form
+     */
+
+    public function saveStudyDirectorReplacementForm(Request $request)
+    {
+        $rules = [
+            "project_id" => "required|exists:pro_projects,id",
+            "study_director" => "required|exists:personnels,id",
+            "project_manager" => "nullable|exists:personnels,id",
+            "replacement_reason" => "nullable|string",
+            "replacement_date" => "nullable|date",
+            "sd_appointment_file" => "nullable|file|mimes:pdf",
+        ];
+
+        // $validator = Validator::make($request->all(), $rules);
+
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors(), "code_erreur" => 1], 200);
+        // }
+        if (!$request->input('study_director')) {
+            return response()->json(['message' => 'The new study director is required.', "code_erreur" => 1], 200);
+        }
+
+
+        $project = Pro_Project::find($request->input('project_id'));
+
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
+        }
+
+        if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
+            return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
+        }
+        if ($request->hasFile('sd_appointment_file')) {
+            $file = $request->file('sd_appointment_file');
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
+            }
+        } else {
+            return response()->json(['message' => 'The signed Study Director Replacement Form (PDF) is required.', "code_erreur" => 1], 200);
+        }
+
+
+        // Check if an appointment form already exists for this project
+        $existingForm = $project->studyDirectorAppointmentForm;
+        if (!$existingForm) {
+            return response()->json(['message' => 'No existing Study Director Appointment Form found for this project.', "code_erreur" => 1], 200);
+        }
+
+        $oldStudyDirectorId = $existingForm->study_director;
+        if ($oldStudyDirectorId == $request->input('study_director')) {
+            return response()->json(['message' => 'The new Study Director must be different from the current one.', "code_erreur" => 1], 200);
+        }
+
+        $oldSdAppointmentDate = $existingForm->sd_appointment_date;
+        if ($oldSdAppointmentDate && $request->input('replacement_date') && $request->input('replacement_date') < $oldSdAppointmentDate) {
+            return response()->json(['message' => 'The replacement date cannot be earlier than the original appointment date.', "code_erreur" => 1], 200);
+        }
+        if ($request->input('replacement_date') && $existingForm->estimated_end_date && $request->input('replacement_date') > $existingForm->estimated_end_date) {
+            return response()->json(['message' => 'The replacement date cannot be later than the estimated end date of the study.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('replacement_date')) {
+            return response()->json(['message' => 'The replacement date is required.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('replacement_reason')) {
+            return response()->json(['message' => 'The replacement reason is required.', "code_erreur" => 1], 200);
+        }
+
+
+        // Update project with new study director
+        $dataToUpdate = [
+            'study_director' => $request->input('study_director'),
+            'project_manager' => $request->input('project_manager'),
+            'sd_appointment_date' => $request->input('replacement_date'), // Using replacement date as new appointment date of the new SD
+        ];
+
+        if ($request->hasFile('sd_appointment_file')) {
+            $path = $request->file('sd_appointment_file')->store('uploads', 'public');
+            $dataToUpdate['sd_appointment_file'] = $path;
+        }
+
+
+        if ($existingForm) {
+            // Update existing form
+            $existingForm->update(['active' => false, "replacement_date" => $request->input('replacement_date'), "replacement_reason" => $request->input('replacement_reason')]); // Mark existing as inactive
+
+            $dataToUpdate['estimated_start_date'] = $existingForm->estimated_start_date;
+            $dataToUpdate['estimated_end_date'] = $existingForm->estimated_end_date;
+            $dataToUpdate['active'] = true;
+
+            // Create new form
+            $dataToUpdate['project_id'] = $project->id;
+            \App\Models\Pro_StudyDirectorAppointmentForm::create($dataToUpdate);
+        }
+
+        session()->flash('success', 'Study Director Replacement Form saved successfully.');
+        return response()->json(['message' => 'Study Director Replacement Form saved successfully.', "code_erreur" => 0], 200);
+    }
+
+
+    /**
+     * Save Other Basic Documents for a Project
+     */
+
+    function saveOtherBasicDocuments(Request $request)
+    {
+
+
+        $rules = [
+            "project_id" => "required|exists:pro_projects,id",
+            "titre_document" => "required|string|max:255",
+            "description_document" => "nullable|string",
+            "document_file" => "required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png",
+            "upload_date" => "nullable|date",
+            "uploaded_by" => "nullable|string|max:255",
+            "document_type" => "nullable|string|max:255",
+        ];
+
+        if (!$request->input('titre_document')) {
+            return response()->json(['message' => 'The document title is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->hasFile('document_file')) {
+            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+        }
+
+        $project = Pro_Project::find($request->input('project_id'));
+
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
+        }
+
+        if ($request->hasFile('document_file')) {
+            $file = $request->file('document_file');
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
+            }
+            $path = $file->store('other_basic_documents', 'public');
+        } else {
+            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+        }
+
+        $documentData = [
+            'project_id' => $project->id,
+            'titre_document' => $request->input('titre_document'),
+            'description_document' => $request->input('description_document'),
+            'document_file_path' => $path,
+            'upload_date' => now(),
+            'uploaded_by' => FacadesAuth::user() ? FacadesAuth::user()->id : null,
+            'document_type' => "other basic",
+        ];
+
+        Pro_OtherBasicDocument::create($documentData);
+
+        session()->flash('success', 'Other Basic Document saved successfully.');
+        return response()->json(['message' => 'Other Basic Document saved successfully.', "code_erreur" => 0], 200);
     }
 }
