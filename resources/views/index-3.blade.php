@@ -49,8 +49,11 @@
         <link rel="stylesheet" href="{{ asset("storage/assets/js/bootstrap-select/css/bootstrap-select.min.css") }}">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" type="text/css"
-        href="{{ asset('storage/assets_vendor3/icon/font-awesome/css/font-awesome.min.css') }}">
+    {{-- <link rel="stylesheet" type="text/css"
+        href="{{ asset('storage/assets_vendor3/icon/font-awesome/css/font-awesome.min.css') }}"> --}}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+
     <!-- Style.css")}} -->
     <link rel="stylesheet" type="text/css" href="{{ asset('storage/assets_vendor3/css/style.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('storage/assets_vendor3/css/jquery.mCustomScrollbar.css') }}">

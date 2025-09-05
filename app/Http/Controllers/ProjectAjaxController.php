@@ -446,7 +446,7 @@ class ProjectAjaxController extends Controller
             $parent_activity = \App\Models\Pro_StudyActivities::find($request->input('parent_activity_id'));
             if ($parent_activity) {
 
-                if ($parent_activity->activity_name == $request->input('activity_name')) {
+                if ($parent_activity->study_activity_name == $request->input('study_activity_name')) {
                     return response()->json(['message' => 'The activity cannot be its own parent.', "code_erreur" => 1], 200);
                 }
 

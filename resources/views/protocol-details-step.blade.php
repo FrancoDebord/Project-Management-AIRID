@@ -5,10 +5,10 @@
         --brand-soft: #f5b5b5;
     } */
 
-    :root {
-    --brand: #1d4ed8;       /* Bleu vif */
-    --brand-dark: #0f3aaa;  /* Bleu foncé */
-    --brand-soft: #c7d2fe;  /* Bleu pastel */
+   :root {
+    --brand: #7c3aed;       /* Violet vibrant */
+    --brand-dark: #5b21b6;  /* Violet foncé */
+    --brand-soft: #e9d5ff;  /* Violet pastel */
 }
 
     /* Accordion look */
@@ -173,12 +173,13 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th style="width:29%">Activity</th>
+                                            <th style="width:20%">Activity</th>
                                             <th style="width:15%">SubCategory</th>
                                             <th style="width:18%">Parent Activity</th>
                                             <th style="width:14%">Responsible</th>
                                             <th style="width:14%">Due Date</th>
                                             <th style="width:10%">Status</th>
+                                            <th style="width:9%">Action</th>
                                         </tr>
                                     </thead>
 
@@ -225,10 +226,18 @@
                                                 <td><span
                                                         class="status-badge {{ $status_progress }}">{{ $study_activity->status }}</span>
                                                 </td>
+                                                <td>
+                                                    <a href="#" class="btn btn-outline-warning">
+                                                        <i class="fa fa-edit">&nbsp;</i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-danger">
+                                                        <i class="fa fa-trash-alt">&nbsp;</i>
+                                                    </a>
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center">Aucune activité trouvée</td>
+                                                <td colspan="6" class="text-center">Aucune activité trouvée</td>
                                             </tr>
                                         @endforelse
 
