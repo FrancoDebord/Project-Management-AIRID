@@ -10,7 +10,9 @@ class FrontendController extends Controller
 {
     //
 
-    function __construct() {}
+    function __construct() {
+        $this->middleware('auth');
+    }
 
     function indexPage(Request $request)
     {

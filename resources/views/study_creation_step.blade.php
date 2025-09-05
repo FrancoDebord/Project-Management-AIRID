@@ -1,5 +1,5 @@
 <style>
-    <style>.btn-custom {
+        .btn-custom {
         font-weight: 600;
         padding: 12px 22px;
         border-radius: 8px;
@@ -55,7 +55,6 @@
         color: #fff;
         transform: translateY(-2px);
     }
-</style>
 </style>
 
 <div class="row">
@@ -294,7 +293,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>New Study Director Name</th>
+                    <th>Replaced Study Director </th>
                     <th>Appointment Date</th>
                     <th>Replacement Date</th>
                     <th>Comments</th>
@@ -344,7 +343,7 @@
 
             @endphp
             <tbody>
-                @foreach ($otherBasicDocuments ?? [] as $document)
+                @forelse ($otherBasicDocuments ?? [] as $document)
 
                     <tr>
                         <td>{{ $document->titre_document }}</td>
@@ -361,7 +360,11 @@
                             @endif
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="5">No other basic documents found.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

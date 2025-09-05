@@ -88,10 +88,10 @@
 
 
     {{-- Graphique budgets --}}
-    <div class="card shadow-sm border-0 rounded-4 p-4">
+    {{-- <div class="card shadow-sm border-0 rounded-4 p-4">
         <h5 class="mb-3">Évolution du budget par mois</h5>
         <canvas id="budgetChart" height="100"></canvas>
-    </div>
+    </div> --}}
 
 
     <div class="row mt-3" style="background-color: #fff; padding: 10px; border-radius: 10px;">

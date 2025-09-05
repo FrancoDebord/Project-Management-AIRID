@@ -436,7 +436,7 @@
                     <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase</a></li>
                     <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Exper. Phase</a></li>
                     {{-- <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experiment. Phase</a></li> --}}
-                    <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Data Analysis</a></li>
+                    <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Qual. Assurance</a></li>
                     <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase</a></li>
                     <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase</a></li>
                 </ul>
@@ -446,8 +446,10 @@
                         @include('study_creation_step')
                     </div>
                     <div class="tab-pane fade" id="step2" role="tabpanel">
-                        <h4>Protocol Details</h4>
-                        <p>Contenu de la deuxième étape.</p>
+                        {{-- <h4>Protocol Details</h4>
+                        <p>Contenu de la deuxième étape.</p> --}}
+
+                        @include('protocol-details-step')
                     </div>
                     <div class="tab-pane fade" id="step3" role="tabpanel">
                         <h4>Protocol Development</h4>

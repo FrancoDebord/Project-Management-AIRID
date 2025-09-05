@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pro_OtherBasicDocument;
 use App\Models\Pro_Project;
-use Illuminate\Container\Attributes\Auth;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\Validator;
@@ -369,5 +369,125 @@ class ProjectAjaxController extends Controller
 
         session()->flash('success', 'Other Basic Document saved successfully.');
         return response()->json(['message' => 'Other Basic Document saved successfully.', "code_erreur" => 0], 200);
+    }
+
+    function getStudyTypeById(Request $request)
+    {
+        $study_type_id = $request->input('study_type_id');
+        $project_id = $request->input('project_id');
+
+        if (!$study_type_id) {
+            return response()->json(['message' => 'The study type ID is required.', "code_erreur" => 1], 200);
+        }
+        if (!$project_id) {
+            return response()->json(['message' => 'The project ID is required.', "code_erreur" => 1], 200);
+        }
+
+        $study_type = \App\Models\Pro_StudyType::find($study_type_id);
+        if (!$study_type) {
+            return response()->json(['message' => 'Study type not found.', "code_erreur" => 1], 200);
+        }
+
+        $all_sub_categories = $study_type->allSubCategories;
+
+        $project = Pro_Project::find($project_id);
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
+        }
+
+        $all_activities = $project->allActivitiesProject($study_type_id)->get();
+
+        return response()->json(['message' => 'Study type retrieved successfully.', 'study_type' => $study_type, 'sub_categories' => $all_sub_categories, 'all_activities' => $all_activities, "code_erreur" => 0], 200);
+    }
+
+
+
+    /**
+     * Save the activity for a project
+     */
+    function saveActivityProject(Request $request)
+    {
+
+        $rules = [
+            "project_id" => "required|exists:pro_projects,id",
+            "study_type_id" => "required|exists:pro_studies_types,id",
+            "study_sub_category_id" => "nullable|exists:pro_studies_types_sub_categories,id",
+            "parent_activity_id" => "nullable|exists:pro_study_activities,id",
+            "study_activity_name" => "required|string|max:255",
+            "description" => "nullable|string",
+            "estimated_activity_date" => "nullable|date",
+            "should_be_performed_by" => "nullable|exists:personnels,id",
+        ];
+
+
+
+        if (!$request->input('estimated_activity_date')) {
+            return response()->json(['message' => 'The estimated activity date is required.', "code_erreur" => 1], 200);
+        }
+
+
+        if (!$request->input('project_id')) {
+            return response()->json(['message' => 'The project ID for the activity is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('study_type_id')) {
+            return response()->json(['message' => 'The study type for the activity is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('study_sub_category_id')) {
+            return response()->json(['message' => 'The study sub-category for the activity is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('study_activity_name')) {
+            return response()->json(['message' => 'The activity name is required.', "code_erreur" => 1], 200);
+        }
+
+        if ($request->input('parent_activity_id')) {
+            $parent_activity = \App\Models\Pro_StudyActivities::find($request->input('parent_activity_id'));
+            if ($parent_activity) {
+
+                if ($parent_activity->activity_name == $request->input('activity_name')) {
+                    return response()->json(['message' => 'The activity cannot be its own parent.', "code_erreur" => 1], 200);
+                }
+
+                if (Carbon::parse($request->estimated_activity_date) >= $parent_activity->estimated_activity_date) {
+                    return response()->json(['message' => "The Due date of the new activity shall be inferior or equal to its parent activity's", "code_erreur" => 1], 200);
+                }
+            }
+        }
+
+        $project = Pro_Project::find($request->input('project_id'));
+
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
+        }
+
+        $study_type = \App\Models\Pro_StudyType::find($request->input('study_type_id'));
+        if (!$study_type) {
+            return response()->json(['message' => 'Study type not found.', "code_erreur" => 1], 200);
+        }
+
+        $study_sub_category = \App\Models\Pro_StudyTypeSubCategory::find($request->input('study_sub_category_id'));
+        if (!$study_sub_category) {
+            return response()->json(['message' => 'Study sub-category not found.', "code_erreur" => 1], 200);
+        }
+
+        $activityData = [
+            'project_id' => $project->id,
+            'study_type_id' => $request->input('study_type_id'),
+            'study_sub_category_id' => $request->input('study_sub_category_id'),
+            'parent_activity_id' => $request->input('parent_activity_id') ?? null,
+            'study_activity_name' => $request->input('study_activity_name'),
+            'activity_description' => $request->input('activity_description'),
+            'estimated_activity_date' => $request->input('estimated_activity_date'),
+            'should_be_performed_by' => $request->input('should_be_performed_by') ?? null,
+            'created_by' => FacadesAuth::id(),
+            'status' => 'pending',
+        ];
+
+        \App\Models\Pro_StudyActivities::create($activityData);
+
+        session()->flash('success', 'Activity added to project successfully.');
+        return response()->json(['message' => 'Activity added to project successfully.', "code_erreur" => 0], 200);
     }
 }

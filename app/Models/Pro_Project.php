@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pro_Project extends Model
 {
@@ -55,5 +56,19 @@ class Pro_Project extends Model
     public function otherBasicDocuments()
     {
         return $this->hasMany(Pro_OtherBasicDocument::class, 'project_id', 'id');
+    }
+
+    /**
+     * Get all of the allActivities for the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function allActivitiesProject($study_type_id): HasMany
+    {
+         $activites = $this->hasMany(Pro_StudyActivities::class, 'project_id', 'id')->where("study_type_id",$study_type_id);
+
+
+         return $activites;
+        
     }
 }
