@@ -5,11 +5,14 @@
         --brand-soft: #f5b5b5;
     } */
 
-   :root {
-    --brand: #7c3aed;       /* Violet vibrant */
-    --brand-dark: #5b21b6;  /* Violet foncé */
-    --brand-soft: #e9d5ff;  /* Violet pastel */
-}
+    :root {
+        --brand: #7c3aed;
+        /* Violet vibrant */
+        --brand-dark: #5b21b6;
+        /* Violet foncé */
+        --brand-soft: #e9d5ff;
+        /* Violet pastel */
+    }
 
     /* Accordion look */
     .accordion-item {
@@ -126,25 +129,34 @@
 
         @forelse ($all_study_types as $study_type)
 
-        @php
-            $compteur=0;
-        @endphp
+            @php
+                $compteur = 0;
+            @endphp
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingLab{{ $study_type->id }}">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#zoneLab{{ $study_type->id }}" aria-expanded="{{ $compteur == 0?"true":"false" }}"
+                        data-bs-target="#zoneLab{{ $study_type->id }}"
+                        aria-expanded="{{ $compteur == 0 ? 'true' : 'false' }}"
                         aria-controls="zoneLab{{ $study_type->id }}">
                         <i class="bi bi-flask me-2"></i> {{ $study_type->study_type_name }}
                     </button>
 
                 </h2>
-                <div id="zoneLab{{ $study_type->id }}" class="accordion-collapse collapse {{ $compteur++ == 0?"show":"" }} "
+                <div id="zoneLab{{ $study_type->id }}"
+                    class="accordion-collapse collapse {{ $compteur++ == 0 ? 'show' : '' }} "
                     aria-labelledby="headingLab{{ $study_type->id }}" data-bs-parent="#zonesAccordion">
                     <div class="accordion-body zone-block" data-zone="lab">
 
                         <div class="row mt-2 mb-3">
                             <div class="col-12">
-                                <button type="button" class="btn btn-outline-danger add-activity" data-project-id="{{ $project->id }}" data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}" data-study-type-id="{{ $study_type->id }}">Add Activity</button>
+                                <button type="button" class="btn btn-outline-danger add-activity"
+                                    data-project-id="{{ $project->id }}"
+                                    data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
+                                    data-study-type-id="{{ $study_type->id }}">
+                                
+                                    <i class="fa fa-plus-circle">&nbsp;</i>
+                                    Add Activity
+                                </button>
 
                             </div>
                         </div>
@@ -173,18 +185,21 @@
                                 <table class="table table-hover mb-0">
                                     <thead>
                                         <tr>
-                                            <th style="width:20%">Activity</th>
+                                            <th style="width:21%">Activity</th>
                                             <th style="width:15%">SubCategory</th>
                                             <th style="width:18%">Parent Activity</th>
                                             <th style="width:14%">Responsible</th>
                                             <th style="width:14%">Due Date</th>
                                             <th style="width:10%">Status</th>
-                                            <th style="width:9%">Action</th>
+                                            <th style="width:4%">Edit</th>
+                                            <th style="width:4%">Del</th>
                                         </tr>
                                     </thead>
 
                                     @php
-                                        $all_activities_project = $project->allActivitiesProject($study_type->id)->get();
+                                        $all_activities_project = $project
+                                            ->allActivitiesProject($study_type->id)
+                                            ->get();
                                     @endphp
                                     <tbody>
 
@@ -218,7 +233,7 @@
                                                 @endphp
                                                 <td>
                                                     <span
-                                                        class="badge bg-light text-dark">{{ $parent_activity? $parent_activity->study_activity_name:"N/A" }}</span>
+                                                        class="badge bg-light text-dark">{{ $parent_activity ? $parent_activity->study_activity_name : 'N/A' }}</span>
                                                 </td>
                                                 <td>{{ $personneResponsable ? $personneResponsable->titre . ' ' . $personneResponsable->prenom . ' ' . $personneResponsable->nom : 'Not yet assigned' }}
                                                 </td>
@@ -227,10 +242,39 @@
                                                         class="status-badge {{ $status_progress }}">{{ $study_activity->status }}</span>
                                                 </td>
                                                 <td>
-                                                    <a href="#" class="btn btn-outline-warning">
+                                                    <a href="#"
+                                                        class="btn btn-outline-warning bouton-modifier-activite"
+                                                        data-activity-id="{{ $study_activity->id }}"
+                                                        data-activity-name="{{ $study_activity->study_activity_name }}"
+                                                        data-activity-date="{{ $study_activity->estimated_activity_date }}"
+                                                        data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
+                                                        data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
+                                                        data-activity-study-type-id="{{ $study_activity->study_type_id }}"
+                                                        data-activity-description="{{ $study_activity->activity_description }}"
+                                                        data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
+                                                        data-project-id="{{ $project_id }}"
+                                                        data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
+                                                        >
                                                         <i class="fa fa-edit">&nbsp;</i>
                                                     </a>
-                                                    <a href="#" class="btn btn-outline-danger">
+
+                                                </td>
+                                                <td>
+                                                    <a href="#"
+                                                        class="btn btn-outline-danger bouton-supprimer-activite"
+                                                         data-activity-id="{{ $study_activity->id }}"
+                                                        data-activity-name="{{ $study_activity->study_activity_name }}"
+                                                        data-activity-date="{{ $study_activity->estimated_activity_date }}"
+                                                        data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
+                                                        data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
+                                                        data-activity-study-type-id="{{ $study_activity->study_type_id }}"
+                                                        data-activity-description="{{ $study_activity->activity_description }}"
+                                                        data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
+                                                        data-project-id="{{ $project_id }}"
+                                                        data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
+                                                        data-children-activites-route="{{ route('childrenActivity') }}"
+                                                        
+                                                        >
                                                         <i class="fa fa-trash-alt">&nbsp;</i>
                                                     </a>
                                                 </td>
@@ -461,6 +505,7 @@
 </div>
 
 @include('partials.add-activity-project')
+@include('partials.supprimer-activite-dialog')
 
 <script>
     // Gestion locale des filtres par zone

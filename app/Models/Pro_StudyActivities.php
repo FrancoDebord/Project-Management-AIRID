@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pro_StudyActivities extends Model
 {
@@ -38,6 +39,16 @@ class Pro_StudyActivities extends Model
      */
     public function ParentActivity(): BelongsTo
     {
-        return $this->belongsTo(Pro_StudyActivities::class, 'parent_activity_id', 'id');
+        return $this->belongsTo(Pro_StudyActivities::class, 'parent_activity_id');
+    }
+
+    /**
+     * Get all of the allChildrenActivities for the Pro_StudyActivities
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function allChildrenActivities(): HasMany
+    {
+        return $this->hasMany(Pro_StudyActivities::class, 'parent_activity_id');
     }
 }

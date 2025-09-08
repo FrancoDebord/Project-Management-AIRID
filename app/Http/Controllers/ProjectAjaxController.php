@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_OtherBasicDocument;
+use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
+use App\Models\Pro_ProtocolDevActivity;
+use App\Models\Pro_ProtocolDevActivityProject;
+use App\Models\Pro_StudyActivities;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
@@ -397,7 +402,9 @@ class ProjectAjaxController extends Controller
 
         $all_activities = $project->allActivitiesProject($study_type_id)->get();
 
-        return response()->json(['message' => 'Study type retrieved successfully.', 'study_type' => $study_type, 'sub_categories' => $all_sub_categories, 'all_activities' => $all_activities, "code_erreur" => 0], 200);
+        $all_personnels = Pro_Personnel::orderBy("prenom", "asc")->get();
+
+        return response()->json(['message' => 'Study type retrieved successfully.', 'study_type' => $study_type, 'sub_categories' => $all_sub_categories, 'all_activities' => $all_activities, "all_personnels" => $all_personnels,  "code_erreur" => 0], 200);
     }
 
 
@@ -450,8 +457,8 @@ class ProjectAjaxController extends Controller
                     return response()->json(['message' => 'The activity cannot be its own parent.', "code_erreur" => 1], 200);
                 }
 
-                if (Carbon::parse($request->estimated_activity_date) >= $parent_activity->estimated_activity_date) {
-                    return response()->json(['message' => "The Due date of the new activity shall be inferior or equal to its parent activity's", "code_erreur" => 1], 200);
+                if (Carbon::parse($request->estimated_activity_date) > $parent_activity->estimated_activity_date) {
+                    return response()->json(['message' => "The Due date of the new activity shall be inferior or equal to its parent activity's. (" . $parent_activity->estimated_activity_date . ")", "code_erreur" => 1], 200);
                 }
             }
         }
@@ -485,9 +492,160 @@ class ProjectAjaxController extends Controller
             'status' => 'pending',
         ];
 
-        \App\Models\Pro_StudyActivities::create($activityData);
+        if ($request->input('id')) {
+
+            $activity_to_update = Pro_StudyActivities::find($request->input('id'));
+            if (!$activity_to_update) {
+                return response()->json(['message' => 'Study Activity not found.', "code_erreur" => 1], 200);
+            } else {
+                $activity_to_update->update($activityData);
+            }
+        } else {
+
+            \App\Models\Pro_StudyActivities::create($activityData);
+        }
 
         session()->flash('success', 'Activity added to project successfully.');
         return response()->json(['message' => 'Activity added to project successfully.', "code_erreur" => 0], 200);
+    }
+
+
+    /**
+     * Supprimer une activité
+     */
+    function supprimerActivite(Request $request)
+    {
+
+        $delete_cascade = $request->input('delete_cascade');
+        $activity_id_to_delete = $request->input('activity_id');
+
+        $activity_to_delete = Pro_StudyActivities::find($activity_id_to_delete);
+        if (!$activity_to_delete) {
+            return response()->json(['message' => 'Study Activity not found.', "code_erreur" => 1], 200);
+        } else {
+
+
+            if ($delete_cascade == 1) { // Supprimer avec les enfants
+
+                $supprimer_enfants = Pro_StudyActivities::where("parent_activity_id", $activity_id_to_delete)->delete();
+            }
+
+            $activity_to_delete->delete(); //Suppression de la tâche principale
+
+            session()->flash('success', 'Study Activity deleted successfully.');
+            return response()->json(['message' => 'Study Activity deleted successfully.', "code_erreur" => 0], 200);
+        }
+    }
+
+    /**
+     * 
+     */
+    function childrenActivity(Request $request)
+    {
+
+
+        $all_children_activities = [];
+
+        $activity_to_delete = Pro_StudyActivities::find($request->input('activity_id'));
+        if (!$activity_to_delete) {
+            return response()->json(['message' => 'Study Activity not found.', "code_erreur" => 1], 200);
+        } else {
+
+
+            // $all_children_activities = Pro_StudyActivities::where("parent_activity_id",$request->input('activity_id'))->orderBy("estimated_activity_date")->get();
+            $all_children_activities = $activity_to_delete->allChildrenActivities;
+        }
+
+        return response()->json(['all_children_activities' => $all_children_activities, "code_erreur" => 0], 200);
+    }
+
+
+    /**
+     * Generate Protocol Dev activities for Project
+     */
+
+    function generateProtocolDevActivitiesForProject(Request $request)
+    {
+
+        $project_id = $request->input("project_id");
+
+        if (!$request->input('project_id')) {
+            return response()->json(['message' => 'The project ID for the activity is required.', "code_erreur" => 1], 200);
+        }
+
+        $project = Pro_Project::find($project_id);
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
+        }
+
+        $all_protocol_dev_activities = Pro_ProtocolDevActivity::all();
+
+        foreach ($all_protocol_dev_activities as $key => $protocol_dev_activity) {
+            # code...
+
+            $check_exist = Pro_ProtocolDevActivityProject::where("project_id", $project_id)
+                ->where("protocol_dev_activity_id", $protocol_dev_activity->id)->first();
+
+            if (!$check_exist) {
+
+                $assignedTo = null;
+                $staff_role = "Other";
+
+                $studyDirectorAppointmentForm = $project->studyDirectorAppointmentForm;
+                if ($protocol_dev_activity->staff_role_perform == "Study Director") {
+
+                    $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->study_director : null;
+
+                    $staff_role = "Study Director";
+                } elseif ($protocol_dev_activity->staff_role_perform == "Project Manager") {
+
+                    $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->project_manager : null;
+
+                    $staff_role = "Project Manager";
+                } elseif ($protocol_dev_activity->staff_role_perform == "Facility Manager") {
+
+                    $fm = Pro_KeyFacilityPersonnel::where("staff_role", "Facility Manager")->first();
+
+                    $assignedTo = $fm ? $fm->personnel_id : null;
+
+                    $staff_role = "Facility Manager";
+                } elseif ($protocol_dev_activity->staff_role_perform == "Quality Assurance") {
+
+                    $qa = Pro_KeyFacilityPersonnel::where("staff_role", "Quality Manager")->first();
+
+                    $assignedTo = $qa ? $qa->personnel_id : null;
+                    $staff_role = "QUality Assurance";
+                } elseif ($protocol_dev_activity->staff_role_perform == "Archivist") {
+
+                    $archivist = Pro_KeyFacilityPersonnel::where("staff_role", "Archivist")->first();
+
+                    $assignedTo = $archivist ? $archivist->personnel_id : null;
+                    $staff_role = "Archivist";
+                }
+
+                $act_create = Pro_ProtocolDevActivityProject::create([
+                    "project_id" => $project_id,
+                    "protocol_dev_activity_id" => $protocol_dev_activity->id,
+                    "level_activite" => $protocol_dev_activity->level_activite,
+                    "staff_id_performed" => $assignedTo,
+                    "staff_role" => $staff_role,
+                    "applicable" => true,
+                    "complete" => false,
+                    
+                ]);
+            }
+        }
+
+        session()->flash('success', 'Protocol Dev Activities create for the Project successfully.');
+        return response()->json(['message' => 'Protocol Dev Activities create for the Project successfully.', "code_erreur" => 0], 200);
+    }
+
+    /**
+     * Enregistrer activite Protocol
+     */
+
+    function saveProtocolDevelopmentActivityCompleted(Request $request){
+
+        
     }
 }

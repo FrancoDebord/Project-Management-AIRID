@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
      <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -145,7 +149,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="{{ asset('storage/assets/datatable/datatables.min.js') }}"></script>
-    <script src="{{ asset('storage/assets/alertifyjs/alertify.min.js') }}"></script>
+    {{-- <script src="{{ asset('storage/assets/alertifyjs/alertify.min.js') }}"></script> --}}
+    <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
     <script src="{{ asset('storage/assets/notify/notify.min.js') }}"></script>
     <script src="{{ asset('storage/assets/gigo-master/js/gijgo.min.js') }}"></script>
     <script src="{{ asset('storage/assets/fileinput/js/fileinput.min.js') }}"></script>

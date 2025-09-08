@@ -404,7 +404,9 @@
                     </div>
                 </div>
 
-                <div class="card">
+
+                @if ($project->project_code)
+                    <div class="card">
                     <div class="card-body">
                         <h2 class="h5" style="color :  #c20102">Project Management Design for :
                             <span class=" ">
@@ -415,7 +417,7 @@
                     </div>
                 </div>
 
-                @if (session('success'))
+                  @if (session('success'))
                     <div class="alert alert-success-custom alert-dismissible fade show mt-3" role="alert">
                         <i class="bi bi-check-circle-fill icon"></i>
                         <div>
@@ -426,6 +428,7 @@
                    
                 @endif
 
+                
                 <ul class="wizard" id="myTab" role="tablist">
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study
                             Creation</a></li>
@@ -441,7 +444,7 @@
                     <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase</a></li>
                 </ul>
 
-                <div class="tab-content" id="myTabContent">
+                   <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active" id="step1" role="tabpanel">
                         @include('study_creation_step')
                     </div>
@@ -452,8 +455,9 @@
                         @include('protocol-details-step')
                     </div>
                     <div class="tab-pane fade" id="step3" role="tabpanel">
-                        <h4>Protocol Development</h4>
-                        <p>Contenu de la troisième étape.</p>
+                        <h4>Protocol Development ({{ $project ? $project->project_code:"No project selected"}})</h4>
+                        {{-- <p>Contenu de la troisième étape.</p> --}}
+                        @include('protocol-development')
                     </div>
                     <div class="tab-pane fade" id="step4" role="tabpanel">
                         <h4>Planning Phase</h4>
@@ -477,122 +481,28 @@
                     </div>
                 </div>
 
+                @else
+                <div class="row">
+                    <div class="col-12">
+                        <p class="alert alert-info text-center mt-2">
+                            <strong>Veuillez sélectionner un projet pour voir ses détails.</strong>
+                        </p>
+                    </div>
+                </div>
+                @endif
+
+                
+
+              
+
+
+             
+
             </div>
 
             @include('partials.dialog-create-project')
         @endsection
 
         @section('js')
-            {{-- <script>
-                (function() {
-                    const form = document.getElementById('wizardForm');
-                    const steps = [...document.querySelectorAll('.step')];
-                    const nextBtn = document.getElementById('nextBtn');
-                    const prevBtn = document.getElementById('prevBtn');
-                    const submitBtn = document.getElementById('submitBtn');
-                    const progressBar = document.getElementById('progressBar');
-                    const circles = document.querySelectorAll('[data-step-circle]');
-                    const lines = document.querySelectorAll('[data-step-line]');
-                    const review = document.getElementById('review');
-
-                    let current = 0; // index 0..n-1
-
-                    const total = steps.length;
-                    updateUI();
-
-                    nextBtn.addEventListener('click', () => {
-                        // Valider les champs requis de l'étape courante
-                        if (!validateStep(steps[current])) return;
-                        if (current < total - 1) {
-                            current++;
-                            // Remplir la section récap à l'entrée de la dernière étape
-                            if (current === total - 1) fillReview();
-                            updateUI();
-                        }
-                    });
-
-                    prevBtn.addEventListener('click', () => {
-                        if (current > 0) {
-                            current--;
-                            updateUI();
-                        }
-                    });
-
-                    form.addEventListener('submit', (e) => {
-                        // Validation globale au submit
-                        if (!form.checkValidity()) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            form.classList.add('was-validated');
-                        }
-                    });
-
-                    function validateStep(stepEl) {
-                        const requiredFields = stepEl.querySelectorAll('[required]');
-                        let valid = true;
-                        requiredFields.forEach(input => {
-                            if (input.type === 'checkbox') {
-                                if (!input.checked) {
-                                    valid = false;
-                                }
-                            } else if (!input.value) {
-                                valid = false;
-                            } else if (input.type === 'email' && !/^\S+@\S+\.\S+$/.test(input.value)) {
-                                valid = false;
-                            }
-                            if (!input.checkValidity()) valid = false;
-                        });
-                        stepEl.querySelectorAll('input, select, textarea').forEach(el => el.reportValidity());
-                        return valid;
-                    }
-
-                    function updateUI() {
-                        steps.forEach((s, i) => s.classList.toggle('active', i === current));
-                        prevBtn.disabled = current === 0;
-                        nextBtn.classList.toggle('d-none', current === total - 1);
-                        submitBtn.classList.toggle('d-none', current !== total - 1);
-                        // Progression (0%, 50%, 100% pour 3 étapes)
-                        const pct = Math.round((current) / (total - 1) * 100);
-                        progressBar.style.width = pct + '%';
-                        progressBar.setAttribute('aria-valuenow', pct);
-                        // Indicateurs
-                        circles.forEach((c, i) => {
-                            c.classList.remove('active', 'done', 'bg-secondary-subtle', 'text-secondary');
-                            if (i < current) {
-                                c.classList.add('done');
-                            } else if (i === current) {
-                                c.classList.add('active');
-                            } else {
-                                c.classList.add('bg-secondary-subtle', 'text-secondary');
-                            }
-                        });
-                        lines.forEach((l, i) => {
-                            l.classList.toggle('filled', i < current);
-                        });
-                    }
-
-                    function fillReview() {
-                        const data = new FormData(form);
-                        const entries = {};
-                        for (const [k, v] of data.entries()) {
-                            entries[k] = v;
-                        }
-                        review.innerHTML = `
-          <div class="row g-3 small">
-            <div class="col-md-6"><strong>Prénom:</strong> ${escapeHtml(entries.first_name || '')}</div>
-            <div class="col-md-6"><strong>Nom:</strong> ${escapeHtml(entries.last_name || '')}</div>
-            <div class="col-md-6"><strong>Email:</strong> ${escapeHtml(entries.email || '')}</div>
-            <div class="col-md-6"><strong>Téléphone:</strong> ${escapeHtml(entries.phone || '')}</div>
-            <div class="col-md-6"><strong>Projet:</strong> ${escapeHtml(entries.project_name || '')}</div>
-            <div class="col-md-6"><strong>Catégorie:</strong> ${escapeHtml(entries.category || '')}</div>
-            <div class="col-md-6"><strong>Budget:</strong> ${escapeHtml(entries.budget || '')}</div>
-            <div class="col-12"><strong>Description:</strong><br>${escapeHtml(entries.description || '')}</div>
-          </div>`;
-                    }
-
-                    function escapeHtml(str) {
-                        return str.replace(/[&<>"](/g, "_");
-                    }
-                })();
-            </script> --}}
+         
         @endsection

@@ -28,6 +28,7 @@
 
                      <input type="hidden" name="project_id" id="project_id" value="{{ $project_id }}">
                      <input type="hidden" name="study_type_id" id="study_type_id" value="">
+                     <input type="hidden" name="id" id="activity_id" value="">
 
                      <div class="row">
                          <div class="mb-3 col">
@@ -54,8 +55,8 @@
                      </div>
 
                      <div class="mb-3">
-                         <label for="description" class="form-label">Description</label>
-                         <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                         <label for="activity_description" class="form-label">Description</label>
+                         <textarea class="form-control" id="activity_description" name="activity_description" rows="3" ></textarea>
                      </div>
 
                      @php
@@ -93,7 +94,7 @@
 
              <!-- Pied -->
              <div class="modal-footer">
-                 <button type="button" class="btn btn-outline-main" data-bs-dismiss="modal">Annuler</button>
+                 <button type="button" class="btn btn-outline-main" data-bs-dismiss="modal">Cancel</button>
              </div>
          </div>
      </div>

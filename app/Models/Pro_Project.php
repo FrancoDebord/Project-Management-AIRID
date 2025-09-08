@@ -65,10 +65,20 @@ class Pro_Project extends Model
      */
     public function allActivitiesProject($study_type_id): HasMany
     {
-         $activites = $this->hasMany(Pro_StudyActivities::class, 'project_id', 'id')->where("study_type_id",$study_type_id);
+         $activites = $this->hasMany(Pro_StudyActivities::class, 'project_id', 'id')->where("study_type_id",$study_type_id)->orderBy("estimated_activity_date");
 
 
          return $activites;
         
+    }
+
+    /**
+     * Get all of the protocolDeveloppementActivitiesProject for the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function protocolDeveloppementActivitiesProject(): HasMany
+    {
+        return $this->hasMany(Pro_ProtocolDevActivityProject::class, 'project_id', 'id')->orderBy("level_activite");
     }
 }
