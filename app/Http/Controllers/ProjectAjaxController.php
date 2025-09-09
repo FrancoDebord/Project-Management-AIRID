@@ -366,7 +366,7 @@ class ProjectAjaxController extends Controller
             'description_document' => $request->input('description_document'),
             'document_file_path' => $path,
             'upload_date' => now(),
-            'uploaded_by' => FacadesAuth::user() ? FacadesAuth::user()->id : null,
+            'uploaded_by' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
             'document_type' => "other basic",
         ];
 
@@ -488,7 +488,7 @@ class ProjectAjaxController extends Controller
             'activity_description' => $request->input('activity_description'),
             'estimated_activity_date' => $request->input('estimated_activity_date'),
             'should_be_performed_by' => $request->input('should_be_performed_by') ?? null,
-            'created_by' => FacadesAuth::id(),
+            'created_by' => FacadesAuth::user()->personnel->id,
             'status' => 'pending',
         ];
 
@@ -586,66 +586,123 @@ class ProjectAjaxController extends Controller
             $check_exist = Pro_ProtocolDevActivityProject::where("project_id", $project_id)
                 ->where("protocol_dev_activity_id", $protocol_dev_activity->id)->first();
 
+            $assignedTo = null;
+            $staff_role = "Other";
+
+            $studyDirectorAppointmentForm = $project->studyDirectorAppointmentForm;
+            if ($protocol_dev_activity->staff_role_perform == "Study Director") {
+
+                $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->study_director : null;
+
+                $staff_role = "Study Director";
+            } elseif ($protocol_dev_activity->staff_role_perform == "Project Manager") {
+
+                $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->project_manager : null;
+
+                $staff_role = "Project Manager";
+            } elseif ($protocol_dev_activity->staff_role_perform == "Facility Manager") {
+
+                $fm = Pro_KeyFacilityPersonnel::where("staff_role", "Facility Manager")->first();
+
+                $assignedTo = $fm ? $fm->personnel_id : null;
+
+                $staff_role = "Facility Manager";
+            } elseif ($protocol_dev_activity->staff_role_perform == "Quality Assurance") {
+
+                $qa = Pro_KeyFacilityPersonnel::where("staff_role", "Quality Assurance")->first();
+
+                $assignedTo = $qa ? $qa->personnel_id : null;
+                $staff_role = "Quality Assurance";
+            } elseif ($protocol_dev_activity->staff_role_perform == "Archivist") {
+
+                $archivist = Pro_KeyFacilityPersonnel::where("staff_role", "Archivist")->first();
+
+                $assignedTo = $archivist ? $archivist->personnel_id : null;
+                $staff_role = "Archivist";
+            }
+
             if (!$check_exist) {
 
-                $assignedTo = null;
-                $staff_role = "Other";
-
-                $studyDirectorAppointmentForm = $project->studyDirectorAppointmentForm;
-                if ($protocol_dev_activity->staff_role_perform == "Study Director") {
-
-                    $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->study_director : null;
-
-                    $staff_role = "Study Director";
-                } elseif ($protocol_dev_activity->staff_role_perform == "Project Manager") {
-
-                    $assignedTo = $studyDirectorAppointmentForm ? $studyDirectorAppointmentForm->project_manager : null;
-
-                    $staff_role = "Project Manager";
-                } elseif ($protocol_dev_activity->staff_role_perform == "Facility Manager") {
-
-                    $fm = Pro_KeyFacilityPersonnel::where("staff_role", "Facility Manager")->first();
-
-                    $assignedTo = $fm ? $fm->personnel_id : null;
-
-                    $staff_role = "Facility Manager";
-                } elseif ($protocol_dev_activity->staff_role_perform == "Quality Assurance") {
-
-                    $qa = Pro_KeyFacilityPersonnel::where("staff_role", "Quality Manager")->first();
-
-                    $assignedTo = $qa ? $qa->personnel_id : null;
-                    $staff_role = "QUality Assurance";
-                } elseif ($protocol_dev_activity->staff_role_perform == "Archivist") {
-
-                    $archivist = Pro_KeyFacilityPersonnel::where("staff_role", "Archivist")->first();
-
-                    $assignedTo = $archivist ? $archivist->personnel_id : null;
-                    $staff_role = "Archivist";
-                }
 
                 $act_create = Pro_ProtocolDevActivityProject::create([
                     "project_id" => $project_id,
                     "protocol_dev_activity_id" => $protocol_dev_activity->id,
                     "level_activite" => $protocol_dev_activity->level_activite,
-                    "staff_id_performed" => $assignedTo,
+                    "staff_id_assigned" => $assignedTo,
                     "staff_role" => $staff_role,
                     "applicable" => true,
                     "complete" => false,
-                    
+
+                ]);
+            } else {
+
+                $check_exist->update([
+                    "project_id" => $project_id,
+                    "protocol_dev_activity_id" => $protocol_dev_activity->id,
+                    "level_activite" => $protocol_dev_activity->level_activite,
+                    "staff_id_assigned" => $assignedTo,
+                    "staff_role" => $staff_role,
+                    "applicable" => true,
+
                 ]);
             }
         }
 
-        session()->flash('success', 'Protocol Dev Activities create for the Project successfully.');
-        return response()->json(['message' => 'Protocol Dev Activities create for the Project successfully.', "code_erreur" => 0], 200);
+        session()->flash('success', 'Protocol Dev Activities created for the Project successfully.');
+        return response()->json(['message' => 'Protocol Dev Activities created for the Project successfully.', "code_erreur" => 0], 200);
     }
 
     /**
      * Enregistrer activite Protocol
      */
 
-    function saveProtocolDevelopmentActivityCompleted(Request $request){
+    function saveProtocolDevelopmentActivityCompleted(Request $request)
+    {
 
-        
+
+        if (!$request->input('protocol_dev_activity_project_id')) {
+            return response()->json(['message' => 'The  activity ID is required.', "code_erreur" => 1], 200);
+        }
+
+        $record_activity = Pro_ProtocolDevActivityProject::find($request->input('protocol_dev_activity_project_id'));
+        if (!$record_activity) {
+            return response()->json(['message' => 'Record to update not found.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('date_performed')) {
+            return response()->json(['message' => 'The Activity Date performed is required.', "code_erreur" => 1], 200);
+        }
+
+        if (Carbon::parse($request->date_performed) > now()) {
+            return response()->json(['message' => "The Date performed of the activity shall be inferior or equal to today ", "code_erreur" => 1], 200);
+        }
+
+        if ($request->hasFile('document_file')) {
+            $file = $request->file('document_file');
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
+            }
+            $path = $file->store('protocol_dev', 'public');
+        } else {
+            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+        }
+
+
+        $documentData = [
+            'id' => $request->input('protocol_dev_activity_project_id'),
+            'date_performed' => $request->input('date_performed'),
+            'document_file_path' => $path,
+            'complete' => true,
+            'real_date_performed' => now(),
+            'staff_id_performed' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
+        ];
+
+        $record_activity->update($documentData);
+
+        $activity = $record_activity->protocolDevActivity;
+        $message_success = $activity ? $activity->nom_activite . " document successfully uploaded " : "Protocol Dev Activities updated for the Project successfully.";
+
+        session()->flash('success', $message_success);
+        return response()->json(['message' => $message_success, "code_erreur" => 0], 200);
     }
 }

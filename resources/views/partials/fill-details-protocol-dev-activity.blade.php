@@ -6,12 +6,12 @@
                   <h5 class="modal-title" id="detailsModalLabel">Fill Activity Details</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <form action="#" method="POST">
+              <form action="{{ route("saveProtocolDevelopmentActivityCompleted") }}" method="POST" enctype="multipart/form-data" id="form-details-protocol-dev-activity">
                   @csrf
                   <div class="modal-body">
-                    
+
                       <div class="row mt-2 mb-3">
-                          <div class="col-12" id="div-messages-error"></div>
+                          <div class="col-12" id="div-messages-error2"></div>
 
                       </div>
 
@@ -23,7 +23,7 @@
                               <input type="text" class="form-control" id="activityName" name="activityName" readonly>
                           </div>
                           <div class="col mb-3">
-                              <label for="date_performed" class="form-label">Date Performed</label>
+                              <label for="date_performed_protocol_dev" class="form-label">Date Performed</label>
                               <input type="text" class="form-control" id="date_performed_protocol_dev"
                                   name="date_performed" readonly>
                           </div>

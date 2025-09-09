@@ -20,7 +20,7 @@ return new class extends Migration
               $table->date("due_date_performed")->nullable();
               $table->unsignedBigInteger("staff_id_performed")->nullable();
               $table->string("staff_role")->nullable();
-              $table->string("document_file")->nullable();
+              $table->string("document_file_path")->nullable();
               $table->boolean("applicable")->default(true);
               $table->integer("level_activite")->nullable();
               $table->boolean("complete")->default(false);

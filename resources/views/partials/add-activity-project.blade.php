@@ -65,7 +65,7 @@
 
                      <div class="row">
                          <div class="col">
-                             <label for="estimated_activity_date" class="form-label">Start Date</label>
+                             <label for="estimated_activity_date" class="form-label">Activity Due Date</label>
                              <input type="text" class="form-control" id="estimated_activity_date"
                                  name="estimated_activity_date" required>
                          </div>
