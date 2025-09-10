@@ -40,7 +40,7 @@
                          <div class="col-12 col-sm-6 form-group-sm mt-2">
                              <label for="study_director" class="form-label">Study Director</label>
                              <select id="study_director" name="study_director"
-                                 class="form-select form-control selectpicker show-tick" data-live-search="true">
+                                 class=" form-control selectpicker show-tick" data-allow-live-search="true">
 
                                  @foreach ($all_personnels as $personnel)
                                      <option value="{{ $personnel->id }}"
@@ -54,7 +54,7 @@
                          <div class="col-12 col-sm-6 form-group-sm mt-2">
                              <label for="project_manager" class="form-label">Project Manager</label>
                              <select id="project_manager" name="project_manager"
-                                 class="form-select form-control selectpicker show-tick" data-live-search="true">
+                                 class=" form-control selectpicker show-tick" data-allow-live-search="true">
 
                                  @foreach ($all_personnels as $personnel)
                                      <option value="{{ $personnel->id }}"

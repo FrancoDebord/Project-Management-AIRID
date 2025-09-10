@@ -26,24 +26,24 @@
                  <form id="formAddActivity" action="{{ route("saveActivityProject") }}" method="POST">
                      @csrf
 
-                     <input type="hidden" name="project_id" id="project_id" value="{{ $project_id }}">
-                     <input type="hidden" name="study_type_id" id="study_type_id" value="">
+                     <input type="hidden" name="project_id" id="project_id_add_activity" value="{{ $project_id }}">
+                     <input type="hidden" name="study_type_id" id="study_type_id_add_activity" value="">
                      <input type="hidden" name="id" id="activity_id" value="">
 
                      <div class="row">
                          <div class="mb-3 col">
                              <label for="study_sub_category_id" class="form-label">Study Type</label>
-                             <select name="study_sub_category_id" id="study_sub_category_id" class="form-select selectpicker   "
-                                 required>
-                                 <option value="">Select a Study Type...</option>
+                             <select name="study_sub_category_id" id="study_sub_category_id" class="form-control selectpicker   show-tick"
+                                 required data-live-search="true">
+                                 {{-- <option value="">Select a Study Type...</option> --}}
                              </select>
                          </div>
 
 
                          <div class="mb-3 col">
                              <label for="parent_activity_id" class="form-label">Parent Activity</label>
-                             <select name="parent_activity_id" id="parent_activity_id" class="form-select">
-                                 <option value="">Select a Parent Activity...</option>
+                             <select name="parent_activity_id" id="parent_activity_id" class="form-control selectpicker show-tick" data-live-search="true">
+                                 {{-- <option value="">Select a Parent Activity...</option> --}}
                              </select>
                          </div>
 
@@ -73,12 +73,11 @@
                              <label for="should_be_performed_by" class="form-label">Responsible Person for this activity
                              </label>
                              <select name="should_be_performed_by" id="should_be_performed_by"
-                                 class="form-select selectpicker   " required>
-                                 <option value="">Select a Responsible Person...</option>
-                                 @foreach ($all_personnels as $personnel)
+                                 class="form-control selectpicker  show-tick " data-live-search="true" required>
+                                 {{-- @foreach ($all_personnels as $personnel)
                                      <option value="{{ $personnel->id }}">{{ $personnel->prenom }} {{ $personnel->nom }}
                                      </option>
-                                 @endforeach
+                                 @endforeach --}}
                              </select>
                          </div>
                      </div>

@@ -74,7 +74,7 @@ class ProjectAjaxController extends Controller
 
             foreach ($all_study_types as $key => $study_type_id) {
 
-                $project =  Pro_ProjectRelatedStudyType::create([
+                $project_related =  Pro_ProjectRelatedStudyType::create([
                     'project_id' => $project->id,
                     'study_type_id' => $study_type_id,
                 ]);
@@ -82,7 +82,7 @@ class ProjectAjaxController extends Controller
 
             foreach ($all_products_types as $key => $product_type_id) {
 
-                $project =  Pro_ProjectRelatedProductType::create([
+                $project_related =  Pro_ProjectRelatedProductType::create([
                     'project_id' => $project->id,
                     'product_type_id' => $product_type_id,
                 ]);
@@ -90,7 +90,7 @@ class ProjectAjaxController extends Controller
 
             foreach ($all_lab_tests as $key => $lab_test_id) {
 
-                $project =  Pro_ProjectRelatedLabTest::create([
+                $project_related =  Pro_ProjectRelatedLabTest::create([
                     'project_id' => $project->id,
                     'lab_test_id' => $lab_test_id,
                 ]);
@@ -174,6 +174,7 @@ class ProjectAjaxController extends Controller
 
         $project = Pro_Project::find($project_id);
 
+
         if (!$project) {
             return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
         }
@@ -207,7 +208,7 @@ class ProjectAjaxController extends Controller
 
         foreach ($all_study_types as $key => $study_type_id) {
 
-            $project =  Pro_ProjectRelatedStudyType::create([
+            $project_related =  Pro_ProjectRelatedStudyType::create([
                 'project_id' => $project->id,
                 'study_type_id' => $study_type_id,
             ]);
@@ -215,7 +216,7 @@ class ProjectAjaxController extends Controller
 
         foreach ($all_products_types as $key => $product_type_id) {
 
-            $project =  Pro_ProjectRelatedProductType::create([
+            $project_related =  Pro_ProjectRelatedProductType::create([
                 'project_id' => $project->id,
                 'product_type_id' => $product_type_id,
             ]);
@@ -223,7 +224,7 @@ class ProjectAjaxController extends Controller
 
         foreach ($all_lab_tests as $key => $lab_test_id) {
 
-            $project =  Pro_ProjectRelatedLabTest::create([
+            $project_related =  Pro_ProjectRelatedLabTest::create([
                 'project_id' => $project->id,
                 'lab_test_id' => $lab_test_id,
             ]);
@@ -493,6 +494,8 @@ class ProjectAjaxController extends Controller
         }
 
         $all_sub_categories = $study_type->allSubCategories;
+
+        
 
         $project = Pro_Project::find($project_id);
         if (!$project) {
