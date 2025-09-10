@@ -81,4 +81,35 @@ class Pro_Project extends Model
     {
         return $this->hasMany(Pro_ProtocolDevActivityProject::class, 'project_id', 'id')->orderBy("level_activite");
     }
+
+    /**
+     * The studyTypesApplied that belong to the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function studyTypesApplied(): BelongsToMany
+    {
+        return $this->belongsToMany(Pro_StudyType::class, 'pro_projects_related_study_types', 'project_id', 'study_type_id')->orderBy("level_type");
+    }
+
+
+    /**
+     * The productTypesEvaluated that belong to the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function productTypesEvaluated(): BelongsToMany
+    {
+        return $this->belongsToMany(Pro_ProductType::class, 'pro_projects_related_product_types', 'project_id', 'product_type_id')->orderBy("level_product");
+    }
+
+    /**
+     * The labTestsConcerned that belong to the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function labTestsConcerned(): BelongsToMany
+    {
+        return $this->belongsToMany(Pro_LabTest::class, 'pro_projects_related_lab_tests', 'project_id', 'lab_test_id')->orderBy("level_test");
+    }
 }

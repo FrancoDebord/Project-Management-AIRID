@@ -28,7 +28,9 @@
                                 <th scope="col">Activity</th>
                                 <th scope="col">Assigned To</th>
                                 <th scope="col">Performed By</th>
+                                <th scope="col">Date Performed</th>
                                 <th scope="col">Deadline</th>
+                                <th scope="col" class="text-center">See Document</th>
                                 <th scope="col" class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -55,14 +57,33 @@
                                     <td>{{ $assignedTo ? $assignedTo->prenom . ' ' . $assignedTo->nom : 'Not yet assigned' }}
                                     <td>{{ $staffPerformed ? $staffPerformed->prenom . ' ' . $staffPerformed->nom : 'Not yet performed' }}
                                     </td>
+                                    <td>{{ $activity->date_performed }}</td>
                                     <td>{{ $activity->due_date_performed }}</td>
+                                    <td class="text-center">
+                                        @if ($check_current_step_completed)
+                                            <i class="fa fa-check-circle text-success"></i> <br>
+                                            <a href="{{ asset('storage/' . $check_current_step_completed->document_file_path) }}"
+                                                target="_blank" class="btn btn-outline-success mt-2">
+                                                <i class="fa fa-eye">&nbsp;</i> See Document
+                                            </a>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
 
                                         @if ($check_current_step_completed)
-                                            <i class="fa fa-check-circle text-success"></i> <br>
+                                            {{-- <i class="fa fa-check-circle text-success"></i> <br>
                                             <a href="{{ asset("storage/".$check_current_step_completed->document_file_path) }}" target="_blank" class="btn btn-outline-success mt-2">
                                                 <i class="fa fa-eye">&nbsp;</i> See Document
-                                            </a>
+                                            </a> --}}
+
+                                            <button class="btn btn-outline-danger  btn-upload-doc-protocol-dev"
+                                                data-bs-toggle="modal" data-bs-target="#detailsModal"
+                                                data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
+                                                data-activity-project-id="{{ $activity->id }}">
+                                                <i class="fa fa-circle-notch">&nbsp;</i>
+                                                Update Document
+
+                                            </button>
                                         @else
                                             @php
 
@@ -76,8 +97,8 @@
                                             @endphp
 
                                             @if ($check_step_before_completed)
-                                                <button class="btn btn-outline-warning  btn-upload-doc-protocol-dev" data-bs-toggle="modal"
-                                                    data-bs-target="#detailsModal"
+                                                <button class="btn btn-outline-warning  btn-upload-doc-protocol-dev"
+                                                    data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                     data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
                                                     data-activity-project-id="{{ $activity->id }}">
                                                     <i class="fa fa-upload">&nbsp;</i>
@@ -86,8 +107,8 @@
                                                 </button>
                                             @else
                                                 @if ($level_activity == 1)
-                                                    <button class="btn btn-outline-warning btn-upload-doc-protocol-dev" data-bs-toggle="modal"
-                                                        data-bs-target="#detailsModal"
+                                                    <button class="btn btn-outline-warning btn-upload-doc-protocol-dev"
+                                                        data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                         data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
                                                         data-activity-project-id="{{ $activity->id }}">
                                                         <i class="fa fa-upload">&nbsp;</i>

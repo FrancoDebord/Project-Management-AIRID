@@ -6,6 +6,9 @@ use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_OtherBasicDocument;
 use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
+use App\Models\Pro_ProjectRelatedLabTest;
+use App\Models\Pro_ProjectRelatedProductType;
+use App\Models\Pro_ProjectRelatedStudyType;
 use App\Models\Pro_ProtocolDevActivity;
 use App\Models\Pro_ProtocolDevActivityProject;
 use App\Models\Pro_StudyActivities;
@@ -26,15 +29,35 @@ class ProjectAjaxController extends Controller
     function storeProject(Request $request)
     {
 
+
         $rules = [
             "code" => "required|string|max:50",
             "title" => "required|string|max:255",
             "is_glp" => "required|boolean",
+            "study_type_id" => "required|array",
+            "product_type_id" => "required|array",
+            "lab_test_id" => "required|array",
         ];
 
         $checkUnique = Pro_Project::where("project_code", $request->code)->first();
         if ($checkUnique) {
             return response()->json(['message' => 'The project code has already been taken.', "code_erreur" => 1], 201);
+        }
+
+        $checkUnique = Pro_Project::where("project_title", $request->title)->first();
+        if ($checkUnique) {
+            return response()->json(['message' => 'The project title has already been taken.', "code_erreur" => 1], 201);
+        }
+
+        if (!$request->input('study_type_id')) {
+            return response()->json(['message' => 'The Study Type is required.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('product_type_id')) {
+            return response()->json(['message' => 'The Evaluation Product Type is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('lab_test_id')) {
+            return response()->json(['message' => 'The Lab Test appliable is required.', "code_erreur" => 1], 200);
         }
 
         $project =  Pro_Project::create([
@@ -43,6 +66,36 @@ class ProjectAjaxController extends Controller
             'is_glp' => (bool) $request->is_glp
         ]);
 
+        if ($project) {
+
+            $all_study_types = $request->input('study_type_id');
+            $all_products_types = $request->input('product_type_id');
+            $all_lab_tests = $request->input('lab_test_id');
+
+            foreach ($all_study_types as $key => $study_type_id) {
+
+                $project =  Pro_ProjectRelatedStudyType::create([
+                    'project_id' => $project->id,
+                    'study_type_id' => $study_type_id,
+                ]);
+            }
+
+            foreach ($all_products_types as $key => $product_type_id) {
+
+                $project =  Pro_ProjectRelatedProductType::create([
+                    'project_id' => $project->id,
+                    'product_type_id' => $product_type_id,
+                ]);
+            }
+
+            foreach ($all_lab_tests as $key => $lab_test_id) {
+
+                $project =  Pro_ProjectRelatedLabTest::create([
+                    'project_id' => $project->id,
+                    'lab_test_id' => $lab_test_id,
+                ]);
+            }
+        }
 
         $data = [
             'project_id' => $project->id,
@@ -103,8 +156,19 @@ class ProjectAjaxController extends Controller
         if ($request->input('date_debut_effective') && $request->input('date_fin_effective') && $request->input('date_debut_effective') > $request->input('date_fin_effective')) {
             return response()->json(['message' => 'The actual start date cannot be later than the actual end date.', "code_erreur" => 1], 200);
         }
-        if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
-            return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
+        // if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
+        //     return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
+        // }
+
+        if (!$request->input('study_type_id')) {
+            return response()->json(['message' => 'The Study Type is required.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('product_type_id')) {
+            return response()->json(['message' => 'The Evaluation Product Type is required.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('lab_test_id')) {
+            return response()->json(['message' => 'The Lab Test appliable is required.', "code_erreur" => 1], 200);
         }
 
 
@@ -130,6 +194,41 @@ class ProjectAjaxController extends Controller
         $project->date_fin_effective = $request->input('date_fin_effective');
         $project->description_project = $request->input('description_project');
         $project->save();
+
+
+        //suppression des anciennes données 
+        $delete_olds_study_types = Pro_ProjectRelatedStudyType::where("project_id", $project->id)->delete();
+        $delete_olds_product_types = Pro_ProjectRelatedProductType::where("project_id", $project->id)->delete();
+        $delete_olds_lab_tests = Pro_ProjectRelatedLabTest::where("project_id", $project->id)->delete();
+
+        $all_study_types = $request->input('study_type_id');
+        $all_products_types = $request->input('product_type_id');
+        $all_lab_tests = $request->input('lab_test_id');
+
+        foreach ($all_study_types as $key => $study_type_id) {
+
+            $project =  Pro_ProjectRelatedStudyType::create([
+                'project_id' => $project->id,
+                'study_type_id' => $study_type_id,
+            ]);
+        }
+
+        foreach ($all_products_types as $key => $product_type_id) {
+
+            $project =  Pro_ProjectRelatedProductType::create([
+                'project_id' => $project->id,
+                'product_type_id' => $product_type_id,
+            ]);
+        }
+
+        foreach ($all_lab_tests as $key => $lab_test_id) {
+
+            $project =  Pro_ProjectRelatedLabTest::create([
+                'project_id' => $project->id,
+                'lab_test_id' => $lab_test_id,
+            ]);
+        }
+
         session()->flash('success', 'Project information updated successfully.');
         return response()->json(['message' => 'Project information updated successfully.', "code_erreur" => 0], 200);
     }
@@ -700,7 +799,7 @@ class ProjectAjaxController extends Controller
         $record_activity->update($documentData);
 
         $activity = $record_activity->protocolDevActivity;
-        $message_success = $activity ? $activity->nom_activite . " document successfully uploaded " : "Protocol Dev Activities updated for the Project successfully.";
+        $message_success = $activity ? $activity->nom_activite . " document successfully uploaded or updated " : "Protocol Dev Activities updated for the Project successfully.";
 
         session()->flash('success', $message_success);
         return response()->json(['message' => $message_success, "code_erreur" => 0], 200);

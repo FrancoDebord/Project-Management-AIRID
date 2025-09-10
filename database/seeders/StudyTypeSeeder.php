@@ -15,18 +15,19 @@ class StudyTypeSeeder extends Seeder
         //
 
         $study_types = [
-            ['name' => 'Lab Study', "level_type" => 1],
-            ['name' => 'Hut Trials', "level_type" => 2],
+            ['name' => 'Laboratory Bioassays', "level_type" => 1],
+            ['name' => 'Experimental Hut Trials', "level_type" => 2],
             ['name' => 'Community Trials', "level_type" => 3],
+            ['name' => 'Resistance Bioassays', "level_type" => 4],
         ];
 
         $study_sub_categories = [
-            'Lab Study' => [
+            'Laboratory Bioassays' => [
                 ["study_sub_category_name" => "ITN Evaluation", "level_sub_category" => 1],
                 ["study_sub_category_name" => "IRS Evaluation", "level_sub_category" => 2],
                 ["study_sub_category_name" => "Resistance Testing", "level_sub_category" => 3],
             ],
-            'Hut Trials' => [
+            'Experimental Hut Trials' => [
 
                 ["study_sub_category_name" => "ITN Evaluation", "level_sub_category" => 1],
                 ["study_sub_category_name" => "IRS Evaluation", "level_sub_category" => 2],
@@ -38,6 +39,9 @@ class StudyTypeSeeder extends Seeder
                 ["study_sub_category_name" => "IRS Phase 3", "level_sub_category" => 2],
                 ["study_sub_category_name" => "Randomised Control Trials", "level_sub_category" => 3],
                 ["study_sub_category_name" => "Other Trials", "level_sub_category" => 4],
+            ],
+            'Resistance Bioassays' => [
+                ["study_sub_category_name" => "Not Specified", "level_sub_category" => 1],
             ],
         ];
 

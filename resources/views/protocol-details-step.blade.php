@@ -124,7 +124,8 @@
     <div class="accordion" id="zonesAccordion">
 
         @php
-            $all_study_types = App\Models\Pro_StudyType::orderBy('level_type', 'asc')->get();
+            // $all_study_types = App\Models\Pro_StudyType::orderBy('level_type', 'asc')->get();
+            $all_study_types = $project->studyTypesApplied;
         @endphp
 
         @forelse ($all_study_types as $study_type)
