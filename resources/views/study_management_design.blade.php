@@ -299,7 +299,8 @@
                     </div>
                     <div class="tab-pane fade" id="step4" role="tabpanel">
                         <h4>Planning Phase</h4>
-                        <p>Contenu de la quatrième étape.</p>
+                        {{-- <p>Contenu de la quatrième étape.</p> --}}
+                        @include('planning-phase-step')
                     </div>
                     <div class="tab-pane fade" id="step5" role="tabpanel">
                         <h4>Experimental Phase</h4>
