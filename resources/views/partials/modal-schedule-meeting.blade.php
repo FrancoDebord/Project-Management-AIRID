@@ -5,7 +5,7 @@
              <div class="modal-header bg-primary text-white">
                  <h5 class="modal-title" id="meetingModalLabel">Schedule Meeting</h5>
                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                     aria-label="Close"></button>
+                     aria-label="Close"></button>   
              </div>
              <div class="modal-body">
                  <form id="meetingForm" action="">
