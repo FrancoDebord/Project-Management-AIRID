@@ -807,4 +807,59 @@ class ProjectAjaxController extends Controller
         session()->flash('success', $message_success);
         return response()->json(['message' => $message_success, "code_erreur" => 0], 200);
     }
+
+
+    /**
+     * schedule meeting
+     */
+
+    function scheduleStudyInitiationMeeting(Request $request)
+    {
+
+
+        if (!$request->input('meeting_date')) {
+            return response()->json(['message' => 'The  Metting Date is required.', "code_erreur" => 1], 200);
+        }
+
+        $record_activity = Pro_ProtocolDevActivityProject::find($request->input('protocol_dev_activity_project_id'));
+        if (!$record_activity) {
+            return response()->json(['message' => 'Record to update not found.', "code_erreur" => 1], 200);
+        }
+
+        if (!$request->input('date_performed')) {
+            return response()->json(['message' => 'The Activity Date performed is required.', "code_erreur" => 1], 200);
+        }
+
+        if (Carbon::parse($request->date_performed) > now()) {
+            return response()->json(['message' => "The Date performed of the activity shall be inferior or equal to today ", "code_erreur" => 1], 200);
+        }
+
+        if ($request->hasFile('document_file')) {
+            $file = $request->file('document_file');
+            if (!$file->isValid()) {
+                return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
+            }
+            $path = $file->store('protocol_dev', 'public');
+        } else {
+            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+        }
+
+
+        $documentData = [
+            'id' => $request->input('protocol_dev_activity_project_id'),
+            'date_performed' => $request->input('date_performed'),
+            'document_file_path' => $path,
+            'complete' => true,
+            'real_date_performed' => now(),
+            'staff_id_performed' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
+        ];
+
+        $record_activity->update($documentData);
+
+        $activity = $record_activity->protocolDevActivity;
+        $message_success = $activity ? $activity->nom_activite . " document successfully uploaded or updated " : "Protocol Dev Activities updated for the Project successfully.";
+
+        session()->flash('success', $message_success);
+        return response()->json(['message' => $message_success, "code_erreur" => 0], 200);
+    }
 }

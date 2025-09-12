@@ -1,46 +1,31 @@
 <div class="container">
 
-    <!-- Bouton principal -->
-    <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#meetingModal">
-        Schedule Study Initiation Meeting
-    </button>
+    @php
+        $project_id = request('project_id');
 
-    <!-- Modal pour créer un meeting -->
-    <div class="modal fade" id="meetingModal" tabindex="-1" aria-labelledby="meetingModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="meetingModalLabel">Schedule Meeting</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="meetingForm">
-                        <div class="mb-3">
-                            <label for="meetingDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="meetingDate" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="meetingTime" class="form-label">Heure</label>
-                            <input type="time" class="form-control" id="meetingTime" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="participants" class="form-label">Participants</label>
-                            <textarea class="form-control" id="participants" rows="2" placeholder="Liste des participants" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="meetingLink" class="form-label">Lien de réunion (optionnel)</label>
-                            <input type="url" class="form-control" id="meetingLink" placeholder="https://...">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" form="meetingForm" class="btn btn-primary">Enregistrer</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        
+        $project = App\Models\Pro_Project::find($project_id);
+
+        $study_initiation_meeting = App\Models\Pro_StudyQualityAssuranceMeeting::where("project_id",$project_id)
+        ->where("meeting_type","study_initiation_meeting")
+        ->first();
+    @endphp
+
+    @if (!$study_initiation_meeting)
+        <!-- Bouton principal -->
+        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#meetingModal">
+            Schedule Study Initiation Meeting
+        </button>
+
+        @else
+         <!-- Bouton principal -->
+        <button type="button" class="btn btn-info mb-4" data-bs-toggle="modal" data-bs-target="#meetingModal">
+            Modify the Meeting's Info
+        </button>
+    @endif
+
+
+    @include('partials.modal-schedule-meeting')
 
 
     <!-- Tableau des réunions -->
