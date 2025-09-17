@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\MeetingMail;
 use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_OtherBasicDocument;
 use App\Models\Pro_Personnel;
@@ -12,9 +13,13 @@ use App\Models\Pro_ProjectRelatedStudyType;
 use App\Models\Pro_ProtocolDevActivity;
 use App\Models\Pro_ProtocolDevActivityProject;
 use App\Models\Pro_StudyActivities;
+use App\Models\Pro_StudyQualityAssuranceMeeting;
+use App\Models\Pro_StudyQualityAssuranceMeetingParticipant;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectAjaxController extends Controller
@@ -495,7 +500,7 @@ class ProjectAjaxController extends Controller
 
         $all_sub_categories = $study_type->allSubCategories;
 
-        
+
 
         $project = Pro_Project::find($project_id);
         if (!$project) {
@@ -817,49 +822,90 @@ class ProjectAjaxController extends Controller
     {
 
 
+
+        if (!$request->input('meeting_type')) {
+            return response()->json(['message' => 'The  Meeting Type is required.', "code_erreur" => 1], 200);
+        }
         if (!$request->input('meeting_date')) {
-            return response()->json(['message' => 'The  Metting Date is required.', "code_erreur" => 1], 200);
+            return response()->json(['message' => 'The  Meeting Date is required.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('meeting_time')) {
+            return response()->json(['message' => 'The  Meeting Time is required.', "code_erreur" => 1], 200);
+        }
+        if (!$request->input('participants')) {
+            return response()->json(['message' => 'At least, one participant is required for the meeting.', "code_erreur" => 1], 200);
         }
 
-        $record_activity = Pro_ProtocolDevActivityProject::find($request->input('protocol_dev_activity_project_id'));
-        if (!$record_activity) {
-            return response()->json(['message' => 'Record to update not found.', "code_erreur" => 1], 200);
+        if ($request->input('meeting_id')) {
+
+            $existing_meeting = Pro_StudyQualityAssuranceMeeting::find($request->input('meeting_id'));
+
+            if (!$existing_meeting) {
+                return response()->json(['message' => 'Record to update not found.', "code_erreur" => 1], 200);
+            }
         }
 
-        if (!$request->input('date_performed')) {
-            return response()->json(['message' => 'The Activity Date performed is required.', "code_erreur" => 1], 200);
-        }
 
-        if (Carbon::parse($request->date_performed) > now()) {
-            return response()->json(['message' => "The Date performed of the activity shall be inferior or equal to today ", "code_erreur" => 1], 200);
-        }
+        $path=null;
 
-        if ($request->hasFile('document_file')) {
-            $file = $request->file('document_file');
+        if ($request->hasFile('meeting_file')) {
+            $file = $request->file('meeting_file');
             if (!$file->isValid()) {
                 return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
             }
-            $path = $file->store('protocol_dev', 'public');
-        } else {
-            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+            $path = $file->store('qa_meetings', 'public');
         }
 
 
+
         $documentData = [
-            'id' => $request->input('protocol_dev_activity_project_id'),
-            'date_performed' => $request->input('date_performed'),
-            'document_file_path' => $path,
-            'complete' => true,
-            'real_date_performed' => now(),
-            'staff_id_performed' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
+            'project_id' => $request->input('project_id'),
+            'meeting_type' => $request->input('meeting_type'),
+            'date_scheduled' => $request->input('meeting_date'),
+            'time_scheduled' => $request->input('meeting_time'),
+            'breve_description' => $request->input('breve_description'),
+            'meeting_link' => $request->input('meeting_link'),
+            'meeting_file' => $path,
+            'status' => "pending",
+            'organizer_id' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
         ];
 
-        $record_activity->update($documentData);
+        $meeting = Pro_StudyQualityAssuranceMeeting::find($request->input('meeting_id'));
 
-        $activity = $record_activity->protocolDevActivity;
-        $message_success = $activity ? $activity->nom_activite . " document successfully uploaded or updated " : "Protocol Dev Activities updated for the Project successfully.";
 
-        session()->flash('success', $message_success);
-        return response()->json(['message' => $message_success, "code_erreur" => 0], 200);
+        if ($meeting) {
+
+            $meeting->update($documentData);
+
+            //delete olds participants
+            Pro_StudyQualityAssuranceMeetingParticipant::where("initiation_meeting_id",$request->input('meeting_id'))->delete();
+        } else {
+
+            $meeting = Pro_StudyQualityAssuranceMeeting::create($documentData);
+        }
+
+        $participants = $request->input('participants');
+        $participants[] = $documentData["organizer_id"];
+
+        if ($meeting) {
+
+            foreach ($participants as $key => $participant_id) {
+                # code...
+                $participant  = Pro_StudyQualityAssuranceMeetingParticipant::create([
+                    'initiation_meeting_id' =>  $meeting->id,
+                    'participant_id' => $participant_id,
+                ]);
+            }
+
+            $all_participants = Pro_Personnel::whereIn("id",$participants)->pluck("email_professionnel")->toArray();
+
+
+            // Envoi par email
+        Mail::to($all_participants)->send(new MeetingMail($meeting));
+        }
+
+
+        session()->flash('success', "Meeting scheduled or updated successfully");
+        return response()->json(['message' => "Meeting scheduled or updated successfully", "code_erreur" => 0], 200);
     }
 }

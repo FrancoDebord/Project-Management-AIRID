@@ -3,23 +3,23 @@
     @php
         $project_id = request('project_id');
 
-        
         $project = App\Models\Pro_Project::find($project_id);
 
-        $study_initiation_meeting = App\Models\Pro_StudyQualityAssuranceMeeting::where("project_id",$project_id)
-        ->where("meeting_type","study_initiation_meeting")
-        ->first();
+        $study_initiation_meeting = App\Models\Pro_StudyQualityAssuranceMeeting::where('project_id', $project_id)
+            ->where('meeting_type', 'study_initiation_meeting')
+            ->first();
     @endphp
 
     @if (!$study_initiation_meeting)
         <!-- Bouton principal -->
-        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#meetingModal">
+        <button type="button" class="btn btn-primary mb-4" id="study_qa_initiation" data-bs-toggle="modal"
+            data-bs-target="#meetingModal" data-project-id="{{ $project_id }}">
             Schedule Study Initiation Meeting
         </button>
-
-        @else
-         <!-- Bouton principal -->
-        <button type="button" class="btn btn-info mb-4" data-bs-toggle="modal" data-bs-target="#meetingModal">
+    @else
+        <!-- Bouton principal -->
+        <button type="button" class="btn btn-info mb-4" data-bs-toggle="modal" id="study_qa_initiation"
+            data-bs-target="#meetingModal" data-project-id="{{ $project_id }}">
             Modify the Meeting's Info
         </button>
     @endif
@@ -42,16 +42,34 @@
         </thead>
         <tbody>
             <tr>
-                <td>2025-09-15</td>
-                <td>14:00</td>
-                <td>John, Alice, Marc</td>
-                <td><a href="#">Lien Zoom</a></td>
-                <td>
-                    <button class="btn btn-sm btn-warning">Edit</button>
-                    <button class="btn btn-sm btn-danger">Delete</button>
-                    <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                        data-bs-target="#participantsModal">Voir</button>
-                </td>
+
+                @if ($study_initiation_meeting)
+                    <td>{{ $study_initiation_meeting->date_scheduled }}</td>
+                    <td>{{ $study_initiation_meeting->time_scheduled }}</td>
+                    @php
+                        $participants = $study_initiation_meeting->participants;
+
+                        $all_participants = [];
+
+                        foreach ($participants ?? [] as $key => $participant) {
+                            # code...
+
+                            $all_participants[] = $participant->prenom . ' ' . $participant->nom;
+                        }
+
+                    @endphp
+                    <td>{{ implode(',', $all_participants) }}</td>
+                    <td><a href="{{ $study_initiation_meeting->meeting_link }}">Meeting Link</a></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning">Edit</button>
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal"
+                            data-bs-target="#participantsModal">Voir</button>
+                    </td>
+                @else
+                    <td colspan="5">The meeting is not scheduled yet</td>
+                @endif
+
             </tr>
         </tbody>
     </table>
@@ -69,9 +87,12 @@
                 </div>
                 <div class="modal-body">
                     <ul>
-                        <li>John</li>
-                        <li>Alice</li>
-                        <li>Marc</li>
+
+                        @forelse ($all_participants ?? [] as $participant_name)
+                            <li>{{ $participant_name }}</li>
+                        @empty
+                            <li>No Participants invited</li>
+                        @endforelse
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -88,26 +109,41 @@
         <thead class="table-secondary">
             <tr>
                 <th>Activité</th>
-                <th>Status</th>
+                <th>Date prévue</th>
+                <th>Activité parente</th>
+                <th>Assignée à</th>
                 <th>Critique</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Préparation des documents</td>
-                <td>En cours</td>
-                <td>
-                    <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#criticalModal">Marquer Critique</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Vérification des données</td>
-                <td>Terminé</td>
-                <td>
-                    <button class="btn btn-outline-success btn-sm">Non Critique</button>
-                </td>
-            </tr>
+
+            @if ($study_initiation_meeting)
+                @php
+                    $all_activities = $project->allActivitiesProject;
+                @endphp
+
+                @forelse ($all_activities??[] as $activite)
+                    <tr>
+                        <td>{{ $activite->study_activity_name }}</td>
+                        <td>{{ $activite->estimated_activity_date }}</td>
+                        <td>{{ $activite->ParentActivity ?  $activite->ParentActivity->study_activity_name:"N/A" }}</td>
+                        <td>{{ $activite->personneResponsable ?  $activite->personneResponsable->prenom." ".$activite->personneResponsable->nom:"N/A" }}</td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#criticalModal">Marquer Critique</button>
+                        </td>
+                    </tr>
+                @empty
+                @endforelse
+            @else
+                <tr>
+                    <td colspan="5">Veuillez d'abord programmer la réunion avant de sélectionner les phases critiques
+                    </td>
+                </tr>
+            @endif
+
+
+            
         </tbody>
     </table>
 
@@ -146,30 +182,34 @@
     const meetingsTableBody = document.querySelector('#meetingsTable tbody');
     const participantsList = document.getElementById('participantsList');
 
-    meetingForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const date = document.getElementById('meetingDate').value;
-        const time = document.getElementById('meetingTime').value;
-        const participants = document.getElementById('participants').value;
-        const link = document.getElementById('meetingLink').value;
+    //     meetingForm.addEventListener('submit', function(e) {
+    //         e.preventDefault();
+    //         const date = document.getElementById('meeting_date').value;
+    //         const time = document.getElementById('meeting_time').value;
+    //         const participants = document.getElementById('participants').value;
+    //         const link = document.getElementById('meeting_link').value;
+    //         const breve_description = document.getElementById('breve_description').value;
+    //         const meeting_type = document.getElementById('meeting_type').value;
+    //         const project_id = document.getElementById('project_id_qa_meeting').value;
+    //         const meeting_id = document.getElementById('meeting_id').value;
 
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-<td>${date}</td>
-<td>${time}</td>
-<td>${participants}</td>
-<td>${link ? `<a href="${link}" target="_blank">Lien</a>` : ''}</td>
-<td>
-<button class="btn btn-sm btn-warning edit-btn">Edit</button>
-<button class="btn btn-sm btn-danger delete-btn">Delete</button>
-<button class="btn btn-sm btn-info view-btn" data-participants="${participants}">Voir</button>
-</td>
-`;
-        meetingsTableBody.appendChild(row);
-        meetingForm.reset();
-        bootstrap.Modal.getInstance(document.getElementById('meetingModal')).hide();
-    });
+    //         const row = document.createElement('tr');
+    //         row.innerHTML = `
+    // <td>${date}</td>
+    // <td>${time}</td>
+    // <td>${participants}</td>
+    // <td>${link ? `<a href="${link}" target="_blank">Lien</a>` : ''}</td>
+    // <td>
+    // <button class="btn btn-sm btn-warning edit-btn">Edit</button>
+    // <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+    // <button class="btn btn-sm btn-info view-btn" data-participants="${participants}">Voir</button>
+    // </td>
+    // `;
+    //         meetingsTableBody.appendChild(row);
+    //         meetingForm.reset();
+    //         bootstrap.Modal.getInstance(document.getElementById('meetingModal')).hide();
+    //     });
 
 
     // Gestion actions tableau réunions

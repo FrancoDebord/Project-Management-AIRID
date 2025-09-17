@@ -17,7 +17,8 @@ Route::prefix('ajax')->group(function () {
     Route::post('/delete-activity-project', [ProjectAjaxController::class,"supprimerActivite"])->name("supprimerActivite");
     Route::post('/generate-protocol-dev-activity-project', [ProjectAjaxController::class,"generateProtocolDevActivitiesForProject"])->name("generateProtocolDevActivitiesForProject");
     Route::post('/update-protocol-dev-activity-project', [ProjectAjaxController::class,"saveProtocolDevelopmentActivityCompleted"])->name("saveProtocolDevelopmentActivityCompleted");
-
+    
+    Route::post('/schedule-meeting', [ProjectAjaxController::class,"scheduleStudyInitiationMeeting"])->name("scheduleStudyInitiationMeeting");
 
 
     Route::get('/get-study-type/{id}', [ProjectAjaxController::class,"getStudyTypeById"])->name("getStudyTypeById");
