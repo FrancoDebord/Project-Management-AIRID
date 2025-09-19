@@ -530,8 +530,10 @@ class ProjectAjaxController extends Controller
             "study_activity_name" => "required|string|max:255",
             "description" => "nullable|string",
             "estimated_activity_date" => "nullable|date",
+            "estimated_activity_end_date" => "nullable|date",
             "should_be_performed_by" => "nullable|exists:personnels,id",
         ];
+
 
 
 
@@ -554,6 +556,15 @@ class ProjectAjaxController extends Controller
 
         if (!$request->input('study_activity_name')) {
             return response()->json(['message' => 'The activity name is required.', "code_erreur" => 1], 200);
+        }
+
+
+        if ($request->input('estimated_activity_date') && $request->input('estimated_activity_end_date')) {
+
+
+            if (Carbon::parse($request->estimated_activity_date) > Carbon::parse($request->estimated_activity_end_date)) {
+                return response()->json(['message' => "The Due date of the new activity shall be inferior or equal to the end date", "code_erreur" => 1], 200);
+            }
         }
 
         if ($request->input('parent_activity_id')) {
@@ -594,6 +605,7 @@ class ProjectAjaxController extends Controller
             'study_activity_name' => $request->input('study_activity_name'),
             'activity_description' => $request->input('activity_description'),
             'estimated_activity_date' => $request->input('estimated_activity_date'),
+            'estimated_activity_end_date' => $request->input('estimated_activity_end_date'),
             'should_be_performed_by' => $request->input('should_be_performed_by') ?? null,
             'created_by' => FacadesAuth::user()->personnel->id,
             'status' => 'pending',
@@ -846,7 +858,7 @@ class ProjectAjaxController extends Controller
         }
 
 
-        $path=null;
+        $path = null;
 
         if ($request->hasFile('meeting_file')) {
             $file = $request->file('meeting_file');
@@ -878,7 +890,7 @@ class ProjectAjaxController extends Controller
             $meeting->update($documentData);
 
             //delete olds participants
-            Pro_StudyQualityAssuranceMeetingParticipant::where("initiation_meeting_id",$request->input('meeting_id'))->delete();
+            Pro_StudyQualityAssuranceMeetingParticipant::where("initiation_meeting_id", $request->input('meeting_id'))->delete();
         } else {
 
             $meeting = Pro_StudyQualityAssuranceMeeting::create($documentData);
@@ -897,15 +909,118 @@ class ProjectAjaxController extends Controller
                 ]);
             }
 
-            $all_participants = Pro_Personnel::whereIn("id",$participants)->pluck("email_professionnel")->toArray();
+            $all_participants = Pro_Personnel::whereIn("id", $participants)->pluck("email_professionnel")->toArray();
 
 
             // Envoi par email
-        Mail::to($all_participants)->send(new MeetingMail($meeting));
+            // Mail::to($all_participants)->send(new MeetingMail($meeting));
         }
 
 
         session()->flash('success', "Meeting scheduled or updated successfully");
         return response()->json(['message' => "Meeting scheduled or updated successfully", "code_erreur" => 0], 200);
+    }
+
+
+    /**
+     * Get Meeting Info By Id
+     */
+
+    function getMeetingInfoById(Request $request)
+    {
+
+
+        $meeting_id = $request->meeting_id;
+
+        $meeting_info = Pro_StudyQualityAssuranceMeeting::find($meeting_id);
+        $participants = [];
+
+        if ($meeting_info) {
+
+            $participants = $meeting_info->participants()->pluck("participant_id")->toArray();
+        }
+
+        return response()->json(['meeting_info' => $meeting_info, 'participants' => $participants, "code_erreur" => 0], 200);
+    }
+
+    function deleteQAMeeting(Request $request)
+    {
+
+        $meeting_id = $request->meeting_id;
+
+        $meeting_to_delete = Pro_StudyQualityAssuranceMeeting::find($meeting_id);
+
+
+        if (!$meeting_to_delete) {
+
+            session()->flash('success', "You record you want to delete does not exist");
+            return response()->json(['message' => "You record you want to delete does not exist", "code_erreur" => 1], 200);
+        }
+
+        $delete = $meeting_to_delete->delete();
+
+        if ($delete) {
+
+
+            //supprimer les participants
+
+            $delete_participants = Pro_StudyQualityAssuranceMeetingParticipant::where("initiation_meeting_id", $meeting_id)->delete();
+
+            session()->flash('success', "Meeting unscheduled successfully");
+            return response()->json(['message' => "Meeting unscheduled successfully", "code_erreur" => 0], 200);
+        }
+    }
+
+
+    /**
+     * Marquer une activité comme une phase critique
+     */
+    function marquerActivitePhaseCritique(Request $request)
+    {
+
+        $activity_id = $request->activity_id;
+        $meeting_id = $request->meeting_id;
+
+        $activity = Pro_StudyActivities::find($activity_id);
+
+
+        if (!$activity) {
+
+            session()->flash('success', "You activity record does not exist");
+            return response()->json(['message' => "You activity record does not exist", "code_erreur" => 1], 200);
+        }
+
+
+        $activity->phase_critique = true;
+        $activity->meeting_id = $meeting_id;
+        $activity->save();
+
+        session()->flash('success', "Activity successfully marked as critical");
+        return response()->json(['message' => "Activity successfully marked as critical", "code_erreur" => 0], 200);
+    }
+
+    function marquerActiviteNonPhaseCritique(Request $request)
+    {
+
+
+        $activity_id = $request->activity_id;
+        $meeting_id = $request->meeting_id;
+
+        $activity = Pro_StudyActivities::find($activity_id);
+
+
+        if (!$activity) {
+
+            session()->flash('success', "You activity record does not exist");
+            return response()->json(['message' => "You activity record does not exist", "code_erreur" => 1], 200);
+        }
+
+
+        $activity->phase_critique = false;
+        $activity->meeting_id = $meeting_id;
+        $activity->save();
+
+        session()->flash('success', "Activity successfully marked  as non critical");
+        return response()->json(['message' => "Activity successfully marked non as critical", "code_erreur" => 0], 200);
     }
 }

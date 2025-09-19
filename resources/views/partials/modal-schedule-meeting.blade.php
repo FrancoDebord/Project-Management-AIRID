@@ -20,9 +20,16 @@
                  <form id="meetingForm" action="{{ route('scheduleStudyInitiationMeeting') }}">
 
                      @csrf
+
+                     @if (!$project_id)
+                         <div class="mb-3">
+                             <p class="alert alert-info p-2 text-center">Please, first select a real project</p>
+                         </div>
+                     @endif
+
                      <input type="hidden" name="project_id" id="project_id_qa_meeting" value="{{ $project_id }}">
-                     <input type="hidden" name="meeting_id" id="meeting_id" value="">
-                     <input type="hidden" name="meeting_type" value="study_initiation_meeting">
+                     <input type="hidden" name="meeting_id" id="qa_meeting_id" value="">
+                     <input type="hidden" name="meeting_type"  id="qa_meeting_type" value="study_initiation_meeting">
                      <div class="row">
                          <div class="mb-3 col">
                              <label for="meeting_date" class="form-label">Date</label>

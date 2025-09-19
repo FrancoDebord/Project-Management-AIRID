@@ -8,20 +8,27 @@
         $study_initiation_meeting = App\Models\Pro_StudyQualityAssuranceMeeting::where('project_id', $project_id)
             ->where('meeting_type', 'study_initiation_meeting')
             ->first();
+
+        $all_phases_critiques = $project->allPhasesCritiques;
     @endphp
 
     @if (!$study_initiation_meeting)
+        <h4>Planning Phase</h4>
         <!-- Bouton principal -->
-        <button type="button" class="btn btn-primary mb-4" id="study_qa_initiation" data-bs-toggle="modal"
-            data-bs-target="#meetingModal" data-project-id="{{ $project_id }}">
+        <button type="button" class="btn btn-primary mb-4 study_qa_initiation" data-project-id="{{ $project_id }}"
+            data-qa-meeting-id="" data-ajaxroute="">
             Schedule Study Initiation Meeting
         </button>
     @else
-        <!-- Bouton principal -->
-        <button type="button" class="btn btn-info mb-4" data-bs-toggle="modal" id="study_qa_initiation"
-            data-bs-target="#meetingModal" data-project-id="{{ $project_id }}">
-            Modify the Meeting's Info
-        </button>
+        @if (!$all_phases_critiques)
+            <h4>Planning Phase</h4>
+            <!-- Bouton principal -->
+            <button type="button" class="btn btn-info mb-4 study_qa_initiation" data-project-id="{{ $project_id }}"
+                data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
+                data-ajaxroute="{{ route('getMeetingInfoById') }}">
+                Modify the Meeting's Info
+            </button>
+        @endif
     @endif
 
 
@@ -29,14 +36,14 @@
 
 
     <!-- Tableau des réunions -->
-    <h4 class="mb-3">Meeting Details</h4>
+    <h4 class="mb-3">Study Initition Meeting Details</h4>
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
             <tr>
-                <th>Date</th>
-                <th>Heure</th>
+                <th>Date scheduled</th>
+                <th>Time scheduled</th>
                 <th>Participants</th>
-                <th>Lien</th>
+                <th>Link</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -58,13 +65,30 @@
                         }
 
                     @endphp
-                    <td>{{ implode(',', $all_participants) }}</td>
-                    <td><a href="{{ $study_initiation_meeting->meeting_link }}">Meeting Link</a></td>
+                    <td>{{ implode(', ', $all_participants) }}</td>
                     <td>
-                        <button class="btn btn-sm btn-warning">Edit</button>
-                        <button class="btn btn-sm btn-danger">Delete</button>
+                        @if ($study_initiation_meeting->meeting_link)
+                            <a href="{{ $study_initiation_meeting->meeting_link }}">Meeting Link</a>
+                        @else
+                            No link Provided
+                        @endif
+                    </td>
+                    <td>
+
+                        @if (!$all_phases_critiques)
+                            <button class="btn btn-sm btn-warning study_qa_initiation"
+                                data-project-id="{{ $project_id }}"
+                                data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
+                                data-ajaxroute="{{ route('getMeetingInfoById') }}">Edit</button>
+                            <button class="btn btn-sm btn-danger supprimer-meeting"
+                                data-ajaxroute="{{ route('deleteQAMeeting') }}"
+                                data-qa-meeting-id="{{ $study_initiation_meeting->id }}">Delete</button>
+                        @endif
+
                         <button class="btn btn-sm btn-info" data-bs-toggle="modal"
-                            data-bs-target="#participantsModal">Voir</button>
+                            data-bs-target="#participantsModal">
+                            <i class="fa fa-users">&nbsp;</i> View
+                        </button>
                     </td>
                 @else
                     <td colspan="5">The meeting is not scheduled yet</td>
@@ -105,14 +129,15 @@
 
     <!-- Tableau des activités -->
     <h4 class="mt-5 mb-3">Activities</h4>
-    <table class="table table-bordered align-middle">
+    <table class="table table-bordered align-middle table-hover table-striped">
         <thead class="table-secondary">
             <tr>
-                <th>Activité</th>
-                <th>Date prévue</th>
-                <th>Activité parente</th>
-                <th>Assignée à</th>
-                <th>Critique</th>
+                <th>Activity</th>
+                <th>Date Start</th>
+                <th>Date End </th>
+                <th>Parent Activity</th>
+                <th>Assigned to</th>
+                <th>Mark</th>
             </tr>
         </thead>
         <tbody>
@@ -126,14 +151,33 @@
                     <tr>
                         <td>{{ $activite->study_activity_name }}</td>
                         <td>{{ $activite->estimated_activity_date }}</td>
-                        <td>{{ $activite->ParentActivity ?  $activite->ParentActivity->study_activity_name:"N/A" }}</td>
-                        <td>{{ $activite->personneResponsable ?  $activite->personneResponsable->prenom." ".$activite->personneResponsable->nom:"N/A" }}</td>
+                        <td>{{ $activite->estimated_activity_end_date }}</td>
+                        <td>{{ $activite->ParentActivity ? $activite->ParentActivity->study_activity_name : 'N/A' }}
+                        </td>
+                        <td>{{ $activite->personneResponsable ? $activite->personneResponsable->prenom . ' ' . $activite->personneResponsable->nom : 'N/A' }}
+                        </td>
                         <td>
-                            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#criticalModal">Marquer Critique</button>
+                            @if ($activite->phase_critique == false)
+                                <button class="btn btn-outline-danger btn-sm marquer-critique" data-bs-toggle="modal"
+                                    data-bs-target="#criticalModal" data-project-id="{{ $project_id }}"
+                                    data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
+                                    data-activity-id="{{ $activite->id }}"
+                                    data-ajaxroute="{{ route('marquerActivitePhaseCritique') }}">Mark as
+                                    critique</button>
+                            @else
+                                <button class="btn btn-outline-info btn-sm marquer-non-critique" data-bs-toggle="modal"
+                                    data-bs-target="#criticalModal" data-project-id="{{ $project_id }}"
+                                    data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
+                                    data-activity-id="{{ $activite->id }}"
+                                    data-ajaxroute="{{ route('marquerActiviteNonPhaseCritique') }}">Unmark</button>
+                            @endif
+
                         </td>
                     </tr>
                 @empty
+                    <tr>
+                        <td colspan="5">No activity scheduled yet</td>
+                    </tr>
                 @endforelse
             @else
                 <tr>
@@ -143,126 +187,60 @@
             @endif
 
 
-            
+
         </tbody>
     </table>
 
+    {{-- <h2 class="mb-4 text-center">📅 Mon Agenda avec FullCalendar</h2> --}}
 
-    <!-- Modal Critique -->
-    <div class="modal fade" id="criticalModal" tabindex="-1" aria-labelledby="criticalModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="criticalModalLabel">Définir une Inspection</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="criticalForm">
-                        <div class="mb-3">
-                            <label for="inspectionDate" class="form-label">Date d'inspection</label>
-                            <input type="date" class="form-control" id="inspectionDate" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" form="criticalForm" class="btn btn-danger">Valider</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="calendar" class="shadow rounded p-3 bg-white"></div>
 
 
 </div>
 
+@php
+
+    $events = [];
+
+    foreach ($all_phases_critiques ?? [] as $key => $phase_critique) {
+        # code...
+
+        $events[] = [
+            'title' => $phase_critique->study_activity_name,
+            'start' => $phase_critique->estimated_activity_date,
+            'end' => $phase_critique->estimated_activity_end_date,
+        ];
+    }
+
+@endphp
+
+
 <script>
-    // Gestion des réunions
-    const meetingForm = document.getElementById('meetingForm');
-    const meetingsTableBody = document.querySelector('#meetingsTable tbody');
-    const participantsList = document.getElementById('participantsList');
+    const events = @json($events);
 
-    //     meetingForm.addEventListener('submit', function(e) {
-    //         e.preventDefault();
-    //         const date = document.getElementById('meeting_date').value;
-    //         const time = document.getElementById('meeting_time').value;
-    //         const participants = document.getElementById('participants').value;
-    //         const link = document.getElementById('meeting_link').value;
-    //         const breve_description = document.getElementById('breve_description').value;
-    //         const meeting_type = document.getElementById('meeting_type').value;
-    //         const project_id = document.getElementById('project_id_qa_meeting').value;
-    //         const meeting_id = document.getElementById('meeting_id').value;
-
-
-    //         const row = document.createElement('tr');
-    //         row.innerHTML = `
-    // <td>${date}</td>
-    // <td>${time}</td>
-    // <td>${participants}</td>
-    // <td>${link ? `<a href="${link}" target="_blank">Lien</a>` : ''}</td>
-    // <td>
-    // <button class="btn btn-sm btn-warning edit-btn">Edit</button>
-    // <button class="btn btn-sm btn-danger delete-btn">Delete</button>
-    // <button class="btn btn-sm btn-info view-btn" data-participants="${participants}">Voir</button>
-    // </td>
-    // `;
-    //         meetingsTableBody.appendChild(row);
-    //         meetingForm.reset();
-    //         bootstrap.Modal.getInstance(document.getElementById('meetingModal')).hide();
-    //     });
-
-
-    // Gestion actions tableau réunions
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('delete-btn')) {
-            e.target.closest('tr').remove();
-        }
-        if (e.target.classList.contains('view-btn')) {
-            const participants = e.target.getAttribute('data-participants').split(',');
-            participantsList.innerHTML = '<ul>' + participants.map(p => `<li>${p.trim()}</li>`).join('') +
-                '</ul>';
-            new bootstrap.Modal(document.getElementById('participantsModal')).show();
-        }
-    });
-
-
-    // Gestion des activités critiques
-    const criticalForm = document.getElementById('criticalForm');
-    const criticalActivityInput = document.getElementById('criticalActivity');
-
-
-    // Ouvrir modal critique
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('toggle-critical')) {
-            const activity = e.target.dataset.activity;
-            if (e.target.textContent.includes('Marquer')) {
-                criticalActivityInput.value = activity;
-                new bootstrap.Modal(document.getElementById('criticalModal')).show();
-            } else {
-                e.target.textContent = 'Marquer Critique';
-                e.target.classList.remove('btn-outline-success');
-                e.target.classList.add('btn-outline-danger');
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'en', // calendrier en français
+            themeSystem: 'bootstrap5',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            // buttonText: {
+            //     today: 'Aujourd\'hui',
+            //     month: 'Mois',
+            //     week: 'Semaine',
+            //     day: 'Jour',
+            //     list: 'Liste'
+            // },
+            events: events,
+            eventClick: function(info) {
+                alert("📌 " + info.event.title + "\n📅 " + info.event.start.toLocaleDateString());
             }
-        }
-    });
-
-
-    // Validation critique
-    criticalForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const inspectionDate = document.getElementById('inspectionDate').value;
-        const activity = criticalActivityInput.value;
-        if (inspectionDate) {
-            // Trouver bouton correspondant
-            document.querySelectorAll('.toggle-critical').forEach(btn => {
-                if (btn.dataset.activity === activity) {
-                    btn.textContent = `Critique (Inspection: ${inspectionDate})`;
-                    btn.classList.remove('btn-outline-danger');
-                    btn.classList.add('btn-outline-success');
-                }
-            });
-            bootstrap.Modal.getInstance(document.getElementById('criticalModal')).hide();
-            criticalForm.reset();
-        }
+        });
+        calendar.render();
     });
 </script>

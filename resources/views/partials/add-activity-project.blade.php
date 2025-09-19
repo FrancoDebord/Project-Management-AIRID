@@ -1,6 +1,6 @@
  <!-- Modal -->
  <div class="modal fade" id="ModalAddActivity" tabindex="-1" aria-hidden="true">
-     <div class="modal-dialog modal-dialog-centered modal-lg">
+     <div class="modal-dialog modal-dialog-centered modal-xl">
          <div class="modal-content">
 
              @php
@@ -65,10 +65,16 @@
 
                      <div class="row">
                          <div class="col">
-                             <label for="estimated_activity_date" class="form-label">Activity Due Date</label>
+                             <label for="estimated_activity_date" class="form-label">Activity Start Due Date</label>
                              <input type="text" class="form-control" id="estimated_activity_date"
                                  name="estimated_activity_date" required>
                          </div>
+                         <div class="col">
+                             <label for="estimated_activity_end_date" class="form-label">Activity End Due Date</label>
+                             <input type="text" class="form-control" id="estimated_activity_end_date"
+                                 name="estimated_activity_end_date" required>
+                         </div>
+
                          <div class="col">
                              <label for="should_be_performed_by" class="form-label">Responsible Person for this activity
                              </label>

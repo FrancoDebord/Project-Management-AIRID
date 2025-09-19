@@ -189,8 +189,9 @@
                                             <th style="width:21%">Activity</th>
                                             <th style="width:15%">SubCategory</th>
                                             <th style="width:18%">Parent Activity</th>
-                                            <th style="width:14%">Responsible</th>
-                                            <th style="width:14%">Due Date</th>
+                                            <th style="width:10%">Responsible</th>
+                                            <th style="width:9%">Start Date</th>
+                                            <th style="width:9%">End Date</th>
                                             <th style="width:10%">Status</th>
                                             <th style="width:4%">Edit</th>
                                             <th style="width:4%">Del</th>
@@ -239,6 +240,7 @@
                                                 <td>{{ $personneResponsable ? $personneResponsable->titre . ' ' . $personneResponsable->prenom . ' ' . $personneResponsable->nom : 'Not yet assigned' }}
                                                 </td>
                                                 <td>{{ $study_activity->estimated_activity_date }}</td>
+                                                <td>{{ $study_activity->estimated_activity_end_date }}</td>
                                                 <td><span
                                                         class="status-badge {{ $status_progress }}">{{ $study_activity->status }}</span>
                                                 </td>

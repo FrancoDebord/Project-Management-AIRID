@@ -200,6 +200,16 @@
     }
   </style>
 
+
+@section('css_vendor')
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+
+@endsection
+
+@section('js_vendor')
+    
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+@endsection
     @section('content')
         <div class="row justify-content-center">
             <div class="col-lg-11 col-xl-11">
@@ -298,13 +308,13 @@
                         @include('protocol-development')
                     </div>
                     <div class="tab-pane fade" id="step4" role="tabpanel">
-                        <h4>Planning Phase</h4>
+                      
                         {{-- <p>Contenu de la quatrième étape.</p> --}}
                         @include('planning-phase-step')
                     </div>
                     <div class="tab-pane fade" id="step5" role="tabpanel">
                         <h4>Experimental Phase</h4>
-                        <p>Contenu de la cinquième étape.</p>
+                        @include('experimental-phase-step')
                     </div>
                     <div class="tab-pane fade" id="step6" role="tabpanel">
                         <h4>Data Analysis</h4>

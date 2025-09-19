@@ -122,4 +122,32 @@ class Pro_Project extends Model
     {
         return $this->belongsToMany(Pro_LabTest::class, 'pro_projects_related_lab_tests', 'project_id', 'lab_test_id')->orderBy("level_test");
     }
+
+    /**
+     * Get all of the allPhasesCritiques $study_type=nullfor the Pro_Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function allPhasesCritiques($study_type_id=null): HasMany
+    {
+         $activites = [];
+
+        if($study_type_id == null){
+
+            $activites = $this->hasMany(Pro_StudyActivities::class, 'project_id', 'id')
+            ->where("phase_critique",1)
+            ->orderBy("estimated_activity_date");
+        }
+        else{
+
+            $activites = $this->hasMany(Pro_StudyActivities::class, 'project_id', 'id')
+            ->where("study_type_id",$study_type_id)
+             ->where("phase_critique",1)
+            ->orderBy("estimated_activity_date");
+        }
+
+
+         return $activites;
+        
+    }
 }

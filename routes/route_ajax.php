@@ -23,4 +23,9 @@ Route::prefix('ajax')->group(function () {
 
     Route::get('/get-study-type/{id}', [ProjectAjaxController::class,"getStudyTypeById"])->name("getStudyTypeById");
     Route::get('/get-all-chidren-activities', [ProjectAjaxController::class,"childrenActivity"])->name("childrenActivity");
+    
+    Route::get('/get-meeting-info', [ProjectAjaxController::class,"getMeetingInfoById"])->name("getMeetingInfoById");
+    Route::post('/delete-meeting', [ProjectAjaxController::class,"deleteQAMeeting"])->name("deleteQAMeeting");
+    Route::post('/marquer-critique', [ProjectAjaxController::class,"marquerActivitePhaseCritique"])->name("marquerActivitePhaseCritique");
+    Route::post('/marquer-non-critique', [ProjectAjaxController::class,"marquerActiviteNonPhaseCritique"])->name("marquerActiviteNonPhaseCritique");
 });

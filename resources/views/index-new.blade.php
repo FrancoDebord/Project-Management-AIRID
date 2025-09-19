@@ -31,6 +31,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css" rel="stylesheet">
 
+    @yield('css_vendor')
 
     <link rel="stylesheet" href="{{ asset('storage/assets/css/custom_style.css') }}" />
 
@@ -161,6 +162,8 @@
     {{-- <script src="https://cdn.jsdelivr.net/gh/sumeetghimire/AlertJs/Alert.js"></script> --}}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
+    @yield('js_vendor')
 
     <script src="{{ asset('storage/assets/js/javascript-custom.js') }}"></script>
     <script src="{{ asset('storage/assets/js/javascript_ajax.js') }}"></script>
