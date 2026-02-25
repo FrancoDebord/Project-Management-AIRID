@@ -13,6 +13,8 @@ use App\Models\Pro_ProjectRelatedStudyType;
 use App\Models\Pro_ProtocolDevActivity;
 use App\Models\Pro_ProtocolDevActivityProject;
 use App\Models\Pro_StudyActivities;
+use App\Models\Pro_QaInspection;
+use App\Models\Pro_QaInspectionFinding;
 use App\Models\Pro_StudyQualityAssuranceMeeting;
 use App\Models\Pro_StudyQualityAssuranceMeetingParticipant;
 use Carbon\Carbon;
@@ -617,6 +619,10 @@ class ProjectAjaxController extends Controller
             if (!$activity_to_update) {
                 return response()->json(['message' => 'Study Activity not found.', "code_erreur" => 1], 200);
             } else {
+                // Interdire la modification d'une activité déjà exécutée
+                if (!is_null($activity_to_update->actual_activity_date)) {
+                    return response()->json(['message' => 'You cannot edit an activity that has already been executed.', "code_erreur" => 1], 200);
+                }
                 $activity_to_update->update($activityData);
             }
         } else {
@@ -642,6 +648,11 @@ class ProjectAjaxController extends Controller
         if (!$activity_to_delete) {
             return response()->json(['message' => 'Study Activity not found.', "code_erreur" => 1], 200);
         } else {
+
+            // Interdire la suppression d'une activité déjà exécutée
+            if (!is_null($activity_to_delete->actual_activity_date)) {
+                return response()->json(['message' => 'You cannot delete an activity that has already been executed.', "code_erreur" => 1], 200);
+            }
 
 
             if ($delete_cascade == 1) { // Supprimer avec les enfants
@@ -1022,5 +1033,383 @@ class ProjectAjaxController extends Controller
 
         session()->flash('success', "Activity successfully marked  as non critical");
         return response()->json(['message' => "Activity successfully marked non as critical", "code_erreur" => 0], 200);
+    }
+
+    function executeActivity(Request $request)
+    {
+        $rules = [
+            'activity_id' => 'required|integer|exists:pro_studies_activities,id',
+            'actual_activity_date' => 'required|date|before_or_equal:today',
+            'performed_by' => 'required|integer|exists:personnels,id',
+            'project_id' => 'required|integer|exists:pro_projects,id',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $activity = Pro_StudyActivities::find($request->activity_id);
+
+            if (!$activity) {
+                return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+            }
+
+            // Mettre à jour l'activité avec les informations d'exécution
+            $activity->actual_activity_date = $request->actual_activity_date;
+            $activity->performed_by = $request->performed_by;
+            $activity->status = 'completed';
+
+            // Si des commentaires sont fournis, on les stocke dans l'attribut commentaire
+            if ($request->comments) {
+                $activity->commentaire = ($activity->commentaire ?? '');
+                
+                $activity->commentaire = trim($activity->commentaire . "\n\n" . $request->comments);
+            }
+
+            $activity->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Activity successfully recorded',
+                'activity' => $activity
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Réinitialiser une activité en mode pending
+     */
+    function resetActivityExecution(Request $request)
+    {
+        $rules = [
+            'activity_id' => 'required|integer|exists:pro_studies_activities,id',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $activity = Pro_StudyActivities::find($request->activity_id);
+
+            if (!$activity) {
+                return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+            }
+
+            // Remettre l'activité en pending et nettoyer les infos d'exécution
+            $activity->status = 'pending';
+            $activity->actual_activity_date = null;
+            $activity->performed_by = null;
+            // On conserve les commentaires historiques dans commentaire
+
+            $activity->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Activity successfully reset to pending',
+                'activity' => $activity
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Programmer une inspection QA
+     */
+    function scheduleQaInspection(Request $request)
+    {
+        $rules = [
+            'project_id'       => 'required|integer|exists:pro_projects,id',
+            'qa_inspector_id'  => 'required|integer|exists:personnels,id',
+            'date_scheduled'   => 'required|date',
+            'type_inspection'  => 'required|string|in:Facility Inspection,Process Inspection,Study Inspection,Critical Phase Inspection',
+            'activity_id'      => 'nullable|integer|exists:pro_studies_activities,id',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed: ' . implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $inspectionNumber = Pro_QaInspection::where('project_id', $request->project_id)->count() + 1;
+            $inspectionName   = $request->type_inspection . ' #' . $inspectionNumber;
+
+            $inspection = Pro_QaInspection::create([
+                'project_id'      => $request->project_id,
+                'activity_id'     => $request->activity_id ?? null,
+                'checklist_slug'  => $request->checklist_slug ?? null,
+                'qa_inspector_id' => $request->qa_inspector_id,
+                'date_scheduled'  => $request->date_scheduled,
+                'type_inspection' => $request->type_inspection,
+                'inspection_name' => $inspectionName,
+            ]);
+
+            return response()->json([
+                'success'    => true,
+                'message'    => 'QA Inspection scheduled successfully',
+                'inspection' => $inspection
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Récupérer les findings d'une inspection
+     */
+    function getInspectionFindings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id' => 'required|integer|exists:pro_qa_inspections,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $findings = Pro_QaInspectionFinding::where('inspection_id', $request->inspection_id)
+            ->with(['assignedTo', 'parentFinding'])
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($f) {
+                return [
+                    'id'               => $f->id,
+                    'finding_text'     => $f->finding_text,
+                    'action_point'     => $f->action_point,
+                    'deadline_date'    => $f->deadline_date,
+                    'status'           => $f->status,
+                    'parent_finding_id'=> $f->parent_finding_id,
+                    'assigned_to_name' => $f->assignedTo
+                        ? $f->assignedTo->prenom . ' ' . $f->assignedTo->nom
+                        : null,
+                    'parent_finding_text' => $f->parentFinding
+                        ? mb_strimwidth($f->parentFinding->finding_text, 0, 60, '…')
+                        : null,
+                    'created_at' => $f->created_at?->format('d/m/Y'),
+                ];
+            });
+
+        return response()->json(['success' => true, 'findings' => $findings], 200);
+    }
+
+    /**
+     * Enregistrer un finding d'inspection QA
+     */
+    function saveQaFinding(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id'    => 'required|integer|exists:pro_qa_inspections,id',
+            'project_id'       => 'required|integer|exists:pro_projects,id',
+            'finding_text'     => 'required|string|max:2000',
+            'assigned_to'      => 'required|integer|exists:personnels,id',
+            'deadline_date'    => 'nullable|date',
+            'parent_finding_id'=> 'nullable|integer|exists:pro_qa_inspections_findings,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $finding = Pro_QaInspectionFinding::create([
+                'inspection_id'    => $request->inspection_id,
+                'project_id'       => $request->project_id,
+                'finding_text'     => $request->finding_text,
+                'assigned_to'      => $request->assigned_to,
+                'deadline_date'    => $request->deadline_date,
+                'parent_finding_id'=> $request->parent_finding_id ?: null,
+                'status'           => 'pending',
+            ]);
+
+            // Marquer l'inspection comme réalisée dès le premier finding enregistré
+            $inspection = Pro_QaInspection::find($request->inspection_id);
+            if ($inspection && !$inspection->date_performed) {
+                $inspection->date_performed = now()->toDateString();
+                $inspection->save();
+            }
+
+            $finding->load('assignedTo');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Finding enregistré avec succès',
+                'finding' => [
+                    'id'               => $finding->id,
+                    'finding_text'     => $finding->finding_text,
+                    'action_point'     => null,
+                    'deadline_date'    => $finding->deadline_date,
+                    'status'           => $finding->status,
+                    'parent_finding_id'=> $finding->parent_finding_id,
+                    'assigned_to_name' => $finding->assignedTo
+                        ? $finding->assignedTo->prenom . ' ' . $finding->assignedTo->nom
+                        : null,
+                    'created_at' => $finding->created_at?->format('d/m/Y'),
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Résoudre un finding (Corrective Action par le Study Director)
+     */
+    function resolveQaFinding(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'finding_id'   => 'required|integer|exists:pro_qa_inspections_findings,id',
+            'action_point' => 'required|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $finding = Pro_QaInspectionFinding::find($request->finding_id);
+
+            if (!$finding) {
+                return response()->json(['success' => false, 'message' => 'Finding introuvable'], 404);
+            }
+
+            $finding->action_point = $request->action_point;
+            $finding->status       = 'complete';
+            $finding->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Finding résolu avec succès',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Supprimer une inspection QA et tous ses findings (+ actions correctives)
+     */
+    function deleteQaInspection(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id' => 'required|integer|exists:pro_qa_inspections,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $inspection = Pro_QaInspection::findOrFail($request->inspection_id);
+
+            // Supprimer d'abord les findings enfants, puis les findings, puis l'inspection
+            foreach ($inspection->findings as $finding) {
+                $finding->childFindings()->delete();
+            }
+            $inspection->findings()->delete();
+            $inspection->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inspection supprimée avec succès.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Supprimer un finding individuel (et ses findings enfants)
+     */
+    function deleteQaFinding(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'finding_id' => 'required|integer|exists:pro_qa_inspections_findings,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $finding = Pro_QaInspectionFinding::findOrFail($request->finding_id);
+            $finding->childFindings()->delete();
+            $finding->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Finding supprimé avec succès.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Supprimer une corrective action (remet le finding en statut "pending")
+     */
+    function deleteCorrectiveAction(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'finding_id' => 'required|integer|exists:pro_qa_inspections_findings,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all())
+            ], 422);
+        }
+
+        try {
+            $finding = Pro_QaInspectionFinding::findOrFail($request->finding_id);
+            $finding->action_point = null;
+            $finding->status       = 'pending';
+            $finding->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Corrective action supprimée. Finding remis en attente.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
     }
 }

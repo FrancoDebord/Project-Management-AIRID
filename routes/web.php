@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ProjectActivityScheduleController;
 use App\Http\Controllers\ProjectController;
@@ -22,6 +23,12 @@ Route::get('/manage-project2', [ProjectManagementController::class, 'afficherMan
 
 // Route::get('/wizard', function(){ return view('study_management_design'); });
 // Route::post('/wizard/submit', [WizardController::class, 'submit'])->name('wizard.submit');
+
+// ── Checklist routes ──
+Route::get('/checklist/{inspection_id}',        [ChecklistController::class, 'index'])->name('checklist.index');
+Route::get('/checklist/{inspection_id}/{slug}', [ChecklistController::class, 'show'])->name('checklist.show');
+Route::post('/checklist/{inspection_id}/{slug}',[ChecklistController::class, 'save'])->name('checklist.save');
+Route::get('/ajax/get-checklist-statuses',      [ChecklistController::class, 'statuses'])->name('getChecklistStatuses');
 
 require_once("route_ajax.php");
 Auth::routes();

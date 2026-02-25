@@ -1,17 +1,18 @@
 <style>
-    /* :root {
-        --brand: #c20102;
-        --brand-dark: #8b0001;
-        --brand-soft: #f5b5b5;
-    } */
-
     :root {
-        --brand: #7c3aed;
-        /* Violet vibrant */
-        --brand-dark: #5b21b6;
-        /* Violet foncé */
-        --brand-soft: #e9d5ff;
-        /* Violet pastel */
+        --brand: #C10202;
+        /* Rouge AIRID - primaire */
+        --brand-dark: #8b0001;
+        /* Rouge foncé pour les survols/gradients */
+        --brand-soft: #FDECEC;
+        /* Rouge très clair pour fonds doux */
+        --text-main: #010101;
+        /* Noir institutionnel */
+        --text-secondary: #706D6B;
+        /* Gris foncé institutionnel */
+        --bg-main: #FFFFFF;
+        /* Fond principal */
+        --border-muted: #E5E5E5;
     }
 
     /* Accordion look */
@@ -21,6 +22,7 @@
         overflow: hidden;
         box-shadow: 0 8px 22px rgba(0, 0, 0, .08);
         margin-bottom: 18px;
+        background-color: var(--bg-main);
     }
 
     .accordion-button {
@@ -42,17 +44,17 @@
     /* Chip buttons (fils) */
     .btn-chip {
         border-radius: 999px;
-        border: 1px solid #e6a3a3;
-        background: #fff;
-        color: #7a3a3a;
+        border: 1px solid var(--border-muted);
+        background: var(--bg-main);
+        color: var(--text-secondary);
         font-weight: 600;
         padding: 10px 16px;
         transition: .25s ease;
     }
 
     .btn-chip:hover {
-        background: #ffe4e4;
-        color: #6b0506;
+        background: var(--brand-soft);
+        color: var(--brand-dark);
         transform: translateY(-1px);
     }
 
@@ -65,7 +67,7 @@
 
     /* Table styling */
     .table-wrap {
-        background: #fff;
+        background: var(--bg-main);
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
@@ -89,8 +91,8 @@
     }
 
     .status-open {
-        background: #ffe8e8;
-        color: #a10001;
+        background: var(--brand-soft);
+        color: var(--brand);
     }
 
     .status-inprogress {
@@ -210,6 +212,7 @@
                                                 $categorie = $study_activity->category;
                                                 $personneResponsable = $study_activity->personneResponsable;
                                                 $status = $study_activity->status;
+                                                $is_executed = !is_null($study_activity->actual_activity_date);
 
                                                 $status_progress = 'status-inprogress';
 
@@ -218,7 +221,6 @@
                                                 } elseif ($status == 'in_progress') {
                                                     $status_progress = 'status-inprogress';
                                                 } elseif ($status == 'completed') {
-                                                    # code...
                                                     $status_progress = 'status-done';
                                                 }
 
@@ -241,45 +243,63 @@
                                                 </td>
                                                 <td>{{ $study_activity->estimated_activity_date }}</td>
                                                 <td>{{ $study_activity->estimated_activity_end_date }}</td>
-                                                <td><span
-                                                        class="status-badge {{ $status_progress }}">{{ $study_activity->status }}</span>
+                                                <td>
+                                                    <span class="status-badge {{ $status_progress }}">
+                                                        {{ $study_activity->status }}
+                                                    </span>
+                                                    @if ($is_executed)
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Executed on {{ $study_activity->actual_activity_date }}
+                                                        </small>
+                                                    @endif
                                                 </td>
                                                 <td>
-                                                    <a href="#"
-                                                        class="btn btn-outline-warning bouton-modifier-activite"
-                                                        data-activity-id="{{ $study_activity->id }}"
-                                                        data-activity-name="{{ $study_activity->study_activity_name }}"
-                                                        data-activity-date="{{ $study_activity->estimated_activity_date }}"
-                                                        data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
-                                                        data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
-                                                        data-activity-study-type-id="{{ $study_activity->study_type_id }}"
-                                                        data-activity-description="{{ $study_activity->activity_description }}"
-                                                        data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
-                                                        data-project-id="{{ $project_id }}"
-                                                        data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
-                                                        >
-                                                        <i class="fa fa-edit">&nbsp;</i>
-                                                    </a>
-
+                                                    @if ($is_executed)
+                                                        <button class="btn btn-outline-secondary" disabled
+                                                            title="Activity already executed - modification disabled">
+                                                            <i class="fa fa-lock">&nbsp;</i>
+                                                        </button>
+                                                    @else
+                                                        <a href="#"
+                                                            class="btn btn-outline-warning bouton-modifier-activite"
+                                                            data-activity-id="{{ $study_activity->id }}"
+                                                            data-activity-name="{{ $study_activity->study_activity_name }}"
+                                                            data-activity-date="{{ $study_activity->estimated_activity_date }}"
+                                                            data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
+                                                            data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
+                                                            data-activity-study-type-id="{{ $study_activity->study_type_id }}"
+                                                            data-activity-description="{{ $study_activity->activity_description }}"
+                                                            data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
+                                                            data-project-id="{{ $project_id }}"
+                                                            data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}">
+                                                            <i class="fa fa-edit">&nbsp;</i>
+                                                        </a>
+                                                    @endif
                                                 </td>
                                                 <td>
-                                                    <a href="#"
-                                                        class="btn btn-outline-danger bouton-supprimer-activite"
-                                                         data-activity-id="{{ $study_activity->id }}"
-                                                        data-activity-name="{{ $study_activity->study_activity_name }}"
-                                                        data-activity-date="{{ $study_activity->estimated_activity_date }}"
-                                                        data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
-                                                        data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
-                                                        data-activity-study-type-id="{{ $study_activity->study_type_id }}"
-                                                        data-activity-description="{{ $study_activity->activity_description }}"
-                                                        data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
-                                                        data-project-id="{{ $project_id }}"
-                                                        data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
-                                                        data-children-activites-route="{{ route('childrenActivity') }}"
-                                                        
-                                                        >
-                                                        <i class="fa fa-trash-alt">&nbsp;</i>
-                                                    </a>
+                                                    @if ($is_executed)
+                                                        <button class="btn btn-outline-secondary" disabled
+                                                            title="Activity already executed - deletion disabled">
+                                                            <i class="fa fa-lock">&nbsp;</i>
+                                                        </button>
+                                                    @else
+                                                        <a href="#"
+                                                            class="btn btn-outline-danger bouton-supprimer-activite"
+                                                            data-activity-id="{{ $study_activity->id }}"
+                                                            data-activity-name="{{ $study_activity->study_activity_name }}"
+                                                            data-activity-date="{{ $study_activity->estimated_activity_date }}"
+                                                            data-activity-responsible="{{ $study_activity->should_be_performed_by }}"
+                                                            data-activity-parent-id="{{ $study_activity->parent_activity_id }}"
+                                                            data-activity-study-type-id="{{ $study_activity->study_type_id }}"
+                                                            data-activity-description="{{ $study_activity->activity_description }}"
+                                                            data-study_sub_category_id="{{ $study_activity->study_sub_category_id }}"
+                                                            data-project-id="{{ $project_id }}"
+                                                            data-ajax-route="{{ route('getStudyTypeById', ['id' => $study_type->id]) }}"
+                                                            data-children-activites-route="{{ route('childrenActivity') }}">
+                                                            <i class="fa fa-trash-alt">&nbsp;</i>
+                                                        </a>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @empty

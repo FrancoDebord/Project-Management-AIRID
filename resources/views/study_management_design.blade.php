@@ -317,8 +317,8 @@
                         @include('experimental-phase-step')
                     </div>
                     <div class="tab-pane fade" id="step6" role="tabpanel">
-                        <h4>Data Analysis</h4>
-                        <p>Contenu de la sixième étape.</p>
+                        <h4>Quality Assurance</h4>
+                        @include('partials.qa-assurance-step')
                     </div>
                     <div class="tab-pane fade" id="step7" role="tabpanel">
                         <h4>Report Phase</h4>

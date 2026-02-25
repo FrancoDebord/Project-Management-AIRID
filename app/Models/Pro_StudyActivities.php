@@ -51,4 +51,12 @@ class Pro_StudyActivities extends Model
     {
         return $this->hasMany(Pro_StudyActivities::class, 'parent_activity_id');
     }
+
+    /**
+     * Personnel qui a exécuté l'activité (performed_by)
+     */
+    public function executedBy(): BelongsTo
+    {
+        return $this->belongsTo(Pro_Personnel::class, 'performed_by', 'id');
+    }
 }
