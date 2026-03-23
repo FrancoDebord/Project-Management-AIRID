@@ -27,6 +27,7 @@ class Pro_Cl_ConeIrsWalls extends Model
         'q12',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

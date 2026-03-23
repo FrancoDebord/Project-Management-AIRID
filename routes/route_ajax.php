@@ -31,10 +31,26 @@ Route::prefix('ajax')->group(function () {
     Route::post('/marquer-critique', [ProjectAjaxController::class,"marquerActivitePhaseCritique"])->name("marquerActivitePhaseCritique");
     Route::post('/marquer-non-critique', [ProjectAjaxController::class,"marquerActiviteNonPhaseCritique"])->name("marquerActiviteNonPhaseCritique");
     Route::post('/schedule-qa-inspection', [ProjectAjaxController::class,"scheduleQaInspection"])->name("scheduleQaInspection");
+    Route::post('/update-qa-inspection', [ProjectAjaxController::class,"updateQaInspection"])->name("updateQaInspection");
     Route::get('/get-inspection-findings', [ProjectAjaxController::class,"getInspectionFindings"])->name("getInspectionFindings");
     Route::post('/save-qa-finding', [ProjectAjaxController::class,"saveQaFinding"])->name("saveQaFinding");
     Route::post('/resolve-qa-finding', [ProjectAjaxController::class,"resolveQaFinding"])->name("resolveQaFinding");
     Route::post('/delete-qa-inspection', [ProjectAjaxController::class,"deleteQaInspection"])->name("deleteQaInspection");
+    Route::post('/mark-inspection-done', [ProjectAjaxController::class,"markInspectionDone"])->name("markInspectionDone");
+    Route::post('/toggle-inspection-completed', [ProjectAjaxController::class,"toggleInspectionCompleted"])->name("toggleInspectionCompleted");
+    Route::post('/toggle-phase-completed', [ProjectAjaxController::class,"togglePhaseCompleted"])->name("togglePhaseCompleted");
     Route::post('/delete-qa-finding', [ProjectAjaxController::class,"deleteQaFinding"])->name("deleteQaFinding");
+    Route::post('/update-qa-finding', [ProjectAjaxController::class,"updateQaFinding"])->name("updateQaFinding");
     Route::post('/delete-corrective-action', [ProjectAjaxController::class,"deleteCorrectiveAction"])->name("deleteCorrectiveAction");
+
+    // Report Phase
+    Route::post('/save-report-document',   [ProjectAjaxController::class, 'saveReportDocument'])->name('saveReportDocument');
+    Route::post('/delete-report-document', [ProjectAjaxController::class, 'deleteReportDocument'])->name('deleteReportDocument');
+
+    // Archiving Phase
+    Route::post('/archive-project',           [ProjectAjaxController::class, 'archiveProject'])->name('archiveProject');
+    Route::post('/unarchive-project',         [ProjectAjaxController::class, 'unarchiveProject'])->name('unarchiveProject');
+    Route::post('/save-archive-checklist',    [ProjectAjaxController::class, 'saveArchiveChecklist'])->name('saveArchiveChecklist');
+    Route::post('/save-archiving-document',   [ProjectAjaxController::class, 'saveArchivingDocument'])->name('saveArchivingDocument');
+    Route::post('/delete-archiving-document', [ProjectAjaxController::class, 'deleteArchivingDocument'])->name('deleteArchivingDocument');
 });

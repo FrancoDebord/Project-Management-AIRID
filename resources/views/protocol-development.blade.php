@@ -51,6 +51,15 @@
                                             ->where('complete', true)
                                             ->first();
 
+                                        $prev_date = \App\Models\Pro_ProtocolDevActivityProject::where('project_id', $project_id)
+                                            ->where('level_activite', $level_activity - 1)
+                                            ->where('complete', true)
+                                            ->value('date_performed');
+
+                                        $next_date = \App\Models\Pro_ProtocolDevActivityProject::where('project_id', $project_id)
+                                            ->where('level_activite', $level_activity + 1)
+                                            ->where('complete', true)
+                                            ->value('date_performed');
                                     @endphp
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $activity->protocolDevActivity->nom_activite }}</td>
@@ -79,7 +88,9 @@
                                             <button class="btn btn-outline-danger  btn-upload-doc-protocol-dev"
                                                 data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                 data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
-                                                data-activity-project-id="{{ $activity->id }}">
+                                                data-activity-project-id="{{ $activity->id }}"
+                                                data-prev-date="{{ $prev_date ?? '' }}"
+                                                data-next-date="{{ $next_date ?? '' }}">
                                                 <i class="fa fa-circle-notch">&nbsp;</i>
                                                 Update Document
 
@@ -100,7 +111,9 @@
                                                 <button class="btn btn-outline-warning  btn-upload-doc-protocol-dev"
                                                     data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                     data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
-                                                    data-activity-project-id="{{ $activity->id }}">
+                                                    data-activity-project-id="{{ $activity->id }}"
+                                                    data-prev-date="{{ $prev_date ?? '' }}"
+                                                    data-next-date="{{ $next_date ?? '' }}">
                                                     <i class="fa fa-upload">&nbsp;</i>
                                                     Upload Document
 
@@ -110,7 +123,9 @@
                                                     <button class="btn btn-outline-warning btn-upload-doc-protocol-dev"
                                                         data-bs-toggle="modal" data-bs-target="#detailsModal"
                                                         data-activity="{{ $activity->protocolDevActivity->nom_activite }}"
-                                                        data-activity-project-id="{{ $activity->id }}">
+                                                        data-activity-project-id="{{ $activity->id }}"
+                                                        data-prev-date="{{ $prev_date ?? '' }}"
+                                                        data-next-date="{{ $next_date ?? '' }}">
                                                         <i class="fa fa-upload">&nbsp;</i>
                                                         Upload Document
                                                     </button>

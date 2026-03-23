@@ -28,6 +28,7 @@ class Pro_Cl_IrsTreatment extends Model
         'q13',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

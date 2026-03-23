@@ -90,18 +90,62 @@
         <div>
             <h4 class="mb-1 fw-bold">
                 <i class="bi bi-clipboard2-check me-2"></i>
-                Critical Phase Inspection Checklists
+                @if(isset($progress))Facility Inspection Checklists @else Critical Phase Inspection Checklists @endif
             </h4>
             <small class="opacity-75">
-                QA-PR-1-003/05 — SANAS OECD GLP COMPLIANT FACILITY N° G0028
+                @if(isset($progress))
+                    {{ $inspection->facility_location === 'cove' ? 'QA-PR-1-001B/06' : 'QA-PR-1-001A/06' }}
+                    — {{ $inspection->facility_location === 'cove' ? 'Covè' : 'Cotonou' }}
+                @else
+                    QA-PR-1-003/05
+                @endif
+                — SANAS OECD GLP COMPLIANT FACILITY N° G0028
             </small>
         </div>
-        @if ($inspection->project_id)
-            <a href="/project/{{ $inspection->project_id }}/edit?project_id={{ $inspection->project_id }}"
-               class="btn btn-back">
-                <i class="bi bi-arrow-left me-1"></i>Retour au projet
+        <div class="d-flex gap-2 flex-wrap">
+            @if(isset($progress))
+                @php
+                    $printRoute = $inspection->type_inspection === 'Process Inspection'
+                        ? 'checklist.processPrint'
+                        : 'checklist.facilityPrint';
+                @endphp
+                <a href="{{ route($printRoute, $inspection->id) }}?mode=filled"
+                   class="btn btn-back" target="_blank">
+                    <i class="bi bi-printer me-1"></i>Imprimer rempli
+                </a>
+                <a href="{{ route($printRoute, $inspection->id) }}?mode=empty"
+                   class="btn btn-back" target="_blank">
+                    <i class="bi bi-file-earmark me-1"></i>Imprimer vierge
+                </a>
+                <a href="{{ route('checklist.report', $inspection->id) }}"
+                   class="btn btn-back" target="_blank">
+                    <i class="bi bi-file-earmark-text me-1"></i>QA Unit Report
+                </a>
+                <a href="{{ route('checklist.followup', $inspection->id) }}"
+                   class="btn btn-back" target="_blank">
+                    <i class="bi bi-file-earmark-check me-1"></i>Follow-Up Report
+                </a>
+            @endif
+            <a href="{{ route('qaDashboard') }}" class="btn btn-back">
+                <i class="bi bi-shield-check me-1"></i>Dashboard QA
             </a>
-        @endif
+            @if ($inspection->project_id)
+                <a href="/project/{{ $inspection->project_id }}/edit?project_id={{ $inspection->project_id }}"
+                   class="btn btn-back">
+                    <i class="bi bi-arrow-left me-1"></i>Retour au projet
+                </a>
+            @endif
+            @if(!isset($progress) && $inspection->project_id)
+            <a href="{{ route('checklist.report', $inspection->id) }}"
+               class="btn btn-back" target="_blank">
+                <i class="bi bi-file-earmark-text me-1"></i>QA Unit Report
+            </a>
+            <a href="{{ route('checklist.followup', $inspection->id) }}"
+               class="btn btn-back" target="_blank">
+                <i class="bi bi-file-earmark-check me-1"></i>Follow-Up Report
+            </a>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -139,39 +183,127 @@
                 </div>
             </div>
             <div class="col-auto">
-                @php $filledCount = collect($statuses)->filter()->count(); @endphp
-                <span class="fw-bold" style="font-size:1.1rem; color:var(--qa-brand);">
-                    {{ $filledCount }} / {{ count($forms) }}
-                </span>
-                <div class="text-muted small">formulaires remplis</div>
+                @isset($progress)
+                    {{-- Facility Inspection: show progress --}}
+                    @if ($progress >= $total)
+                        <span class="badge-filled" style="font-size:.8rem; padding:.35rem .9rem;">
+                            <i class="bi bi-check-circle-fill me-1"></i>{{ $progress }}/{{ $total }} sections complétées
+                        </span>
+                    @else
+                        <span class="badge-todo" style="font-size:.8rem; padding:.35rem .9rem;">
+                            <i class="bi bi-hourglass-split me-1"></i>{{ $progress }}/{{ $total }} sections complétées
+                        </span>
+                    @endif
+                @else
+                    @php $filledSlug = collect($statuses)->search(true); @endphp
+                    @if ($filledSlug)
+                        <span class="badge-filled" style="font-size:.8rem; padding:.35rem .9rem;">
+                            <i class="bi bi-check-circle-fill me-1"></i>Checklist rempli
+                        </span>
+                        <div class="text-muted small mt-1">{{ $forms[$filledSlug]['letter'] }}. {{ $forms[$filledSlug]['title'] }}</div>
+                        @if(!$inspection->date_performed)
+                            <div class="mt-2">
+                                <button id="markDoneBtn" class="btn btn-sm btn-success fw-semibold"
+                                        onclick="markInspectionDone({{ $inspection->id }}, this)">
+                                    <i class="bi bi-check-circle me-1"></i>Marquer comme finalisée
+                                </button>
+                            </div>
+                        @else
+                            <div class="mt-2">
+                                <span class="badge bg-success" style="font-size:.8rem;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Finalisée le {{ \Carbon\Carbon::parse($inspection->date_performed)->format('d/m/Y') }}
+                                </span>
+                            </div>
+                        @endif
+                    @else
+                        <span class="badge-todo" style="font-size:.8rem; padding:.35rem .9rem;">
+                            <i class="bi bi-hand-index me-1"></i>Aucun checklist sélectionné
+                        </span>
+                    @endif
+                @endisset
             </div>
         </div>
 
-        {{-- Progress bar --}}
-        <div class="mt-3">
-            <div class="progress" style="height:8px; border-radius:999px;">
-                <div class="progress-bar"
-                     style="width:{{ count($forms) > 0 ? ($filledCount / count($forms) * 100) : 0 }}%;
-                            background: linear-gradient(90deg, var(--qa-brand), var(--qa-brand-dark));
-                            border-radius:999px;">
+        {{-- Facility progress bar --}}
+        @isset($progress)
+            @php $pct = $total > 0 ? round($progress / $total * 100) : 0; @endphp
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-1" style="font-size:.8rem;">
+                    <span class="text-muted">Progression du remplissage</span>
+                    <span class="fw-semibold" style="color:var(--qa-brand);">{{ $pct }}%</span>
+                </div>
+                <div class="progress" style="height:10px; border-radius:999px;">
+                    <div class="progress-bar {{ $progress >= $total ? 'bg-success' : 'bg-warning' }}"
+                         role="progressbar"
+                         style="width:{{ $pct }}%"
+                         aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="{{ $total }}"></div>
                 </div>
             </div>
-        </div>
+        @endisset
     </div>
 
-    {{-- Grille des 13 formulaires --}}
+    {{-- Grille meta --}}
+    @php
+        $findingCounts = $findingCounts ?? [];
+        $isCritical    = $inspection->type_inspection === 'Critical Phase Inspection';
+        $activeSlug    = $inspection->checklist_slug ?? null;
+    @endphp
+
+    {{-- Instruction --}}
+    @isset($progress)
+        @if ($progress < $total)
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 rounded-3" style="font-size:.88rem;">
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <span>Remplissez <strong>toutes les {{ $total }} sections</strong> pour pouvoir finaliser l'inspection Facility. Il reste <strong>{{ $total - $progress }}</strong> section(s) à compléter.</span>
+            </div>
+        @else
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-3 rounded-3" style="font-size:.88rem;">
+                <i class="bi bi-check-circle-fill fs-5 flex-shrink-0"></i>
+                <span>Toutes les sections sont complétées. Vous pouvez maintenant <strong>finaliser l'inspection</strong>.</span>
+            </div>
+        @endif
+    @else
+        @if($isCritical && $activeSlug)
+            <div class="alert alert-primary d-flex align-items-center gap-2 mb-3 rounded-3" style="font-size:.88rem;">
+                <i class="bi bi-pin-angle-fill fs-5 flex-shrink-0"></i>
+                <span>Seul le formulaire <strong>{{ $forms[$activeSlug]['letter'] }}. {{ $forms[$activeSlug]['title'] }}</strong> est actif pour cette inspection. Les autres sont désactivés.</span>
+            </div>
+        @else
+            <div class="alert alert-info d-flex align-items-center gap-2 mb-3 rounded-3" style="font-size:.88rem;">
+                <i class="bi bi-info-circle-fill fs-5 flex-shrink-0"></i>
+                <span>Sélectionnez <strong>un seul formulaire</strong> correspondant au type d'inspection réalisée, puis remplissez-le.</span>
+            </div>
+        @endif
+    @endisset
+
+    {{-- Grille des formulaires --}}
     <div class="row g-3">
         @foreach ($forms as $slug => $form)
+            @php
+                $done      = $statuses[$slug];
+                $nFindings = $findingCounts[$slug] ?? 0;
+                $isLocked  = $isCritical && $activeSlug && $slug !== $activeSlug;
+            @endphp
             <div class="col-md-6 col-lg-4">
-                <div class="checklist-card p-3 d-flex flex-column gap-2">
+                <div class="checklist-card p-3 d-flex flex-column gap-2
+                    {{ $done ? 'border-success' : '' }}
+                    {{ $isLocked ? 'opacity-50' : '' }}"
+                    style="{{ $done ? 'border-color:#198754 !important; border-width:2px !important;' : '' }}
+                           {{ $isLocked ? 'background:#f3f3f3 !important; cursor:not-allowed;' : '' }}">
                     <div class="d-flex align-items-start gap-3">
-                        <div class="card-letter">{{ $form['letter'] }}</div>
+                        <div class="card-letter" style="{{ $isLocked ? 'background:#adb5bd;' : '' }}">
+                            {{ $form['letter'] }}
+                        </div>
                         <div class="flex-grow-1">
                             <div class="card-title-text">{{ $form['title'] }}</div>
                             <div class="card-qcount">{{ count($form['questions']) }} questions</div>
                         </div>
-                        <div>
-                            @if ($statuses[$slug])
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            @if ($isLocked)
+                                <span class="badge bg-secondary" style="font-size:.72rem;">
+                                    <i class="bi bi-lock me-1"></i>Non sélectionné
+                                </span>
+                            @elseif ($done)
                                 <span class="badge-filled">
                                     <i class="bi bi-check-lg me-1"></i>Rempli
                                 </span>
@@ -180,14 +312,40 @@
                                     <i class="bi bi-clock me-1"></i>À compléter
                                 </span>
                             @endif
+                            @if (!$isLocked && $nFindings > 0)
+                                <span class="badge rounded-pill bg-danger" style="font-size:.72rem;">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ $nFindings }} finding{{ $nFindings > 1 ? 's' : '' }}
+                                </span>
+                            @elseif(!$isLocked && $done)
+                                <span style="font-size:.72rem; color:#198754;">
+                                    <i class="bi bi-check-circle me-1"></i>Conforme
+                                </span>
+                            @endif
                         </div>
                     </div>
-                    <div class="mt-auto text-end">
-                        <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}"
-                           class="btn btn-open btn-sm">
-                            <i class="bi bi-pencil-square me-1"></i>
-                            {{ $statuses[$slug] ? 'Modifier' : 'Remplir' }}
-                        </a>
+                    <div class="mt-auto d-flex justify-content-end gap-2">
+                        @if ($isLocked)
+                            <span class="btn btn-sm btn-secondary disabled" style="font-size:.82rem; cursor:not-allowed;">
+                                <i class="bi bi-lock me-1"></i>Désactivé
+                            </span>
+                        @elseif(isset($progress) && $done)
+                            {{-- Section already filled: propose Modifier + Ajouter un finding --}}
+                            <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}#addFindingForm"
+                               class="btn btn-sm"
+                               style="background:#198754; color:#fff; border:none; border-radius:8px; font-size:.82rem; font-weight:600; padding:.35rem .9rem;">
+                                <i class="bi bi-plus-circle me-1"></i>Ajouter un finding
+                            </a>
+                            <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}"
+                               class="btn btn-open btn-sm">
+                                <i class="bi bi-pencil-square me-1"></i>Modifier
+                            </a>
+                        @else
+                            <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}"
+                               class="btn btn-open btn-sm">
+                                <i class="bi bi-pencil-square me-1"></i>
+                                @if(isset($progress))Remplir le formulaire @else {{ $done ? 'Modifier' : 'Remplir' }} @endif
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -197,5 +355,26 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function markInspectionDone(inspectionId, btn) {
+    if (!confirm('Marquer cette inspection comme finalisée ?')) return;
+    btn.disabled = true;
+    fetch('{{ route("markInspectionDone") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ inspection_id: inspectionId }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { location.reload(); }
+        else { btn.disabled = false; alert(data.message || 'Erreur.'); }
+    })
+    .catch(() => { btn.disabled = false; alert('Erreur réseau.'); });
+}
+</script>
 </body>
 </html>

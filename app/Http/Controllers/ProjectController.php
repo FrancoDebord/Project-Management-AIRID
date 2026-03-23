@@ -49,7 +49,222 @@ class ProjectController extends Controller
         $total_filled_percentage_projects = $this->computeCompleteness('pro_projects', $project->id ?? 0);
         $total_filled_percentage_study_director_appointment = $this->computeCompleteness('pro_study_director_appointment_forms', $project->studyDirectorAppointmentForm->id ?? 0, ['id', 'replacement_date', 'created_at', 'updated_at',"study_director_signature","quality_assurance_signature","fm_signature","comments","sd_appointment_file"]);
 
-        return view("study_management_design", compact("project", "all_personnels", "all_projects", "total_filled_percentage_projects", "total_filled_percentage_study_director_appointment"));
+        $execution_rate = 0;
+        $phase_metrics  = [];
+        $project_phase  = 'study_creation';
+
+        if ($project->id) {
+            $pid = $project->id;
+
+            // 1. Activities
+            $totalActivities     = DB::table('pro_studies_activities')->where('project_id', $pid)->count();
+            $completedActivities = DB::table('pro_studies_activities')->where('project_id', $pid)->where('status', 'completed')->count();
+
+            // 2. QA Inspections (completed = completed_at set)
+            $totalInspections     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
+            $completedInspections = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('completed_at')->count();
+
+            // 3. NC Findings (is_conformity = 0 → non-conformity, resolved = status 'resolved')
+            $totalNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
+            $resolvedNc = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'resolved')->count();
+
+            // 4. Report phase documents (submitted or published = done)
+            $totalReportDocs     = DB::table('pro_report_phase_documents')->where('project_id', $pid)->count();
+            $completedReportDocs = DB::table('pro_report_phase_documents')->where('project_id', $pid)->whereIn('status', ['submitted', 'published'])->count();
+
+            // 5. Archiving milestone (1 point, done when archived_at is set)
+            $isArchived = $project->archived_at ? 1 : 0;
+
+            // Composite rate: all items treated equally
+            $totalItems     = $totalActivities + $totalInspections + $totalNc + $totalReportDocs + 1;
+            $completedItems = $completedActivities + $completedInspections + $resolvedNc + $completedReportDocs + $isArchived;
+            $execution_rate = $totalItems > 0 ? round(($completedItems / $totalItems) * 100, 1) : 0;
+
+            // Phase metrics passed to view (for banner + detail tooltip)
+            $phase_metrics = [
+                'activities'  => ['total' => $totalActivities,     'done' => $completedActivities],
+                'inspections' => ['total' => $totalInspections,    'done' => $completedInspections],
+                'nc_findings' => ['total' => $totalNc,             'done' => $resolvedNc],
+                'report_docs' => ['total' => $totalReportDocs,     'done' => $completedReportDocs],
+                'archiving'   => ['total' => 1,                    'done' => $isArchived],
+            ];
+
+            // Current phase determination: first incomplete phase in order
+            $phasesCompleted = $project->phases_completed ?? [];
+            $phaseOrder = [
+                'study_creation', 'protocol_details', 'protocol_development',
+                'planning', 'experimental', 'quality_assurance', 'reporting', 'archiving',
+            ];
+            $project_phase = 'study_creation';
+            foreach ($phaseOrder as $p) {
+                if (!in_array($p, $phasesCompleted)) {
+                    $project_phase = $p;
+                    break;
+                }
+                $project_phase = 'all_done'; // all phases manually marked
+            }
+        }
+
+        $phaseStatuses = $this->computePhaseStatuses($project);
+
+        return view("study_management_design", compact("project", "all_personnels", "all_projects", "total_filled_percentage_projects", "total_filled_percentage_study_director_appointment", "execution_rate", "phase_metrics", "project_phase", "phaseStatuses"));
+    }
+
+    // Compute per-phase completion status
+    private function computePhaseStatuses($project): array
+    {
+        $statuses = [];
+
+        if (!$project->id) {
+            return $statuses;
+        }
+
+        $pid = $project->id;
+
+        // ── Study Creation ──────────────────────────────────────────────────
+        $basicOk = $project->project_code && $project->project_title
+                   && $project->study_director && $project->protocol_code;
+        $apptForm = $project->studyDirectorAppointmentForm;
+        $apptOk   = $apptForm && $apptForm->study_director && $apptForm->sd_appointment_date;
+        $statuses['study_creation'] = [
+            'can_complete' => (bool)$basicOk && (bool)$apptOk,
+            'items' => [
+                ['label' => 'Basic project information filled (code, title, director, protocol code)', 'done' => (bool)$basicOk],
+                ['label' => 'Study Director Appointment form filled',                                  'done' => (bool)$apptOk],
+            ],
+            'next' => !(bool)$basicOk
+                ? 'Fill in the basic project information (code, title, director, protocol code).'
+                : (!(bool)$apptOk
+                    ? 'Fill in the Study Director Appointment form.'
+                    : 'All criteria met — ready to mark as completed.'),
+        ];
+
+        // ── Protocol Details ────────────────────────────────────────────────
+        $statuses['protocol_details'] = [
+            'can_complete' => true,
+            'items' => [
+                ['label' => 'Protocol details defined (no automatic validation)', 'done' => true],
+            ],
+            'next' => 'Ensure all protocol details and activities are defined before marking as completed.',
+        ];
+
+        // ── Protocol Development ────────────────────────────────────────────
+        $totalProtDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->count();
+        $completedProtDev = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('complete', true)->count();
+        $protDevOk        = $totalProtDev > 0 && $completedProtDev === $totalProtDev;
+        $statuses['protocol_development'] = [
+            'can_complete' => $protDevOk,
+            'items' => [
+                ['label' => "Protocol development documents ({$completedProtDev}/{$totalProtDev} completed)", 'done' => $protDevOk],
+            ],
+            'next' => $protDevOk
+                ? 'All protocol development documents provided — ready to mark as completed.'
+                : ($totalProtDev === 0
+                    ? 'Generate and complete protocol development activities first.'
+                    : "Complete remaining protocol development activities ({$completedProtDev}/{$totalProtDev} done)."),
+        ];
+
+        // ── Planning ────────────────────────────────────────────────────────
+        $meetingDone   = DB::table('pro_studies_initiation_meetings')->where('project_id', $pid)->where('status', 'complete')->count() > 0;
+        $criticalCount = DB::table('pro_studies_activities')->where('project_id', $pid)->where('phase_critique', 1)->count();
+        $planningOk    = $meetingDone && $criticalCount > 0;
+        $statuses['planning'] = [
+            'can_complete' => $planningOk,
+            'items' => [
+                ['label' => 'Study Initiation Meeting completed',                          'done' => $meetingDone],
+                ['label' => "Critical phases identified ({$criticalCount} identified)",    'done' => $criticalCount > 0],
+            ],
+            'next' => !$meetingDone
+                ? 'Complete the Study Initiation Meeting.'
+                : ($criticalCount === 0
+                    ? 'Identify at least one critical phase in the activities.'
+                    : 'All criteria met — ready to mark as completed.'),
+        ];
+
+        // ── Experimental ────────────────────────────────────────────────────
+        $totalActs     = DB::table('pro_studies_activities')->where('project_id', $pid)->count();
+        $completedActs = DB::table('pro_studies_activities')->where('project_id', $pid)->where('status', 'completed')->count();
+        $expOk         = $totalActs > 0 && $completedActs === $totalActs;
+
+        $nextActivity  = !$expOk ? DB::table('pro_studies_activities')
+            ->where('project_id', $pid)
+            ->whereIn('status', ['pending', 'in_progress', 'delayed'])
+            ->orderByRaw("CASE WHEN status = 'in_progress' THEN 0 ELSE 1 END")
+            ->orderBy('estimated_activity_date')
+            ->first() : null;
+
+        $nextActivityLabel = '';
+        if ($nextActivity) {
+            $dateStr = $nextActivity->estimated_activity_date
+                ? ' — scheduled ' . \Carbon\Carbon::parse($nextActivity->estimated_activity_date)->format('d M Y')
+                : '';
+            $statusTag = $nextActivity->status === 'in_progress' ? ' [In progress]' : ($nextActivity->status === 'delayed' ? ' [Delayed]' : '');
+            $nextActivityLabel = "Next activity: \"{$nextActivity->study_activity_name}\"{$statusTag}{$dateStr}";
+        }
+
+        $statuses['experimental'] = [
+            'can_complete' => $expOk,
+            'items' => [
+                ['label' => "Activities executed ({$completedActs}/{$totalActs})", 'done' => $expOk],
+            ],
+            'next' => $expOk
+                ? 'All activities completed — ready to mark as completed.'
+                : ($totalActs === 0
+                    ? 'No activities have been scheduled yet.'
+                    : ($nextActivityLabel ?: "Execute remaining activities ({$completedActs}/{$totalActs} done).")),
+        ];
+
+        // ── Quality Assurance ───────────────────────────────────────────────
+        $totalInsp     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
+        $completedInsp = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('completed_at')->count();
+        $totalNc       = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
+        $resolvedNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'resolved')->count();
+        $inspAllDone   = $totalInsp > 0 && $completedInsp === $totalInsp;
+        $ncAllResolved = $totalNc === 0 || $resolvedNc === $totalNc;
+        $qaOk          = $inspAllDone && $ncAllResolved;
+        $statuses['quality_assurance'] = [
+            'can_complete' => $qaOk,
+            'items' => [
+                ['label' => "All inspections completed ({$completedInsp}/{$totalInsp})",    'done' => $inspAllDone],
+                ['label' => "NC findings resolved ({$resolvedNc}/{$totalNc})",              'done' => $ncAllResolved],
+            ],
+            'next' => !$inspAllDone
+                ? "Complete all scheduled inspections ({$completedInsp}/{$totalInsp} done)."
+                : (!$ncAllResolved
+                    ? "Resolve all non-conformity findings ({$resolvedNc}/{$totalNc} resolved)."
+                    : 'All criteria met — ready to mark as completed.'),
+        ];
+
+        // ── Reporting ───────────────────────────────────────────────────────
+        $reportCount = DB::table('pro_report_phase_documents')->where('project_id', $pid)->count();
+        $reportOk    = $reportCount > 0;
+        $statuses['reporting'] = [
+            'can_complete' => $reportOk,
+            'items' => [
+                ['label' => "At least one report document added ({$reportCount} document(s))", 'done' => $reportOk],
+            ],
+            'next' => $reportOk
+                ? 'Report documents recorded — ready to mark as completed.'
+                : 'Add at least one report document.',
+        ];
+
+        // ── Archiving ───────────────────────────────────────────────────────
+        $savedChecklist    = $project->archive_checklist ?? [];
+        $checklistItemKeys = ['physical_docs_archived', 'raw_data_secured', 'electronic_backup', 'samples_stored', 'personnel_notified'];
+        $checkedCount      = count(array_filter($savedChecklist));
+        $totalCheckItems   = count($checklistItemKeys);
+        $checklistOk       = $checkedCount === $totalCheckItems;
+        $statuses['archiving'] = [
+            'can_complete' => $checklistOk,
+            'items' => [
+                ['label' => "Archiving checklist completed ({$checkedCount}/{$totalCheckItems} items checked)", 'done' => $checklistOk],
+            ],
+            'next' => $checklistOk
+                ? 'Archiving checklist complete — ready to mark as completed.'
+                : "Complete the archiving checklist ({$checkedCount}/{$totalCheckItems} items checked).",
+        ];
+
+        return $statuses;
     }
 
     // Calculer le pourcentage de complétude d'une table

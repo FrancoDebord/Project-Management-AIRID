@@ -4,7 +4,7 @@
     $all_phases_critiques = $project ? $project->allPhasesCritiques : collect();
     $all_personnels       = App\Models\Pro_Personnel::orderBy('prenom', 'asc')->get();
     $qa_inspections       = App\Models\Pro_QaInspection::where('project_id', $project_id)
-                                ->with('inspector')
+                                ->with(['inspector', 'activity'])
                                 ->withCount('findings')
                                 ->latest()
                                 ->get();
@@ -17,6 +17,15 @@
                             ->get();
     // Map activity_id → inspection (first inspection found for each activity)
     $activityInspectionMap = $qa_inspections->whereNotNull('activity_id')->keyBy('activity_id');
+    // Activités critiques exécutées sans inspection programmée
+    $activitesSansInspection = $all_phases_critiques->filter(
+        fn($a) => $a->status === 'completed' && !isset($activityInspectionMap[$a->id])
+    );
+    // QA Manager par défaut pour l'inspecteur
+    $qaManagerDefaultId = \DB::table('pro_key_facility_personnels')
+                            ->where('staff_role', 'Quality Assurance')
+                            ->where('active', 1)
+                            ->value('personnel_id');
 @endphp
 
 <style>
@@ -98,6 +107,8 @@
         color: #fff; border-bottom: none;
     }
     .modal-header-checklist .btn-close { filter: brightness(0) invert(1); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { display: inline-block; animation: spin .8s linear infinite; }
 
     .airid-qa .btn-qa-findings {
         background-color: #0d6efd; color: #fff; border: none;
@@ -214,6 +225,42 @@
 
 <div class="row airid-qa">
 
+    {{-- ── ALERTE : activités critiques sans inspection ── --}}
+    @if($activitesSansInspection->isNotEmpty())
+    <div class="col-12 mb-3">
+        <div class="alert alert-warning border-warning d-flex align-items-start gap-2 rounded-3 mb-0"
+             style="border-left: 5px solid #f0ad4e !important;">
+            <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 text-warning flex-shrink-0"></i>
+            <div>
+                <strong>Inspection(s) QA requise(s) :</strong>
+                les activités critiques suivantes ont été exécutées mais n'ont pas encore d'inspection programmée :
+                <ul class="mb-0 mt-1">
+                    @foreach($activitesSansInspection as $act)
+                    <li>
+                        <strong>{{ $act->study_activity_name }}</strong>
+                        @if($act->actual_activity_date)
+                            <span class="text-muted small">
+                                — exécutée le {{ \Carbon\Carbon::parse($act->actual_activity_date)->format('d/m/Y') }}
+                            </span>
+                        @endif
+                        &nbsp;
+                        <button class="btn btn-warning btn-sm py-0 px-2"
+                                style="font-size:.78rem;"
+                                onclick="openQaInspectionModal(
+                                    {{ $act->id }},
+                                    '{{ addslashes($act->study_activity_name) }}',
+                                    'Critical Phase Inspection'
+                                )">
+                            <i class="bi bi-calendar-plus me-1"></i>Programmer
+                        </button>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- ── HEADER ── --}}
     <div class="col-12 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
@@ -285,38 +332,56 @@
                                             </span>
                                         </td>
                                         <td class="text-center">
-                                            @if ($activite->status === 'completed')
-                                                @if (isset($activityInspectionMap[$activite->id]))
-                                                    @php $linkedInspection = $activityInspectionMap[$activite->id]; @endphp
-                                                    @if ($linkedInspection->checklist_slug)
-                                                        {{-- Inspection avec formulaire associé → lien direct --}}
-                                                        <a href="{{ route('checklist.show', [$linkedInspection->id, $linkedInspection->checklist_slug]) }}"
-                                                           class="btn btn-qa-inspect btn-sm">
-                                                            <i class="bi bi-clipboard2-check me-1"></i>Inspecter
-                                                        </a>
+                                            @php $linkedInspection = $activityInspectionMap[$activite->id] ?? null; @endphp
+                                            @if ($linkedInspection)
+                                                <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
+                                                    @if ($activite->status === 'completed')
+                                                        @if ($linkedInspection->checklist_slug)
+                                                            <a href="{{ route('checklist.show', [$linkedInspection->id, $linkedInspection->checklist_slug]) }}"
+                                                               class="btn btn-qa-inspect btn-sm">
+                                                                <i class="bi bi-clipboard2-check me-1"></i>Inspecter
+                                                            </a>
+                                                        @else
+                                                            <button class="btn btn-qa-inspect btn-sm"
+                                                                    onclick="openChecklistModal(
+                                                                        {{ $linkedInspection->id }},
+                                                                        '{{ addslashes($linkedInspection->inspection_name ?? $linkedInspection->type_inspection) }}'
+                                                                    )">
+                                                                <i class="bi bi-clipboard2-check me-1"></i>Inspecter
+                                                            </button>
+                                                        @endif
                                                     @else
-                                                        {{-- Inspection sans formulaire → picker modal --}}
-                                                        <button class="btn btn-qa-inspect btn-sm"
-                                                                onclick="openChecklistModal(
+                                                        <span class="text-warning small fst-italic">
+                                                            <i class="bi bi-hourglass-split me-1"></i>En attente de l'exécution de l'activité
+                                                        </span>
+                                                    @endif
+                                                    @if (!$linkedInspection->date_performed)
+                                                        <button class="btn btn-outline-secondary btn-sm"
+                                                                onclick="openEditInspectionModal(
                                                                     {{ $linkedInspection->id }},
-                                                                    '{{ addslashes($linkedInspection->inspection_name ?? $linkedInspection->type_inspection) }}'
-                                                                )">
-                                                            <i class="bi bi-clipboard2-check me-1"></i>Inspecter
+                                                                    '{{ addslashes($linkedInspection->inspection_name ?? '') }}',
+                                                                    '{{ $linkedInspection->date_scheduled ?? '' }}',
+                                                                    {{ $linkedInspection->qa_inspector_id ?? 'null' }},
+                                                                    '{{ $linkedInspection->checklist_slug ?? '' }}',
+                                                                    '{{ $linkedInspection->type_inspection }}'
+                                                                )"
+                                                                title="Modifier l'inspection">
+                                                            <i class="bi bi-pencil"></i>
                                                         </button>
                                                     @endif
-                                                @else
-                                                    <button class="btn btn-qa-schedule btn-sm"
-                                                            onclick="openQaInspectionModal(
-                                                                {{ $activite->id }},
-                                                                '{{ addslashes($activite->study_activity_name) }}',
-                                                                'Critical Phase Inspection'
-                                                            )">
-                                                        <i class="bi bi-calendar-plus me-1"></i>Programmer Inspection
-                                                    </button>
-                                                @endif
+                                                </div>
+                                            @elseif ($activite->status === 'completed')
+                                                <button class="btn btn-qa-schedule btn-sm"
+                                                        onclick="openQaInspectionModal(
+                                                            {{ $activite->id }},
+                                                            '{{ addslashes($activite->study_activity_name) }}',
+                                                            'Critical Phase Inspection'
+                                                        )">
+                                                    <i class="bi bi-calendar-plus me-1"></i>Programmer Inspection
+                                                </button>
                                             @else
-                                                <span class="text-muted small fst-italic">
-                                                    <i class="bi bi-lock me-1"></i>Non exécutée
+                                                <span class="text-warning small fst-italic">
+                                                    <i class="bi bi-hourglass-split me-1"></i>En attente de l'exécution de l'activité
                                                 </span>
                                             @endif
                                         </td>
@@ -410,7 +475,9 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            @if ($inspection->date_performed)
+                                            @if ($inspection->completed_at)
+                                                <span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i>Terminée</span>
+                                            @elseif ($inspection->date_performed)
                                                 <span class="badge-done"><i class="bi bi-check-lg me-1"></i>Réalisée</span>
                                             @else
                                                 <span class="badge-scheduled"><i class="bi bi-clock me-1"></i>Programmée</span>
@@ -418,29 +485,105 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
+                                                @if ($inspection->date_performed)
                                                 <button class="btn btn-qa-findings btn-sm"
                                                         onclick="openFindingsModal(
                                                             {{ $inspection->id }},
                                                             '{{ addslashes($inspection->inspection_name ?? $inspection->type_inspection) }}',
-                                                            '{{ $inspection->date_scheduled ? \Carbon\Carbon::parse($inspection->date_scheduled)->format("d/m/Y") : "" }}'
+                                                            '{{ $inspection->date_scheduled ? \Carbon\Carbon::parse($inspection->date_scheduled)->format("d/m/Y") : "" }}',
+                                                            {{ $inspection->completed_at ? 'true' : 'false' }}
                                                         )">
                                                     <i class="bi bi-journal-text me-1"></i>Findings
                                                     @if ($inspection->findings_count > 0)
                                                         <span class="badge bg-white text-primary ms-1">{{ $inspection->findings_count }}</span>
                                                     @endif
                                                 </button>
-                                                @if ($inspection->checklist_slug)
+                                                @else
+                                                <button class="btn btn-secondary btn-sm" disabled
+                                                        title="Remplissez d'abord le checklist d'inspection">
+                                                    <i class="bi bi-lock me-1"></i>Findings
+                                                </button>
+                                                @endif
+                                                @php
+                                                    $activityNotExecuted = $inspection->activity_id
+                                                        && $inspection->activity
+                                                        && $inspection->activity->status !== 'completed';
+                                                @endphp
+                                                @if ($inspection->completed_at)
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"
+                                                          title="Inspection terminée — formulaire verrouillé">
+                                                        <i class="bi bi-lock-fill me-1"></i>Terminée
+                                                    </span>
+                                                @elseif ($activityNotExecuted && !$inspection->date_performed)
+                                                    <span class="text-warning small fst-italic"
+                                                          title="L'activité doit être exécutée avant de pouvoir remplir l'inspection">
+                                                        <i class="bi bi-hourglass-split me-1"></i>En attente de l'exécution de l'activité
+                                                    </span>
+                                                @elseif ($inspection->checklist_slug)
                                                     <a href="{{ route('checklist.show', [$inspection->id, $inspection->checklist_slug]) }}"
                                                        class="btn btn-outline-dark btn-sm"
                                                        title="Ouvrir le formulaire d'inspection">
                                                         <i class="bi bi-clipboard2-check"></i>
                                                     </a>
+                                                @elseif ($inspection->type_inspection === 'Facility Inspection')
+                                                    <button class="btn btn-qa-inspect btn-sm"
+                                                            onclick="openChecklistModal(
+                                                                {{ $inspection->id }},
+                                                                '{{ addslashes($inspection->inspection_name ?? $inspection->type_inspection) }}',
+                                                                'Facility Inspection',
+                                                                '{{ $inspection->facility_location ?? 'cotonou' }}'
+                                                            )"
+                                                            title="Remplir le Facility Inspection Checklist">
+                                                        <i class="bi bi-building-check me-1"></i>Inspecter
+                                                    </button>
                                                 @else
                                                     <a href="{{ route('checklist.index', $inspection->id) }}"
                                                        class="btn btn-outline-dark btn-sm"
                                                        title="Checklists d'inspection">
                                                         <i class="bi bi-clipboard2-check"></i>
                                                     </a>
+                                                @endif
+                                                @if ($inspection->date_performed)
+                                                <a href="{{ route('checklist.report', $inspection->id) }}"
+                                                   target="_blank"
+                                                   class="btn btn-outline-secondary btn-sm"
+                                                   title="QA Unit Report">
+                                                    <i class="bi bi-file-earmark-text"></i>
+                                                </a>
+                                                <a href="{{ route('checklist.followup', $inspection->id) }}"
+                                                   target="_blank"
+                                                   class="btn btn-outline-primary btn-sm"
+                                                   title="QA Findings Response (Follow-Up)">
+                                                    <i class="bi bi-file-earmark-ruled"></i>
+                                                </a>
+                                                @endif
+                                                @if (!$inspection->date_performed)
+                                                <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="openEditInspectionModal(
+                                                            {{ $inspection->id }},
+                                                            '{{ addslashes($inspection->inspection_name ?? '') }}',
+                                                            '{{ $inspection->date_scheduled ?? '' }}',
+                                                            {{ $inspection->qa_inspector_id ?? 'null' }},
+                                                            '{{ $inspection->checklist_slug ?? '' }}',
+                                                            '{{ $inspection->type_inspection }}'
+                                                        )"
+                                                        title="Modifier l'inspection">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                @endif
+                                                {{-- Mark as completed / Reopen --}}
+                                                @if($inspection->completed_at)
+                                                <button class="btn btn-outline-warning btn-sm"
+                                                        onclick="toggleInspectionComplete({{ $inspection->id }}, this)"
+                                                        title="Rouvrir cette inspection">
+                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Rouvrir
+                                                </button>
+                                                @elseif($inspection->date_performed && $inspection->findings_count > 0)
+                                                <button class="btn btn-outline-success btn-sm"
+                                                        onclick="toggleInspectionComplete({{ $inspection->id }}, this)"
+                                                        title="Marquer l'inspection comme terminée">
+                                                    <i class="bi bi-check-all me-1"></i>Terminer
+                                                </button>
                                                 @endif
                                                 <button class="btn btn-qa-delete btn-sm"
                                                         onclick="deleteQaInspection(
@@ -483,7 +626,7 @@
                             <option value="">— Toutes les inspections —</option>
                             @foreach ($qa_inspections as $insp)
                                 <option value="{{ $insp->id }}">
-                                    #{{ $insp->id }} — {{ $insp->type_inspection }}
+                                    {{ $insp->inspection_name ?? $insp->type_inspection }}
                                     ({{ $insp->date_scheduled
                                         ? \Carbon\Carbon::parse($insp->date_scheduled)->format('d/m/Y')
                                         : '—' }})
@@ -515,7 +658,8 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Inspection</th>
-                                    <th style="width:30%">Observation / Finding</th>
+                                    <th style="width:8%">Type</th>
+                                    <th style="width:28%">Observation / Finding</th>
                                     <th>Adressé à</th>
                                     <th>Deadline</th>
                                     <th>Corrective Action</th>
@@ -535,6 +679,18 @@
                                     @endphp
                                     <tr class="finding-row" data-inspection-id="{{ $fi->inspection_id }}">
                                         <td class="text-muted small">{{ $loop->iteration }}</td>
+                                        <td>
+                                            {{-- Type conformité --}}
+                                            @if($fi->is_conformity)
+                                                <span class="badge bg-success rounded-pill" style="font-size:.72rem;">
+                                                    <i class="bi bi-check-circle me-1"></i>Conf.
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger rounded-pill" style="font-size:.72rem;">
+                                                    <i class="bi bi-x-circle me-1"></i>Non-conf.
+                                                </span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="badge mb-1 d-block text-center"
                                                   style="background-color:{{ $inspColor }}; color:#fff;
@@ -584,6 +740,8 @@
                                                      style="background:#e8f5e9; font-size:.83rem; color:#1a5c2a; white-space:pre-wrap; word-break:break-word;">
                                                     {{ $fi->action_point }}
                                                 </div>
+                                            @elseif($fi->is_conformity)
+                                                <span class="text-muted fst-italic small">—</span>
                                             @else
                                                 <span class="text-muted fst-italic small">En attente</span>
                                             @endif
@@ -592,6 +750,10 @@
                                             @if ($fi->status === 'complete')
                                                 <span class="badge bg-success rounded-pill">
                                                     <i class="bi bi-check-lg me-1"></i>Résolu
+                                                </span>
+                                            @elseif($fi->is_conformity)
+                                                <span class="badge bg-success rounded-pill">
+                                                    <i class="bi bi-check-circle me-1"></i>Conforme
                                                 </span>
                                             @else
                                                 <span class="badge bg-warning text-dark rounded-pill">
@@ -639,10 +801,23 @@
 
             <div class="modal-body p-4">
 
-                <p class="text-muted small mb-3">
+                <p class="text-muted small mb-3" id="checklistPickerInstruction">
                     <i class="bi bi-info-circle me-1"></i>
                     Sélectionnez le formulaire à remplir pour cette inspection.
                 </p>
+
+                {{-- Facility progress bar (hidden by default) --}}
+                <div id="facilityProgressArea" style="display:none;" class="mb-4">
+                    <div class="d-flex justify-content-between mb-1" style="font-size:.8rem;">
+                        <span class="text-muted">Sections complétées</span>
+                        <span id="facilityProgressLabel" class="fw-semibold" style="color:#C10202;"></span>
+                    </div>
+                    <div class="progress mb-3" style="height:10px; border-radius:999px;">
+                        <div id="facilityProgressBar" class="progress-bar"
+                             role="progressbar" style="width:0%"></div>
+                    </div>
+                    <div id="facilityProgressAlert" class="alert d-flex align-items-center gap-2 py-2 px-3 mb-0" style="font-size:.82rem;"></div>
+                </div>
 
                 {{-- Cards grid --}}
                 <div class="row g-3" id="checklistPickerGrid">
@@ -700,6 +875,30 @@
                         <input type="date" class="form-control" id="qaDateScheduled" required>
                     </div>
 
+                    {{-- Facility location (visible seulement pour Facility Inspection) --}}
+                    <div class="col-12" id="qaFacilityLocationWrapper" style="display:none;">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
+                            Site d'inspection <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="qaFacilityLocation"
+                                       id="locCotonou" value="cotonou" checked>
+                                <label class="form-check-label" for="locCotonou">
+                                    <strong>Cotonou</strong> — Main Facility (QA-PR-1-001A/06)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="qaFacilityLocation"
+                                       id="locCove" value="cove">
+                                <label class="form-check-label" for="locCove">
+                                    <strong>Covè</strong> — Field Site (QA-PR-1-001B/06)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Dropdown activité critique (visible seulement pour Critical Phase Inspection) --}}
                     <div class="col-12" id="qaActivitySelectWrapper" style="display:none;">
                         <label class="form-label fw-semibold">
@@ -747,6 +946,15 @@
                     </div>
 
                     <div class="col-12">
+                        <label for="qaInspectionCustomName" class="form-label fw-semibold">
+                            Intitulé de l'inspection
+                            <small class="text-muted fw-normal">(optionnel — remplace le nom auto-généré)</small>
+                        </label>
+                        <input type="text" class="form-control" id="qaInspectionCustomName"
+                               placeholder="Ex : Inspection LLIN — Lot B — Semaine 12">
+                    </div>
+
+                    <div class="col-12">
                         <label for="qaInspectorSelect" class="form-label fw-semibold">
                             Inspecteur QA <span class="text-danger">*</span>
                         </label>
@@ -790,6 +998,83 @@
     </div>
 </div>
 
+{{-- ═══════════════════════════════════════
+     MODAL — Modifier une inspection
+     ═══════════════════════════════════════ --}}
+<div class="modal fade" id="editInspectionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-pencil-square me-2 text-danger"></i>Modifier l'inspection
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pt-3">
+                <input type="hidden" id="editInspectionId">
+                <input type="hidden" id="editInspectionType">
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Intitulé de l'inspection</label>
+                        <input type="text" class="form-control" id="editInspectionName"
+                               placeholder="Ex : Critical Phase — Lot B">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Date prévue <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="editInspectionDate">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Inspecteur QA</label>
+                        <select class="form-select" id="editInspectionInspector">
+                            <option value="">— Sélectionner un inspecteur —</option>
+                            @foreach ($all_personnels as $personnel)
+                                <option value="{{ $personnel->id }}">
+                                    {{ $personnel->prenom }} {{ $personnel->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12" id="editChecklistSlugWrapper">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-clipboard2-check me-1 text-danger"></i>
+                            Formulaire de checklist à utiliser
+                        </label>
+                        <select class="form-select" id="editChecklistSlug">
+                            <option value="">— Sélectionner le formulaire —</option>
+                            <option value="cone-llin">A — Cone Bioassay with LLIN samples</option>
+                            <option value="cone-irs-blocks-treatment">B — Cone Bioassay with IRS blocks (Blocks treatment)</option>
+                            <option value="cone-irs-blocks-test">C — Cone Bioassay with IRS blocks (Test)</option>
+                            <option value="tunnel-test">D — Tunnel Test</option>
+                            <option value="llin-washing">E — Evaluation of Whole LLIN – Washing/Cutting</option>
+                            <option value="llin-exp-huts">F — Evaluation of Whole LLIN in Experimental huts</option>
+                            <option value="irs-treatment">G — IRS Treatment application</option>
+                            <option value="irs-trial">H — IRS Trial</option>
+                            <option value="cone-irs-walls">I — Cone Bioassay on IRS treated walls</option>
+                            <option value="cylinder-bioassay">J — Cylinder Bioassay</option>
+                            <option value="cdc-bottle-coating">K — CDC Bottle Bioassay (Coating)</option>
+                            <option value="cdc-bottle-test">L — CDC Bottle Bioassay (Test)</option>
+                            <option value="spatial-repellents">M — Evaluation of spatial repellents in Experimental huts</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="editInspectionErrorMsg" class="alert alert-danger mt-3 d-none" role="alert"></div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-qa-save rounded-3 px-4" id="btnSaveEditInspection"
+                        onclick="saveEditInspection()">
+                    <i class="bi bi-check2 me-1"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {{-- ═══════════════════════════════════════
      MODAL 2 : Findings d'une inspection
@@ -819,6 +1104,7 @@
                     <div class="card-body">
                         <input type="hidden" id="findingInspectionId">
                         <input type="hidden" id="findingProjectId" value="{{ $project_id }}">
+                        <input type="hidden" id="projectStudyDirectorId" value="{{ $project?->study_director ?? '' }}">
 
                         <div class="row g-3">
                             <div class="col-12">
@@ -828,11 +1114,32 @@
                                 <textarea class="form-control" id="findingText" rows="3"
                                           placeholder="Décrivez l'observation ou le constat fait lors de l'inspection…"></textarea>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Type de constat</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="findingConformity"
+                                               id="findingNonConformity" value="0" checked
+                                               onchange="toggleFindingCorrectiveFields()">
+                                        <label class="form-check-label text-danger fw-semibold" for="findingNonConformity">
+                                            <i class="bi bi-x-circle me-1"></i>Non-conformité
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="findingConformity"
+                                               id="findingConformity" value="1"
+                                               onchange="toggleFindingCorrectiveFields()">
+                                        <label class="form-check-label text-success fw-semibold" for="findingConformity">
+                                            <i class="bi bi-check-circle me-1"></i>Conformité
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5" id="findingAssignedToWrapper">
                                 <label class="form-label fw-semibold">
                                     Adressé à (Study Director / Responsable) <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="findingAssignedTo" required>
+                                <select class="form-select" id="findingAssignedTo">
                                     <option value="">— Sélectionner —</option>
                                     @foreach ($all_personnels as $personnel)
                                         <option value="{{ $personnel->id }}">
@@ -841,7 +1148,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" id="findingDeadlineWrapper">
                                 <label class="form-label fw-semibold">Date limite de résolution</label>
                                 <input type="date" class="form-control" id="findingDeadline">
                             </div>
@@ -924,13 +1231,15 @@ function escapeHtml(str) {
               .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+const QA_MANAGER_DEFAULT_ID = {{ $qaManagerDefaultId ?? 'null' }};
+
 // ─────────────────────────────────────────────
 //  MODAL 1 — Programmer une inspection
 // ─────────────────────────────────────────────
 function openQaInspectionModal(activityId, activityName, defaultType) {
     document.getElementById('qaTypeInspection').value        = defaultType || '';
     document.getElementById('qaDateScheduled').value         = '';
-    document.getElementById('qaInspectorSelect').value       = '';
+    document.getElementById('qaInspectorSelect').value       = QA_MANAGER_DEFAULT_ID || '';
     document.getElementById('qaActivityIdHidden').value      = activityId || '';
     document.getElementById('qaChecklistSlugSelect').value   = '';
 
@@ -938,10 +1247,12 @@ function openQaInspectionModal(activityId, activityName, defaultType) {
     errDiv.classList.add('d-none');
     errDiv.textContent = '';
 
-    // Afficher/masquer les champs spécifiques à Critical Phase
+    // Afficher/masquer les champs spécifiques à Critical Phase / Facility
     const isCritical = defaultType === 'Critical Phase Inspection';
+    const isFacility = defaultType === 'Facility Inspection';
     document.getElementById('qaActivitySelectWrapper').style.display    = isCritical ? '' : 'none';
     document.getElementById('qaChecklistFormWrapper').style.display     = isCritical ? '' : 'none';
+    document.getElementById('qaFacilityLocationWrapper').style.display  = isFacility ? '' : 'none';
 
     // Pré-sélectionner l'activité dans le dropdown si fournie
     const actSelect = document.getElementById('qaActivitySelect');
@@ -966,6 +1277,7 @@ function saveQaInspection() {
     const inspectorId     = document.getElementById('qaInspectorSelect').value;
     const activityId      = document.getElementById('qaActivityIdHidden').value;
     const checklistSlug   = document.getElementById('qaChecklistSlugSelect').value;
+    const customName      = document.getElementById('qaInspectionCustomName').value.trim();
     const errDiv          = document.getElementById('qaInspectionErrorMsg');
     const btn             = document.getElementById('btnSaveQaInspection');
 
@@ -990,8 +1302,13 @@ function saveQaInspection() {
     fd.append('qa_inspector_id', inspectorId);
     fd.append('date_scheduled',  dateScheduled);
     fd.append('type_inspection', typeInspection);
-    if (activityId)    fd.append('activity_id',    activityId);
-    if (checklistSlug) fd.append('checklist_slug', checklistSlug);
+    if (activityId)    fd.append('activity_id',     activityId);
+    if (checklistSlug) fd.append('checklist_slug',  checklistSlug);
+    if (customName)    fd.append('inspection_name', customName);
+    if (typeInspection === 'Facility Inspection') {
+        const locEl = document.querySelector('input[name="qaFacilityLocation"]:checked');
+        fd.append('facility_location', locEl ? locEl.value : 'cotonou');
+    }
     fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
     btn.disabled = true;
@@ -1021,16 +1338,23 @@ function saveQaInspection() {
 // ─────────────────────────────────────────────
 //  MODAL 2 — Findings
 // ─────────────────────────────────────────────
-function openFindingsModal(inspectionId, inspectionType, inspectionDate) {
+function openFindingsModal(inspectionId, inspectionType, inspectionDate, isCompleted = false) {
     document.getElementById('findingInspectionId').value = inspectionId;
     document.getElementById('findingsModalSubtitle').textContent =
         inspectionType + (inspectionDate ? ' — ' + inspectionDate : '');
 
     // Réinitialiser formulaire
     document.getElementById('findingText').value       = '';
-    document.getElementById('findingAssignedTo').value = '';
+    document.getElementById('findingAssignedTo').value =
+        document.getElementById('projectStudyDirectorId').value || '';
     document.getElementById('findingDeadline').value   = '';
     document.getElementById('findingParentId').innerHTML = '<option value="">— Aucun —</option>';
+    document.getElementById('findingNonConformity').checked = true;
+    toggleFindingCorrectiveFields();
+
+    // Hide "Add Finding" form when inspection is completed
+    const addFindingCard = document.querySelector('#findingsModal .card.border-0');
+    if (addFindingCard) addFindingCard.style.display = isCompleted ? 'none' : '';
 
     const errDiv = document.getElementById('findingErrorMsg');
     errDiv.classList.add('d-none');
@@ -1086,10 +1410,11 @@ function loadFindings(inspectionId) {
 }
 
 function renderFindingCard(f, container) {
-    const isResolved = f.status === 'complete';
+    const isResolved   = f.status === 'complete';
+    const isConformity = f.is_conformity === true;
     const div = document.createElement('div');
     div.id = 'finding-card-' + f.id;
-    div.className = 'finding-card ' + (isResolved ? 'resolved' : 'pending-finding');
+    div.className = 'finding-card ' + (isResolved || isConformity ? 'resolved' : 'pending-finding');
 
     const deadlineHtml = f.deadline_date
         ? `<span class="text-muted small ms-3"><i class="bi bi-calendar-event me-1"></i>Deadline : <strong>${f.deadline_date}</strong></span>` : '';
@@ -1099,9 +1424,14 @@ function renderFindingCard(f, container) {
         ? `<span class="text-muted small ms-3"><i class="bi bi-clock me-1"></i>${f.created_at}</span>` : '';
     const parentHtml = f.parent_finding_text
         ? `<div class="finding-parent-ref"><i class="bi bi-link-45deg me-1"></i>Lié au finding : ${escapeHtml(f.parent_finding_text)}</div>` : '';
+    const conformityBadge = isConformity
+        ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Conformité</span>`
+        : `<span class="badge bg-danger rounded-pill" style="font-size:.75rem;"><i class="bi bi-x-circle me-1"></i>Non-conformité</span>`;
     const statusBadge = isResolved
         ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check-lg me-1"></i>Résolu</span>`
-        : `<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-hourglass-split me-1"></i>En attente de résolution</span>`;
+        : isConformity
+            ? `<span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Conforme</span>`
+            : `<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-hourglass-split me-1"></i>En attente de résolution</span>`;
     const actionPointHtml = isResolved && f.action_point
         ? `<div class="finding-action-point">
                <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1114,8 +1444,9 @@ function renderFindingCard(f, container) {
                    </button>
                </div>
                <div>${escapeHtml(f.action_point)}</div>
+               ${f.means_of_verification ? `<div class="mt-1" style="font-size:.82rem;color:#1a5c2a;"><strong>Means of verification :</strong> ${escapeHtml(f.means_of_verification)}</div>` : ''}
            </div>` : '';
-    const resolveBtn = !isResolved
+    const resolveBtn = (!isResolved && !isConformity)
         ? `<button class="btn btn-sm btn-outline-success mt-2 rounded-3"
                    onclick="toggleResolveForm(${f.id})">
                <i class="bi bi-check2-circle me-1"></i>Résoudre — Saisir la Corrective Action
@@ -1126,6 +1457,16 @@ function renderFindingCard(f, container) {
                </label>
                <textarea class="form-control form-control-sm mb-2" id="resolve-text-${f.id}"
                          rows="3" placeholder="Décrivez la mesure corrective apportée…"></textarea>
+               <label class="form-label fw-semibold small mb-1 mt-1">
+                   Means of verification for implementation of corrective actions
+               </label>
+               <textarea class="form-control form-control-sm mb-2" id="resolve-mov-${f.id}"
+                         rows="2" placeholder="Ex: See test item reception logbook…"></textarea>
+               <label class="form-label fw-semibold small mb-1 mt-1">
+                   Date de résolution <span class="text-danger">*</span>
+               </label>
+               <input type="date" class="form-control form-control-sm mb-2" id="resolve-date-${f.id}"
+                      value="${new Date().toISOString().split('T')[0]}">
                <button class="btn btn-success btn-sm rounded-3 px-3" onclick="submitResolve(${f.id})">
                    <i class="bi bi-check-circle me-1"></i>Valider la résolution
                </button>
@@ -1135,6 +1476,7 @@ function renderFindingCard(f, container) {
     div.innerHTML = `
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-2">
             <div class="d-flex align-items-center gap-2 flex-wrap">
+                ${conformityBadge}
                 ${statusBadge}
                 <span class="text-muted small fw-semibold">#${f.id}</span>
                 ${dateHtml}${assignedHtml}${deadlineHtml}
@@ -1160,14 +1502,22 @@ function toggleResolveForm(findingId) {
 }
 
 function submitResolve(findingId) {
-    const actionText = document.getElementById('resolve-text-' + findingId).value.trim();
+    const actionText  = document.getElementById('resolve-text-' + findingId).value.trim();
+    const resolveDate = document.getElementById('resolve-date-' + findingId).value;
     if (!actionText) {
         showQaToast('La Corrective Action est obligatoire.', 'error');
         return;
     }
+    if (!resolveDate) {
+        showQaToast('La date de résolution est obligatoire.', 'error');
+        return;
+    }
+    const movText = document.getElementById('resolve-mov-' + findingId).value.trim();
     const fd = new FormData();
-    fd.append('finding_id',   findingId);
-    fd.append('action_point', actionText);
+    fd.append('finding_id',            findingId);
+    fd.append('action_point',          actionText);
+    fd.append('means_of_verification', movText);
+    fd.append('resolved_date',         resolveDate);
     fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
     fetch('/ajax/resolve-qa-finding', { method: 'POST', body: fd })
@@ -1183,21 +1533,34 @@ function submitResolve(findingId) {
         .catch(() => showQaToast('Erreur réseau.', 'error'));
 }
 
+function toggleFindingCorrectiveFields() {
+    const isConformity = document.getElementById('findingConformity').checked;
+    const assignedWrapper = document.getElementById('findingAssignedToWrapper');
+    const deadlineWrapper = document.getElementById('findingDeadlineWrapper');
+    assignedWrapper.style.display = isConformity ? 'none' : '';
+    deadlineWrapper.style.display = isConformity ? 'none' : '';
+    if (isConformity) {
+        document.getElementById('findingAssignedTo').value = '';
+        document.getElementById('findingDeadline').value   = '';
+    }
+}
+
 function saveFinding() {
-    const inspectionId = document.getElementById('findingInspectionId').value;
-    const projectId    = document.getElementById('findingProjectId').value;
-    const text         = document.getElementById('findingText').value.trim();
-    const assignedTo   = document.getElementById('findingAssignedTo').value;
-    const deadline     = document.getElementById('findingDeadline').value;
-    const parentId     = document.getElementById('findingParentId').value;
-    const errDiv       = document.getElementById('findingErrorMsg');
-    const btn          = document.getElementById('btnSaveFinding');
+    const inspectionId  = document.getElementById('findingInspectionId').value;
+    const projectId     = document.getElementById('findingProjectId').value;
+    const text          = document.getElementById('findingText').value.trim();
+    const assignedTo    = document.getElementById('findingAssignedTo').value;
+    const deadline      = document.getElementById('findingDeadline').value;
+    const parentId      = document.getElementById('findingParentId').value;
+    const isConformity  = document.querySelector('input[name="findingConformity"]:checked')?.value ?? '0';
+    const errDiv        = document.getElementById('findingErrorMsg');
+    const btn           = document.getElementById('btnSaveFinding');
 
     errDiv.classList.add('d-none');
     errDiv.textContent = '';
 
-    if (!text || !assignedTo) {
-        errDiv.textContent = 'L\'observation et le responsable sont obligatoires.';
+    if (!text || (!isConformity || isConformity === '0') && !assignedTo) {
+        errDiv.textContent = isConformity === '1' ? 'L\'observation est obligatoire.' : 'L\'observation et le responsable sont obligatoires.';
         errDiv.classList.remove('d-none');
         return;
     }
@@ -1206,6 +1569,7 @@ function saveFinding() {
     fd.append('inspection_id', inspectionId);
     fd.append('project_id',    projectId);
     fd.append('finding_text',  text);
+    fd.append('is_conformity', isConformity);
     fd.append('assigned_to',   assignedTo);
     if (deadline) fd.append('deadline_date', deadline);
     if (parentId) fd.append('parent_finding_id', parentId);
@@ -1225,6 +1589,7 @@ function saveFinding() {
                 document.getElementById('findingAssignedTo').value = '';
                 document.getElementById('findingDeadline').value   = '';
                 document.getElementById('findingParentId').value   = '';
+                document.getElementById('findingNonConformity').checked = true;
                 loadFindings(inspectionId);
             } else {
                 errDiv.textContent = data.message || 'Erreur.';
@@ -1241,6 +1606,35 @@ function saveFinding() {
 // ─────────────────────────────────────────────
 //  SUPPRESSIONS
 // ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+//  Toggle inspection completed / reopen
+// ─────────────────────────────────────────────
+function toggleInspectionComplete(inspectionId, btn) {
+    const isCompleted = btn.classList.contains('btn-outline-warning'); // warning = currently completed → reopen
+    const label = isCompleted ? 'rouvrir' : 'terminer';
+    if (!confirm('Voulez-vous ' + label + ' cette inspection ?')) return;
+
+    btn.disabled = true;
+    fetch('{{ route("toggleInspectionCompleted") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({ inspection_id: inspectionId }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Erreur.');
+            btn.disabled = false;
+        }
+    })
+    .catch(() => { alert('Network error.'); btn.disabled = false; });
+}
 
 function deleteQaInspection(inspectionId, inspectionName) {
     if (!confirm('Supprimer l\'inspection "' + inspectionName + '" ainsi que tous ses findings et actions correctives ?\n\nCette action est irréversible.')) return;
@@ -1348,24 +1742,120 @@ const CHECKLIST_FORMS_META = [
     { slug: 'spatial-repellents',         letter: 'M', title: 'Evaluation of spatial repellents in Experimental huts',        count: 20 },
 ];
 
-function openChecklistModal(inspectionId, inspectionName) {
+const FACILITY_SECTIONS_META = {
+    cotonou: [
+        { slug: 'facility-a', letter: 'A', title: 'Administration',                           count: 26 },
+        { slug: 'facility-b', letter: 'B', title: 'Document Control',                         count: 15 },
+        { slug: 'facility-c', letter: 'C', title: 'Bioassay Laboratory',                      count: 11 },
+        { slug: 'facility-d', letter: 'D', title: 'Biomolecular Room',                        count:  5 },
+        { slug: 'facility-e', letter: 'E', title: 'Shaker-Bath room and LLIN Washing area',   count:  4 },
+        { slug: 'facility-f', letter: 'F', title: 'Chemical & Potter tower Room',             count: 19 },
+        { slug: 'facility-g', letter: 'G', title: 'Safety (changing) room',                   count:  7 },
+        { slug: 'facility-h', letter: 'H', title: 'Storage and untreated block rooms',        count:  6 },
+        { slug: 'facility-i', letter: 'I', title: 'Net storage room and expired products Room', count: 4 },
+        { slug: 'facility-j', letter: 'J', title: 'Equipment',                                count: 15 },
+        { slug: 'facility-k', letter: 'K', title: 'Staff Offices & Buildings',                count: 13 },
+        { slug: 'facility-l', letter: 'L', title: 'Data Management',                          count: 25 },
+        { slug: 'facility-m', letter: 'M', title: 'Archive',                                  count: 16 },
+        { slug: 'facility-n', letter: 'N', title: 'Insectary and Annex',                      count: 25 },
+        { slug: 'facility-o', letter: 'O', title: 'Animal House',                             count: 12 },
+    ],
+    cove: [
+        { slug: 'facility-cove-a', letter: 'A', title: 'General',                             count:  1 },
+        { slug: 'facility-cove-b', letter: 'B', title: 'Staff Offices & Buildings',           count: 24 },
+        { slug: 'facility-cove-c', letter: 'C', title: 'Bioassay Laboratory Field site',      count: 22 },
+        { slug: 'facility-cove-d', letter: 'D', title: 'Chemical Room & Non-treated material Room', count: 16 },
+        { slug: 'facility-cove-e', letter: 'E', title: 'Experimental Huts – SITE 1',          count: 13 },
+        { slug: 'facility-cove-f', letter: 'F', title: 'Experimental Huts – SITE 2',          count: 13 },
+        { slug: 'facility-cove-g', letter: 'G', title: 'Experimental Huts – SITE 3',          count: 13 },
+        { slug: 'facility-cove-h', letter: 'H', title: 'Insectary',                           count: 25 },
+        { slug: 'facility-cove-i', letter: 'I', title: 'Animal House',                        count: 12 },
+    ],
+};
+
+function openChecklistModal(inspectionId, inspectionName, inspectionType, facilityLocation) {
     document.getElementById('checklistPickerSubtitle').textContent = inspectionName;
 
-    const grid = document.getElementById('checklistPickerGrid');
-    grid.innerHTML = CHECKLIST_FORMS_META.map(f => `
-        <div class="col-md-6 col-lg-4">
-            <a href="/checklist/${inspectionId}/${f.slug}" class="text-decoration-none">
-                <div class="picker-card p-3 d-flex align-items-center gap-3">
-                    <div class="picker-letter">${f.letter}</div>
-                    <div class="flex-grow-1">
-                        <div class="picker-title">${escapeHtml(f.title)}</div>
-                        <div class="picker-qcount">${f.count} questions</div>
+    const grid        = document.getElementById('checklistPickerGrid');
+    const progressArea = document.getElementById('facilityProgressArea');
+    const instruction  = document.getElementById('checklistPickerInstruction');
+
+    if (inspectionType === 'Facility Inspection') {
+        instruction.style.display = 'none';
+        progressArea.style.display = 'block';
+        grid.innerHTML = '<div class="col-12 text-center text-muted py-3"><i class="bi bi-arrow-repeat spin me-2"></i>Chargement…</div>';
+
+        const facilityMeta = FACILITY_SECTIONS_META[facilityLocation || 'cotonou'] || FACILITY_SECTIONS_META.cotonou;
+        fetch(`/ajax/get-checklist-statuses?inspection_id=${inspectionId}`)
+            .then(r => r.json())
+            .then(data => {
+                const statuses = data.statuses || {};
+                const done     = statuses['facility_progress'] ?? 0;
+                const total    = facilityMeta.length;
+                const pct      = total > 0 ? Math.round(done / total * 100) : 0;
+
+                // Update progress bar
+                const bar   = document.getElementById('facilityProgressBar');
+                const label = document.getElementById('facilityProgressLabel');
+                const alert = document.getElementById('facilityProgressAlert');
+                bar.style.width = pct + '%';
+                bar.className   = 'progress-bar ' + (done >= total ? 'bg-success' : 'bg-warning');
+                label.textContent = `${done}/${total} (${pct}%)`;
+                if (done >= total) {
+                    alert.className   = 'alert alert-success d-flex align-items-center gap-2 py-2 px-3 mb-0';
+                    alert.innerHTML   = '<i class="bi bi-check-circle-fill flex-shrink-0"></i><span>Toutes les sections sont complétées.</span>';
+                } else {
+                    alert.className   = 'alert alert-warning d-flex align-items-center gap-2 py-2 px-3 mb-0';
+                    alert.innerHTML   = `<i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i><span>Il reste <strong>${total - done}</strong> section(s) à compléter pour pouvoir finaliser.</span>`;
+                }
+
+                // Build section cards
+                grid.innerHTML = facilityMeta.map(f => {
+                    const filled  = statuses[f.slug] === true;
+                    const badge   = filled
+                        ? '<span class="badge rounded-pill bg-success" style="font-size:.7rem;">Rempli</span>'
+                        : '<span class="badge rounded-pill bg-warning text-dark" style="font-size:.7rem;">À compléter</span>';
+                    const border  = filled ? 'border-color:#198754 !important; border-width:2px !important;' : '';
+                    return `
+                        <div class="col-md-6 col-lg-4">
+                            <a href="/checklist/${inspectionId}/${f.slug}" class="text-decoration-none">
+                                <div class="picker-card p-3 d-flex align-items-center gap-3" style="${border}">
+                                    <div class="picker-letter">${f.letter}</div>
+                                    <div class="flex-grow-1">
+                                        <div class="picker-title">${escapeHtml(f.title)}</div>
+                                        <div class="picker-qcount">${f.count} questions</div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        ${badge}
+                                        <i class="bi bi-chevron-right text-muted" style="font-size:.8rem;"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>`;
+                }).join('');
+            })
+            .catch(() => {
+                grid.innerHTML = '<div class="col-12 text-center text-danger py-3">Erreur lors du chargement.</div>';
+            });
+    } else {
+        instruction.style.display = '';
+        progressArea.style.display = 'none';
+
+        grid.innerHTML = CHECKLIST_FORMS_META.map(f => `
+            <div class="col-md-6 col-lg-4">
+                <a href="/checklist/${inspectionId}/${f.slug}" class="text-decoration-none">
+                    <div class="picker-card p-3 d-flex align-items-center gap-3">
+                        <div class="picker-letter">${f.letter}</div>
+                        <div class="flex-grow-1">
+                            <div class="picker-title">${escapeHtml(f.title)}</div>
+                            <div class="picker-qcount">${f.count} questions</div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
                     </div>
-                    <i class="bi bi-chevron-right text-muted"></i>
-                </div>
-            </a>
-        </div>
-    `).join('');
+                </a>
+            </div>
+        `).join('');
+    }
 
     new bootstrap.Modal(document.getElementById('checklistPickerModal')).show();
 }
@@ -1387,8 +1877,10 @@ function openChecklistModal(inspectionId, inspectionName) {
     if (typeSelect) {
         typeSelect.addEventListener('change', function () {
             const isCritical = this.value === 'Critical Phase Inspection';
+            const isFacility = this.value === 'Facility Inspection';
             actWrapper.style.display    = isCritical ? '' : 'none';
             clFormWrapper.style.display = isCritical ? '' : 'none';
+            document.getElementById('qaFacilityLocationWrapper').style.display = isFacility ? '' : 'none';
             if (!isCritical) {
                 actSelect.value      = '';
                 hiddenId.value       = '';
@@ -1543,5 +2035,77 @@ function printFindings(withCorrective) {
     const win = window.open('', '_blank');
     win.document.write(html);
     win.document.close();
+}
+
+// ─────────────────────────────────────────────
+//  MODAL — Modifier une inspection
+// ─────────────────────────────────────────────
+function openEditInspectionModal(inspectionId, name, dateScheduled, inspectorId, checklistSlug, typeInspection) {
+    document.getElementById('editInspectionId').value       = inspectionId;
+    document.getElementById('editInspectionType').value     = typeInspection || '';
+    document.getElementById('editInspectionName').value     = name || '';
+    document.getElementById('editInspectionDate').value     = dateScheduled || '';
+    document.getElementById('editInspectionInspector').value = inspectorId ? String(inspectorId) : '';
+    document.getElementById('editChecklistSlug').value      = checklistSlug || '';
+
+    const isCritical = (typeInspection || '') === 'Critical Phase Inspection';
+    document.getElementById('editChecklistSlugWrapper').style.display = isCritical ? '' : 'none';
+
+    const errDiv = document.getElementById('editInspectionErrorMsg');
+    errDiv.classList.add('d-none');
+    errDiv.textContent = '';
+
+    new bootstrap.Modal(document.getElementById('editInspectionModal'), {}).show();
+}
+
+function saveEditInspection() {
+    const inspectionId   = document.getElementById('editInspectionId').value;
+    const typeInspection = document.getElementById('editInspectionType').value;
+    const name           = document.getElementById('editInspectionName').value.trim();
+    const dateScheduled  = document.getElementById('editInspectionDate').value;
+    const inspectorId    = document.getElementById('editInspectionInspector').value;
+    const checklistSlug  = document.getElementById('editChecklistSlug').value;
+    const errDiv         = document.getElementById('editInspectionErrorMsg');
+    const btn            = document.getElementById('btnSaveEditInspection');
+
+    errDiv.classList.add('d-none');
+    errDiv.textContent = '';
+
+    if (!dateScheduled) {
+        errDiv.textContent = 'La date prévue est obligatoire.';
+        errDiv.classList.remove('d-none');
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append('inspection_id',   inspectionId);
+    fd.append('date_scheduled',  dateScheduled);
+    if (inspectorId)   fd.append('qa_inspector_id', inspectorId);
+    if (name)          fd.append('inspection_name', name);
+    if (checklistSlug) fd.append('checklist_slug',  checklistSlug);
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement…';
+
+    fetch('/ajax/update-qa-inspection', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Enregistrer';
+            if (data.success) {
+                showQaToast('Inspection mise à jour.', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('editInspectionModal')).hide();
+                setTimeout(() => location.reload(), 900);
+            } else {
+                errDiv.textContent = data.message || 'Une erreur est survenue.';
+                errDiv.classList.remove('d-none');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Enregistrer';
+            showQaToast('Erreur réseau.', 'error');
+        });
 }
 </script>

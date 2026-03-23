@@ -35,6 +35,7 @@ class Pro_Cl_LlinExpHuts extends Model
         'q20',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

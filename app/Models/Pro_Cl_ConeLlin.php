@@ -28,6 +28,7 @@ class Pro_Cl_ConeLlin extends Model
         'q13',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

@@ -90,39 +90,14 @@
                 <h5 class="card-title">Progression</h5>
 
                 @php
-                    $totalSteps = 2;
-
-                    $completedSteps = 0;
-                    if ($total_filled_percentage_projects == 100) {
-                        $completedSteps = 1;
-                    }
-                    if ($total_filled_percentage_study_director_appointment == 100) {
-                        $completedSteps = 2;
-                    }
-
-                    $pourcentage = round(
-                        ($total_filled_percentage_projects + $total_filled_percentage_study_director_appointment) /
-                            $totalSteps,
-                        2,
-                    );
-
-                    $nextStep = '';
-                    if ($completedSteps == 0) {
-                        $nextStep = 'Update Project Basic Information';
-                    } elseif ($completedSteps == 1) {
-                        $nextStep = 'Study Director Appointment Form';
-                    } else {
-                        $nextStep = 'All steps completed';
-                    }
-
                     $progressColor = '';
-                    if ($pourcentage <= 20) {
+                    if ($execution_rate <= 20) {
                         $progressColor = 'bg-danger';
-                    } elseif ($pourcentage <= 40) {
+                    } elseif ($execution_rate <= 40) {
                         $progressColor = 'bg-warning';
-                    } elseif ($pourcentage <= 60) {
+                    } elseif ($execution_rate <= 60) {
                         $progressColor = 'bg-info';
-                    } elseif ($pourcentage <= 80) {
+                    } elseif ($execution_rate <= 80) {
                         $progressColor = 'bg-primary';
                     } else {
                         $progressColor = 'bg-success';
@@ -130,16 +105,20 @@
                 @endphp
                 <div class="progress" style="height: 25px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated {{ $progressColor }}"
-                        role="progressbar" style="width: {{ $pourcentage }}%;" aria-valuenow="{{ $pourcentage }}"
-                        aria-valuemin="0" aria-valuemax="100">{{ $pourcentage }}%</div>
+                        role="progressbar" style="width: {{ $execution_rate }}%;" aria-valuenow="{{ $execution_rate }}"
+                        aria-valuemin="0" aria-valuemax="100">{{ $execution_rate }}%</div>
                 </div>
 
-                <p class="mt-3 mb-0">You have completed {{ $completedSteps }} out of {{ $totalSteps }} steps.</p>
-                <p class="mb-0">Next step: <strong class="text-primary">{{ $nextStep ?? '' }}</strong></p>
-                <p class="mb-0">Please ensure that all information provided is accurate and up-to-date. </p>
-                {{-- The Study Director Appointment Form is a mandatory document that must be submitted before proceeding to the next steps of the study creation process.</p> --}}
-                <p class="mb-0">Please contact the support team at <a
-                        href="mailto:support@example.com">support@example.com</a>.</p>
+                <p class="mt-3 mb-0">Overall project execution rate: <strong>{{ $execution_rate }}%</strong></p>
+                @if(!empty($phase_metrics))
+                <ul class="list-unstyled small text-muted mt-2 mb-0" style="font-size:.82rem;">
+                    <li><i class="bi bi-check2-circle me-1"></i>Activities: <strong>{{ $phase_metrics['activities']['done'] }}/{{ $phase_metrics['activities']['total'] }}</strong></li>
+                    <li><i class="bi bi-shield-check me-1"></i>QA Inspections: <strong>{{ $phase_metrics['inspections']['done'] }}/{{ $phase_metrics['inspections']['total'] }}</strong></li>
+                    <li><i class="bi bi-exclamation-triangle me-1"></i>NC Findings resolved: <strong>{{ $phase_metrics['nc_findings']['done'] }}/{{ $phase_metrics['nc_findings']['total'] }}</strong></li>
+                    <li><i class="bi bi-file-earmark-text me-1"></i>Report documents: <strong>{{ $phase_metrics['report_docs']['done'] }}/{{ $phase_metrics['report_docs']['total'] }}</strong></li>
+                    <li><i class="bi bi-archive me-1"></i>Archiving: <strong>{{ $phase_metrics['archiving']['done'] ? 'Done' : 'Pending' }}</strong></li>
+                </ul>
+                @endif
 
             </div>
         </div>
@@ -212,7 +191,10 @@
 
                             </tbody>
                         </table>
-                        <a href="#" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="#" class="btn btn-primary btn-sm"
+                           data-bs-toggle="modal" data-bs-target="#detailedInformationProjectModal">
+                            <i class="bi bi-pencil-square me-1"></i>Edit
+                        </a>
                     @else
                         <p>No Project Basic Information available.</p>
                     @endif
@@ -279,7 +261,10 @@
                                 <!-- Display other fields as needed -->
                             </tbody>
                         </table>
-                        <a href="#" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="#" class="btn btn-primary btn-sm"
+                           data-bs-toggle="modal" data-bs-target="#customModal">
+                            <i class="bi bi-pencil-square me-1"></i>Edit
+                        </a>
                     @else
                         <p>No Study Director Appointment Form available.</p>
                     @endif

@@ -25,6 +25,7 @@ class Pro_Cl_LlinWashing extends Model
         'q10',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

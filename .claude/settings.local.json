@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"table\\\\|string\\\\|email\\\\|prenom\\\\|nom\\\\|titre\\\\|fonction\\\\|phone\" \"e:/Projets_CREC/project-management-lshtm/database/migrations/olds/\"*.php)"
+    ]
+  }
+}

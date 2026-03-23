@@ -14,6 +14,12 @@ class Pro_Project extends Model
     protected $table = "pro_projects";
     protected $guarded = ["created_at", "updated_at"];
 
+    protected $casts = [
+        'phases_completed'  => 'array',
+        'archive_checklist' => 'array',
+        'archived_at'       => 'datetime',
+    ];
+
     /**
      * Get the studyDirector that owns the Pro_Project
      *
@@ -123,11 +129,18 @@ class Pro_Project extends Model
         return $this->belongsToMany(Pro_LabTest::class, 'pro_projects_related_lab_tests', 'project_id', 'lab_test_id')->orderBy("level_test");
     }
 
-    /**
-     * Get all of the allPhasesCritiques $study_type=nullfor the Pro_Project
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
+    public function archivingDocuments(): HasMany
+    {
+        return $this->hasMany(Pro_ArchivingDocument::class, 'project_id', 'id')
+                    ->orderBy('created_at', 'desc');
+    }
+
+    public function reportPhaseDocuments(): HasMany
+    {
+        return $this->hasMany(Pro_ReportPhaseDocument::class, 'project_id', 'id')
+                    ->orderBy('created_at', 'desc');
+    }
+
     public function allPhasesCritiques($study_type_id=null): HasMany
     {
          $activites = [];

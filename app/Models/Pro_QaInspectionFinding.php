@@ -12,9 +12,13 @@ class Pro_QaInspectionFinding extends Model
 
     protected $fillable = [
         'inspection_id',
+        'facility_section',
         'project_id',
         'finding_text',
+        'is_conformity',
         'action_point',
+        'means_of_verification',
+        'resolved_by_name',
         'deadline_date',
         'deadline_text',
         'meeting_date',

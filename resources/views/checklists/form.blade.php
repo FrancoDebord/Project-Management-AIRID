@@ -166,9 +166,13 @@
         <div>
             <h5 class="mb-1 fw-bold">
                 <i class="bi bi-clipboard2-check me-2"></i>
-                Critical Phase Inspection Checklist — {{ $form['letter'] }}. {{ $form['title'] }}
+                @if(isset($fieldPrefix))Facility Inspection Checklist @else Critical Phase Inspection Checklist @endif
+                — {{ $form['letter'] }}. {{ $form['title'] }}
             </h5>
-            <small class="opacity-75">QA-PR-1-003/05 — SANAS OECD GLP COMPLIANT FACILITY N° G0028</small>
+            <small class="opacity-75">
+                @if(isset($fieldPrefix))QA-PR-1-001A/06 @else QA-PR-1-003/05 @endif
+                — SANAS OECD GLP COMPLIANT FACILITY N° G0028
+            </small>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('checklist.index', $inspection->id) }}" class="btn btn-back">
@@ -260,8 +264,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php $fp = $fieldPrefix ?? ''; @endphp
                         @foreach ($form['questions'] as $n => $question)
-                            @php $val = $record ? $record->{"q$n"} : null; @endphp
+                            @php $val = $record ? $record->{"{$fp}q{$n}"} : null; @endphp
                             <tr>
                                 <td>
                                     <div class="q-num">{{ $n }}</div>
@@ -272,29 +277,29 @@
                                         {{-- YES --}}
                                         <div class="radio-opt">
                                             <input type="radio"
-                                                   id="q{{ $n }}_yes"
-                                                   name="q{{ $n }}"
+                                                   id="{{ $fp }}q{{ $n }}_yes"
+                                                   name="{{ $fp }}q{{ $n }}"
                                                    value="yes"
                                                    {{ $val === 'yes' ? 'checked' : '' }}>
-                                            <label for="q{{ $n }}_yes">YES</label>
+                                            <label for="{{ $fp }}q{{ $n }}_yes">YES</label>
                                         </div>
                                         {{-- NO --}}
                                         <div class="radio-opt">
                                             <input type="radio"
-                                                   id="q{{ $n }}_no"
-                                                   name="q{{ $n }}"
+                                                   id="{{ $fp }}q{{ $n }}_no"
+                                                   name="{{ $fp }}q{{ $n }}"
                                                    value="no"
                                                    {{ $val === 'no' ? 'checked' : '' }}>
-                                            <label for="q{{ $n }}_no">NO</label>
+                                            <label for="{{ $fp }}q{{ $n }}_no">NO</label>
                                         </div>
                                         {{-- N/A --}}
                                         <div class="radio-opt">
                                             <input type="radio"
-                                                   id="q{{ $n }}_na"
-                                                   name="q{{ $n }}"
+                                                   id="{{ $fp }}q{{ $n }}_na"
+                                                   name="{{ $fp }}q{{ $n }}"
                                                    value="na"
                                                    {{ $val === 'na' ? 'checked' : '' }}>
-                                            <label for="q{{ $n }}_na">N/A</label>
+                                            <label for="{{ $fp }}q{{ $n }}_na">N/A</label>
                                         </div>
                                     </div>
                                 </td>
@@ -305,14 +310,70 @@
             </div>
 
             {{-- Comments --}}
+            @php $commentsField = ($fieldPrefix ?? '') . 'comments'; @endphp
             <div class="mb-4">
-                <label for="comments" class="form-label fw-semibold" style="color:var(--qa-brand);">
+                <label for="{{ $commentsField }}" class="form-label fw-semibold" style="color:var(--qa-brand);">
                     <i class="bi bi-chat-text me-1"></i>Comments / Observations
                 </label>
-                <textarea id="comments" name="comments" rows="4"
+                <textarea id="{{ $commentsField }}" name="{{ $commentsField }}" rows="4"
                           class="form-control"
-                          placeholder="Observations, remarques, non-conformités…">{{ old('comments', $record->comments ?? '') }}</textarea>
+                          placeholder="Observations, remarques, non-conformités…">{{ old($commentsField, $record->{$commentsField} ?? '') }}</textarea>
             </div>
+
+            {{-- Conclusion (Critical Phase Inspections only — no fieldPrefix) --}}
+            @if (!isset($fieldPrefix))
+            <div class="mb-4 p-4 rounded-3" style="background:#f8f9fa; border: 2px solid #e9ecef;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--qa-brand),var(--qa-brand-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-award-fill text-white" style="font-size:.9rem;"></i>
+                    </div>
+                    <span class="fw-bold" style="color:var(--qa-brand);font-size:1rem;">
+                        Conclusion de l'inspection
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    Après examen de toutes les réponses ci-dessus, l'inspecteur QA donne son appréciation globale sur la conformité de cette phase critique.
+                </p>
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+                    <div class="form-check form-switch" style="min-width:220px;">
+                        <input class="form-check-input" type="checkbox"
+                               role="switch"
+                               id="is_conforming_switch"
+                               name="is_conforming"
+                               value="1"
+                               style="width:3rem;height:1.5rem;cursor:pointer;"
+                               {{ old('is_conforming', $record->is_conforming ?? null) ? 'checked' : '' }}>
+                        <label class="form-check-label fw-semibold ms-2" for="is_conforming_switch"
+                               id="conforming_label"
+                               style="font-size:.95rem;">
+                        </label>
+                    </div>
+                    <div id="conforming_badge"></div>
+                </div>
+            </div>
+            <script>
+            (function() {
+                const sw    = document.getElementById('is_conforming_switch');
+                const label = document.getElementById('conforming_label');
+                const badge = document.getElementById('conforming_badge');
+
+                function update() {
+                    if (sw.checked) {
+                        label.textContent = 'Inspection conforme';
+                        label.style.color = '#198754';
+                        badge.innerHTML   = '<span class="badge rounded-pill" style="background:#198754;font-size:.85rem;padding:.4rem .9rem;"><i class="bi bi-check-circle-fill me-1"></i>CONFORME</span>';
+                    } else {
+                        label.textContent = 'Inspection non conforme';
+                        label.style.color = '#dc3545';
+                        badge.innerHTML   = '<span class="badge rounded-pill" style="background:#dc3545;font-size:.85rem;padding:.4rem .9rem;"><i class="bi bi-x-circle-fill me-1"></i>NON CONFORME</span>';
+                    }
+                }
+
+                sw.addEventListener('change', update);
+                update();
+            })();
+            </script>
+            @endif
 
             {{-- Submit --}}
             <div class="d-flex justify-content-between align-items-center no-print">
@@ -326,6 +387,153 @@
             </div>
         </form>
     </div>
+
+    {{-- ── Findings panel (facility sections only) ── --}}
+    @isset($sectionFindings)
+    <div class="form-card mt-4">
+        <div class="form-card-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-journal-text fs-5" style="color:var(--qa-brand);"></i>
+                <span class="fw-bold" style="color:var(--qa-brand);">
+                    Findings — {{ $form['letter'] }}. {{ $form['title'] }}
+                </span>
+                <span class="badge rounded-pill" style="background:var(--qa-brand); font-size:.75rem;">
+                    {{ $sectionFindings->count() }}
+                </span>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-3 no-print"
+                    onclick="document.getElementById('addFindingForm').style.display=document.getElementById('addFindingForm').style.display==='none'?'':'none'">
+                <i class="bi bi-plus me-1"></i>Ajouter un finding
+            </button>
+        </div>
+
+        <div class="p-4">
+            {{-- Add finding inline form --}}
+            <div id="addFindingForm" style="display:none;" class="mb-4 p-3 rounded-3 border no-print" style="background:#fff8f8;">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <textarea id="newFindingText" rows="2" class="form-control form-control-sm"
+                                  placeholder="Décrivez la non-conformité ou l'observation…"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <select id="newFindingAssigned" class="form-select form-select-sm">
+                            <option value="">— Assigner à (optionnel) —</option>
+                            @foreach($personnels as $p)
+                                <option value="{{ $p->id }}">{{ $p->prenom }} {{ $p->nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="date" id="newFindingDeadline" class="form-control form-control-sm"
+                               placeholder="Deadline">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-sm btn-danger w-100"
+                                onclick="submitSectionFinding('{{ $inspection->id }}', '{{ $slug }}')">
+                            <i class="bi bi-floppy"></i>
+                        </button>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="newFindingConform">
+                            <label class="form-check-label small text-muted" for="newFindingConform">
+                                Marquer comme conformité (observation positive)
+                            </label>
+                        </div>
+                    </div>
+                    <div id="findingSaveError" class="col-12 text-danger small" style="display:none;"></div>
+                </div>
+            </div>
+
+            {{-- Existing findings --}}
+            @if($sectionFindings->isEmpty())
+                <p class="text-muted small text-center py-3 mb-0">
+                    <i class="bi bi-check-circle me-1 text-success"></i>
+                    Aucun finding enregistré pour cette section.
+                </p>
+            @else
+                <div class="d-flex flex-column gap-2" id="sectionFindingsList">
+                    @foreach($sectionFindings as $fi)
+                        <div class="p-3 rounded-3 border d-flex justify-content-between align-items-start gap-2"
+                             style="border-left: 4px solid {{ $fi->is_conformity ? '#198754' : ($fi->status === 'complete' ? '#6c757d' : '#dc3545') }} !important;">
+                            <div class="flex-grow-1">
+                                <div class="small">{{ $fi->finding_text }}</div>
+                                @if($fi->assignedTo)
+                                    <div class="text-muted" style="font-size:.75rem;">
+                                        <i class="bi bi-person me-1"></i>{{ $fi->assignedTo->prenom }} {{ $fi->assignedTo->nom }}
+                                        @if($fi->deadline_date)
+                                            &nbsp;·&nbsp;<i class="bi bi-calendar3 me-1"></i>{{ $fi->deadline_date }}
+                                        @endif
+                                    </div>
+                                @endif
+                                @if($fi->action_point)
+                                    <div class="text-success" style="font-size:.75rem;">
+                                        <i class="bi bi-check2-circle me-1"></i>{{ $fi->action_point }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div>
+                                @if($fi->is_conformity)
+                                    <span class="badge bg-secondary" style="font-size:.7rem;">Conformité</span>
+                                @elseif($fi->status === 'complete')
+                                    <span class="badge bg-success" style="font-size:.7rem;">Résolu</span>
+                                @else
+                                    <span class="badge bg-danger" style="font-size:.7rem;">Pending</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <script>
+    // Auto-open the add-finding form if arriving via #addFindingForm anchor
+    if (window.location.hash === '#addFindingForm') {
+        const form = document.getElementById('addFindingForm');
+        if (form) {
+            form.style.display = '';
+            setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+        }
+    }
+
+    function submitSectionFinding(inspectionId, sectionSlug) {
+        const text     = document.getElementById('newFindingText').value.trim();
+        const errDiv   = document.getElementById('findingSaveError');
+        if (!text) { errDiv.textContent = 'Le texte du finding est requis.'; errDiv.style.display=''; return; }
+        errDiv.style.display = 'none';
+
+        const isSectioned = @json(in_array($inspection->type_inspection, ['Facility Inspection', 'Process Inspection']));
+        const projectId   = @json($inspection->project_id);
+
+        const payload = {
+            inspection_id: inspectionId,
+            finding_text:  text,
+            is_conformity: document.getElementById('newFindingConform').checked ? 1 : 0,
+            assigned_to:   document.getElementById('newFindingAssigned').value || null,
+            deadline_date: document.getElementById('newFindingDeadline').value || null,
+        };
+        if (isSectioned) {
+            payload.facility_section = sectionSlug;
+        } else {
+            payload.project_id = projectId;
+        }
+
+        fetch('{{ route("saveQaFinding") }}', {
+            method:  'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { location.reload(); }
+            else { errDiv.textContent = data.message; errDiv.style.display = ''; }
+        })
+        .catch(() => { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = ''; });
+    }
+    </script>
+    @endisset
 
 </div>
 

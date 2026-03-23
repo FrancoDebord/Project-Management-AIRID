@@ -139,9 +139,16 @@
 
                     @endphp
                     <div class="col-12 col-sm-6 col-md-4 mt-3 {{ $class_phase }}">
-                        <div class="row div-project">
-                            <div class="col-12">
-                                <h6 class="project-title">Project : {{ $project->project_code }}</h6>
+                        <div class="row div-project" style="{{ in_array($project->id, $projectsNeedingInspection) ? 'border: 2px solid #f0ad4e !important;' : '' }}">
+                            <div class="col-12 d-flex align-items-center justify-content-between gap-2">
+                                <h6 class="project-title mb-0">Project : {{ $project->project_code }}</h6>
+                                @if(in_array($project->id, $projectsNeedingInspection))
+                                <span class="badge bg-warning text-dark"
+                                      title="Des activités critiques exécutées n'ont pas d'inspection QA programmée"
+                                      style="font-size:.72rem; white-space:nowrap;">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Inspection QA requise
+                                </span>
+                                @endif
                             </div>
                             <div class="col-12">
                                 <p class="project-title">Date Start :
@@ -157,16 +164,33 @@
                                 <p class="project-title">Stage : {{ $project->project_stage }}</p>
                             </div>
 
+                            @php
+                        $sc = $projectScores[$project->id] ?? ['overall'=>0,'actScore'=>0,'critScore'=>0,'findScore'=>0,'reportScore'=>0,'archiveScore'=>0];
+                        $pct = $sc['overall'];
+                        $barColor = $pct >= 80 ? 'bg-success' : ($pct >= 50 ? 'bg-warning' : 'bg-danger');
+                    @endphp
                             <div class="col-12 mt-2">
-
-                                <div class="progress ">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated {{ $progress_class }}"
-                                        role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
-                                        style="width: 75%"></div>
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Progress</span><span class="fw-semibold">{{ $pct }}%</span>
+                                </div>
+                                <div class="progress" style="height:8px;">
+                                    <div class="progress-bar {{ $barColor }}"
+                                         role="progressbar"
+                                         style="width:{{ $pct }}%"
+                                         aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-1" style="font-size:.68rem;">
+                                    <span class="badge bg-light text-dark border" title="Activities">Act {{ $sc['actScore'] }}%</span>
+                                    <span class="badge bg-light text-dark border" title="Inspections">Insp {{ $sc['critScore'] }}%</span>
+                                    <span class="badge bg-light text-dark border" title="Findings">Find {{ $sc['findScore'] }}%</span>
+                                    <span class="badge bg-light text-dark border" title="Report">Rep {{ $sc['reportScore'] }}%</span>
+                                    <span class="badge bg-light text-dark border" title="Archiving">Arch {{ $sc['archiveScore'] }}%</span>
                                 </div>
                             </div>
                             <div class="col-12 mt-2">
-                                <a href="#" class="btn btn-outline-danger">More Details</a>
+                                <a href="{{ route('projectOverview', $project->id) }}" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-bar-chart-line me-1"></i>Details
+                                </a>
                             </div>
                         </div>
                     </div>

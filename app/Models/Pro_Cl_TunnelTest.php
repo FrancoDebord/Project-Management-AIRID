@@ -31,6 +31,7 @@ class Pro_Cl_TunnelTest extends Model
         'q16',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

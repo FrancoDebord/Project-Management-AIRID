@@ -25,6 +25,7 @@ class Pro_Cl_CdcBottleTest extends Model
         'q10',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

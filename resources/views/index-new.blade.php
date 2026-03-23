@@ -93,7 +93,7 @@
           <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ route("project.create") }}">Study Management</a></li>
           <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Quality Assurance</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('qaDashboard') }}">Quality Assurance</a></li>
           <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
         </ul>
       </div>

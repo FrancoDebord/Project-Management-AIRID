@@ -17,8 +17,14 @@ class Pro_QaInspection extends Model
         'checklist_slug',
         'date_scheduled',
         'date_performed',
+        'completed_at',
         'type_inspection',
         'inspection_name',
+        'facility_location',
+    ];
+
+    protected $casts = [
+        'completed_at' => 'datetime',
     ];
 
     public function inspector(): BelongsTo
@@ -34,5 +40,10 @@ class Pro_QaInspection extends Model
     public function findings(): HasMany
     {
         return $this->hasMany(Pro_QaInspectionFinding::class, 'inspection_id');
+    }
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Pro_StudyActivities::class, 'activity_id');
     }
 }

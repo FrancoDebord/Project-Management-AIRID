@@ -23,6 +23,7 @@ class Pro_Cl_CdcBottleCoating extends Model
         'q8',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

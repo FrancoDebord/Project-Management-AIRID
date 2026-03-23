@@ -26,6 +26,7 @@ class Pro_Cl_ConeIrsBlTest extends Model
         'q11',
         'comments',
         'filled_by',
+        'is_conforming',
     ];
 
     public function inspection(): BelongsTo

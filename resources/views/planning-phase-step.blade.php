@@ -145,6 +145,12 @@
             @if ($study_initiation_meeting)
                 @php
                     $all_activities = $project->allActivitiesProject;
+                    // Activity IDs whose Critical Phase Inspection has already been performed
+                    $performedInspectionActivityIds = App\Models\Pro_QaInspection::where('project_id', $project_id)
+                        ->whereNotNull('activity_id')
+                        ->whereNotNull('date_performed')
+                        ->pluck('activity_id')
+                        ->flip();
                 @endphp
 
                 @forelse ($all_activities??[] as $activite)
@@ -165,11 +171,18 @@
                                     data-ajaxroute="{{ route('marquerActivitePhaseCritique') }}">Mark as
                                     critique</button>
                             @else
-                                <button class="btn btn-outline-info btn-sm marquer-non-critique" data-bs-toggle="modal"
-                                    data-bs-target="#criticalModal" data-project-id="{{ $project_id }}"
-                                    data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
-                                    data-activity-id="{{ $activite->id }}"
-                                    data-ajaxroute="{{ route('marquerActiviteNonPhaseCritique') }}">Unmark</button>
+                                @if(isset($performedInspectionActivityIds[$activite->id]))
+                                    <button class="btn btn-outline-secondary btn-sm" disabled
+                                            title="The Critical Phase Inspection has already been performed — cannot unmark.">
+                                        <i class="bi bi-lock-fill me-1"></i>Unmark
+                                    </button>
+                                @else
+                                    <button class="btn btn-outline-info btn-sm marquer-non-critique" data-bs-toggle="modal"
+                                        data-bs-target="#criticalModal" data-project-id="{{ $project_id }}"
+                                        data-qa-meeting-id="{{ $study_initiation_meeting->id }}"
+                                        data-activity-id="{{ $activite->id }}"
+                                        data-ajaxroute="{{ route('marquerActiviteNonPhaseCritique') }}">Unmark</button>
+                                @endif
                             @endif
 
                         </td>

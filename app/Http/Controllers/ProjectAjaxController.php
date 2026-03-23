@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Mail\MeetingMail;
+use App\Models\Pro_ArchivingDocument;
 use App\Models\Pro_KeyFacilityPersonnel;
+use App\Models\Pro_ReportPhaseDocument;
 use App\Models\Pro_OtherBasicDocument;
 use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
@@ -21,6 +23,7 @@ use Carbon\Carbon;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -269,12 +272,16 @@ class ProjectAjaxController extends Controller
         }
 
 
+        // File is required only when creating (no existing form for this project)
+        $project = Pro_Project::find($request->input('project_id'));
+        $existingFormCheck = $project ? $project->studyDirectorAppointmentForm : null;
+
         if ($request->hasFile('sd_appointment_file')) {
             $file = $request->file('sd_appointment_file');
             if (!$file->isValid()) {
                 return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
             }
-        } else {
+        } elseif (!$existingFormCheck || !$existingFormCheck->sd_appointment_file) {
             return response()->json(['message' => 'The signed Study Director Appointment Form (PDF) is required.', "code_erreur" => 1], 200);
         }
 
@@ -287,8 +294,6 @@ class ProjectAjaxController extends Controller
         if ($request->input('study_director') && $request->input('project_manager') && $request->input('study_director') == $request->input('project_manager')) {
             return response()->json(['message' => 'The study director must be different from the project manager.', "code_erreur" => 1], 200);
         }
-
-        $project = Pro_Project::find($request->input('project_id'));
 
         if (!$project) {
             return response()->json(['message' => 'Project not found.', "code_erreur" => 1], 200);
@@ -308,11 +313,9 @@ class ProjectAjaxController extends Controller
         }
 
         // Check if an appointment form already exists for this project
-        $existingForm = $project->studyDirectorAppointmentForm;
-
-        if ($existingForm) {
+        if ($existingFormCheck) {
             // Update existing form
-            $existingForm->update($dataToUpdate);
+            $existingFormCheck->update($dataToUpdate);
         } else {
             // Create new form
             $dataToUpdate['project_id'] = $project->id;
@@ -624,6 +627,13 @@ class ProjectAjaxController extends Controller
                     return response()->json(['message' => 'You cannot edit an activity that has already been executed.', "code_erreur" => 1], 200);
                 }
                 $activity_to_update->update($activityData);
+
+                // If activity is a critical phase, sync the linked inspection's scheduled date
+                if ($activity_to_update->phase_critique && $request->input('estimated_activity_date')) {
+                    Pro_QaInspection::where('activity_id', $activity_to_update->id)
+                        ->whereNull('date_performed')
+                        ->update(['date_scheduled' => $request->input('estimated_activity_date')]);
+                }
             }
         } else {
 
@@ -804,7 +814,35 @@ class ProjectAjaxController extends Controller
         }
 
         if (Carbon::parse($request->date_performed) > now()) {
-            return response()->json(['message' => "The Date performed of the activity shall be inferior or equal to today ", "code_erreur" => 1], 200);
+            return response()->json(['message' => "The Date performed of the activity shall be inferior or equal to today.", "code_erreur" => 1], 200);
+        }
+
+        // Validate chronological order: date must be >= previous activity's date
+        $prevActivity = Pro_ProtocolDevActivityProject::where('project_id', $record_activity->project_id)
+            ->where('level_activite', $record_activity->level_activite - 1)
+            ->where('complete', true)
+            ->first();
+        if ($prevActivity && $prevActivity->date_performed) {
+            if (Carbon::parse($request->date_performed) < Carbon::parse($prevActivity->date_performed)) {
+                return response()->json([
+                    'message' => 'The date performed cannot be before the previous activity\'s date (' . $prevActivity->date_performed . ').',
+                    'code_erreur' => 1
+                ], 200);
+            }
+        }
+
+        // Validate chronological order: date must be <= next activity's date
+        $nextActivity = Pro_ProtocolDevActivityProject::where('project_id', $record_activity->project_id)
+            ->where('level_activite', $record_activity->level_activite + 1)
+            ->where('complete', true)
+            ->first();
+        if ($nextActivity && $nextActivity->date_performed) {
+            if (Carbon::parse($request->date_performed) > Carbon::parse($nextActivity->date_performed)) {
+                return response()->json([
+                    'message' => 'The date performed cannot be after the next activity\'s date (' . $nextActivity->date_performed . ').',
+                    'code_erreur' => 1
+                ], 200);
+            }
         }
 
         if ($request->hasFile('document_file')) {
@@ -1006,6 +1044,20 @@ class ProjectAjaxController extends Controller
         $activity->meeting_id = $meeting_id;
         $activity->save();
 
+        // Auto-create a Critical Phase Inspection if none exists for this activity
+        $existingInspection = Pro_QaInspection::where('activity_id', $activity->id)->first();
+        if (!$existingInspection) {
+            Pro_QaInspection::create([
+                'project_id'      => $activity->project_id,
+                'activity_id'     => $activity->id,
+                'type_inspection' => 'Critical Phase Inspection',
+                'inspection_name' => 'Critical Phase: ' . $activity->study_activity_name,
+                'date_scheduled'  => $activity->estimated_activity_date,
+                'qa_inspector_id' => null,
+                'checklist_slug'  => null,
+            ]);
+        }
+
         session()->flash('success', "Activity successfully marked as critical");
         return response()->json(['message' => "Activity successfully marked as critical", "code_erreur" => 0], 200);
     }
@@ -1026,10 +1078,25 @@ class ProjectAjaxController extends Controller
             return response()->json(['message' => "You activity record does not exist", "code_erreur" => 1], 200);
         }
 
+        // Block unmarking if the linked inspection has already been performed
+        $performedInspection = Pro_QaInspection::where('activity_id', $activity->id)
+            ->whereNotNull('date_performed')
+            ->first();
+        if ($performedInspection) {
+            return response()->json([
+                'message'     => 'Cannot unmark: the Critical Phase Inspection for this activity has already been performed.',
+                'code_erreur' => 1,
+            ], 200);
+        }
 
         $activity->phase_critique = false;
         $activity->meeting_id = $meeting_id;
         $activity->save();
+
+        // Delete the linked Critical Phase Inspection if not yet performed
+        Pro_QaInspection::where('activity_id', $activity->id)
+            ->whereNull('date_performed')
+            ->delete();
 
         session()->flash('success', "Activity successfully marked  as non critical");
         return response()->json(['message' => "Activity successfully marked non as critical", "code_erreur" => 0], 200);
@@ -1055,6 +1122,12 @@ class ProjectAjaxController extends Controller
 
             if (!$activity) {
                 return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+            }
+
+            // Vérifier que le projet n'est pas archivé
+            $project = Pro_Project::find($request->project_id);
+            if ($project && $project->archived_at) {
+                return response()->json(['success' => false, 'message' => 'This project is archived. No modifications are allowed.'], 403);
             }
 
             // Mettre à jour l'activité avec les informations d'exécution
@@ -1133,8 +1206,9 @@ class ProjectAjaxController extends Controller
      */
     function scheduleQaInspection(Request $request)
     {
+        $isCritical = $request->type_inspection === 'Critical Phase Inspection';
         $rules = [
-            'project_id'       => 'required|integer|exists:pro_projects,id',
+            'project_id'       => $isCritical ? 'required|integer|exists:pro_projects,id' : 'nullable|integer|exists:pro_projects,id',
             'qa_inspector_id'  => 'required|integer|exists:personnels,id',
             'date_scheduled'   => 'required|date',
             'type_inspection'  => 'required|string|in:Facility Inspection,Process Inspection,Study Inspection,Critical Phase Inspection',
@@ -1152,16 +1226,19 @@ class ProjectAjaxController extends Controller
 
         try {
             $inspectionNumber = Pro_QaInspection::where('project_id', $request->project_id)->count() + 1;
-            $inspectionName   = $request->type_inspection . ' #' . $inspectionNumber;
+            $inspectionName   = $request->filled('inspection_name')
+                ? $request->inspection_name
+                : $request->type_inspection . ' #' . $inspectionNumber;
 
             $inspection = Pro_QaInspection::create([
-                'project_id'      => $request->project_id,
-                'activity_id'     => $request->activity_id ?? null,
-                'checklist_slug'  => $request->checklist_slug ?? null,
-                'qa_inspector_id' => $request->qa_inspector_id,
-                'date_scheduled'  => $request->date_scheduled,
-                'type_inspection' => $request->type_inspection,
-                'inspection_name' => $inspectionName,
+                'project_id'        => $request->project_id,
+                'activity_id'       => $request->activity_id ?? null,
+                'checklist_slug'    => $request->checklist_slug ?? null,
+                'qa_inspector_id'   => $request->qa_inspector_id,
+                'date_scheduled'    => $request->date_scheduled,
+                'type_inspection'   => $request->type_inspection,
+                'inspection_name'   => $inspectionName,
+                'facility_location' => $request->facility_location ?? null,
             ]);
 
             return response()->json([
@@ -1179,6 +1256,70 @@ class ProjectAjaxController extends Controller
     }
 
     /**
+     * Mettre à jour les informations d'une inspection (avant démarrage des formulaires)
+     */
+    function updateQaInspection(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id'    => 'required|integer|exists:pro_qa_inspections,id',
+            'inspection_name'  => 'nullable|string|max:200',
+            'date_scheduled'   => 'required|date',
+            'qa_inspector_id'  => 'nullable|integer|exists:personnels,id',
+            'facility_location'=> 'nullable|string|in:cotonou,cove',
+            'checklist_slug'   => 'nullable|string|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $inspection = Pro_QaInspection::findOrFail($request->inspection_id);
+
+        // Block editing if inspection has been marked as done
+        if ($inspection->date_performed) {
+            return response()->json(['success' => false, 'message' => 'Cette inspection est déjà finalisée. Modification impossible.'], 403);
+        }
+
+        // Block editing if any facility forms have been started
+        if ($inspection->type_inspection === 'Facility Inspection') {
+            $started = false;
+            if ($inspection->facility_location === 'cove') {
+                $started = \App\Models\Pro_Cl_FacilityInspectionCove::where('inspection_id', $inspection->id)->exists();
+            } else {
+                $started = \App\Models\Pro_Cl_FacilityInspection::where('inspection_id', $inspection->id)->exists();
+            }
+            if ($started) {
+                return response()->json(['success' => false, 'message' => 'Des formulaires ont déjà été remplis pour cette inspection. Modification impossible.'], 403);
+            }
+        }
+
+        // Block editing if any process inspection forms have been started
+        if ($inspection->type_inspection === 'Process Inspection') {
+            $started = \App\Models\Pro_Cl_ProcessInspection::where('inspection_id', $inspection->id)->exists();
+            if ($started) {
+                return response()->json(['success' => false, 'message' => 'Des formulaires ont déjà été remplis pour cette inspection. Modification impossible.'], 403);
+            }
+        }
+
+        $inspection->date_scheduled   = $request->date_scheduled;
+        if ($request->filled('qa_inspector_id')) {
+            $inspection->qa_inspector_id = $request->qa_inspector_id;
+        }
+        if ($request->filled('inspection_name')) {
+            $inspection->inspection_name = $request->inspection_name;
+        }
+        if ($inspection->type_inspection === 'Facility Inspection' && $request->filled('facility_location')) {
+            $inspection->facility_location = $request->facility_location;
+        }
+        if ($request->filled('checklist_slug')) {
+            $inspection->checklist_slug = $request->checklist_slug;
+        }
+        $inspection->save();
+
+        return response()->json(['success' => true, 'message' => 'Inspection mise à jour.']);
+    }
+
+    /**
      * Récupérer les findings d'une inspection
      */
     function getInspectionFindings(Request $request)
@@ -1191,6 +1332,8 @@ class ProjectAjaxController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
+        $inspection = Pro_QaInspection::find($request->inspection_id);
+
         $findings = Pro_QaInspectionFinding::where('inspection_id', $request->inspection_id)
             ->with(['assignedTo', 'parentFinding'])
             ->orderBy('created_at', 'asc')
@@ -1199,10 +1342,16 @@ class ProjectAjaxController extends Controller
                 return [
                     'id'               => $f->id,
                     'finding_text'     => $f->finding_text,
-                    'action_point'     => $f->action_point,
-                    'deadline_date'    => $f->deadline_date,
-                    'status'           => $f->status,
-                    'parent_finding_id'=> $f->parent_finding_id,
+                    'is_conformity'    => (bool) $f->is_conformity,
+                    'action_point'          => $f->action_point,
+                    'means_of_verification' => $f->means_of_verification,
+                    'resolved_by_name'      => $f->resolved_by_name,
+                    'meeting_date'          => $f->meeting_date,
+                    'deadline_date'         => $f->deadline_date,
+                    'status'                => $f->status,
+                    'facility_section'      => $f->facility_section,
+                    'parent_finding_id'     => $f->parent_finding_id,
+                    'assigned_to_id' => $f->assigned_to,
                     'assigned_to_name' => $f->assignedTo
                         ? $f->assignedTo->prenom . ' ' . $f->assignedTo->nom
                         : null,
@@ -1213,7 +1362,30 @@ class ProjectAjaxController extends Controller
                 ];
             });
 
-        return response()->json(['success' => true, 'findings' => $findings], 200);
+        $response = ['success' => true, 'findings' => $findings];
+
+        // For Facility Inspections, also return location and sections_done
+        if ($inspection && $inspection->type_inspection === 'Facility Inspection') {
+            $response['is_facility']       = true;
+            $response['facility_location'] = $inspection->facility_location;
+
+            $clRecord = null;
+            if ($inspection->facility_location === 'cove') {
+                $clRecord = \App\Models\Pro_Cl_FacilityInspectionCove::where('inspection_id', $inspection->id)->first();
+            } else {
+                $clRecord = \App\Models\Pro_Cl_FacilityInspection::where('inspection_id', $inspection->id)->first();
+            }
+            $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+        }
+
+        // For Process Inspections, also return sections_done
+        if ($inspection && $inspection->type_inspection === 'Process Inspection') {
+            $response['is_process'] = true;
+            $clRecord = \App\Models\Pro_Cl_ProcessInspection::where('inspection_id', $inspection->id)->first();
+            $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+        }
+
+        return response()->json($response, 200);
     }
 
     /**
@@ -1221,11 +1393,18 @@ class ProjectAjaxController extends Controller
      */
     function saveQaFinding(Request $request)
     {
+        $isConformity = $request->boolean('is_conformity', false);
+
+        // Determine if this is a facility or process inspection (no project_id required)
+        $inspection = Pro_QaInspection::find($request->inspection_id);
+        $isFacility = $inspection && in_array($inspection->type_inspection, ['Facility Inspection', 'Process Inspection']);
+
         $validator = Validator::make($request->all(), [
             'inspection_id'    => 'required|integer|exists:pro_qa_inspections,id',
-            'project_id'       => 'required|integer|exists:pro_projects,id',
+            'project_id'       => $isFacility ? 'nullable|integer|exists:pro_projects,id' : 'required|integer|exists:pro_projects,id',
             'finding_text'     => 'required|string|max:2000',
-            'assigned_to'      => 'required|integer|exists:personnels,id',
+            'is_conformity'    => 'nullable|boolean',
+            'assigned_to'      => $isConformity ? 'nullable|integer|exists:personnels,id' : 'required|integer|exists:personnels,id',
             'deadline_date'    => 'nullable|date',
             'parent_finding_id'=> 'nullable|integer|exists:pro_qa_inspections_findings,id',
         ]);
@@ -1238,22 +1417,30 @@ class ProjectAjaxController extends Controller
         }
 
         try {
+            // Block if inspection is marked as completed
+            if ($inspection && $inspection->completed_at) {
+                return response()->json(['success' => false, 'message' => 'This inspection has been marked as completed. No new findings can be added.'], 403);
+            }
+
+            // Vérifier que le projet n'est pas archivé (seulement si project_id fourni)
+            if ($request->project_id) {
+                $projectLock = Pro_Project::find($request->project_id);
+                if ($projectLock && $projectLock->archived_at) {
+                    return response()->json(['success' => false, 'message' => 'This project is archived. No modifications are allowed.'], 403);
+                }
+            }
+
             $finding = Pro_QaInspectionFinding::create([
                 'inspection_id'    => $request->inspection_id,
-                'project_id'       => $request->project_id,
+                'facility_section' => $request->facility_section ?: null,
+                'project_id'       => $request->project_id ?: null,
                 'finding_text'     => $request->finding_text,
+                'is_conformity'    => $request->boolean('is_conformity', false),
                 'assigned_to'      => $request->assigned_to,
                 'deadline_date'    => $request->deadline_date,
                 'parent_finding_id'=> $request->parent_finding_id ?: null,
                 'status'           => 'pending',
             ]);
-
-            // Marquer l'inspection comme réalisée dès le premier finding enregistré
-            $inspection = Pro_QaInspection::find($request->inspection_id);
-            if ($inspection && !$inspection->date_performed) {
-                $inspection->date_performed = now()->toDateString();
-                $inspection->save();
-            }
 
             $finding->load('assignedTo');
 
@@ -1263,6 +1450,7 @@ class ProjectAjaxController extends Controller
                 'finding' => [
                     'id'               => $finding->id,
                     'finding_text'     => $finding->finding_text,
+                    'is_conformity'    => (bool) $finding->is_conformity,
                     'action_point'     => null,
                     'deadline_date'    => $finding->deadline_date,
                     'status'           => $finding->status,
@@ -1279,14 +1467,59 @@ class ProjectAjaxController extends Controller
         }
     }
 
+    function updateQaFinding(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'finding_id'    => 'required|integer|exists:pro_qa_inspections_findings,id',
+            'finding_text'  => 'required|string|max:2000',
+            'assigned_to'   => 'nullable|integer|exists:personnels,id',
+            'deadline_date' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $finding = Pro_QaInspectionFinding::findOrFail($request->finding_id);
+            $finding->finding_text  = $request->finding_text;
+            $finding->assigned_to   = $request->assigned_to ?: null;
+            $finding->deadline_date = $request->deadline_date ?: null;
+            $finding->save();
+            $finding->load('assignedTo');
+
+            return response()->json([
+                'success' => true,
+                'finding' => [
+                    'id'               => $finding->id,
+                    'finding_text'     => $finding->finding_text,
+                    'is_conformity'    => (bool) $finding->is_conformity,
+                    'action_point'     => $finding->action_point,
+                    'deadline_date'    => $finding->deadline_date,
+                    'status'           => $finding->status,
+                    'facility_section' => $finding->facility_section,
+                    'assigned_to_id'   => $finding->assigned_to,
+                    'assigned_to_name' => $finding->assignedTo
+                        ? $finding->assignedTo->prenom . ' ' . $finding->assignedTo->nom
+                        : null,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Résoudre un finding (Corrective Action par le Study Director)
      */
     function resolveQaFinding(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'finding_id'   => 'required|integer|exists:pro_qa_inspections_findings,id',
-            'action_point' => 'required|string|max:2000',
+            'finding_id'           => 'required|integer|exists:pro_qa_inspections_findings,id',
+            'action_point'         => 'required|string|max:2000',
+            'means_of_verification'=> 'nullable|string|max:2000',
+            'resolved_date'        => 'required|date',
+            'resolved_by_name'     => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -1303,8 +1536,11 @@ class ProjectAjaxController extends Controller
                 return response()->json(['success' => false, 'message' => 'Finding introuvable'], 404);
             }
 
-            $finding->action_point = $request->action_point;
-            $finding->status       = 'complete';
+            $finding->action_point          = $request->action_point;
+            $finding->means_of_verification = $request->means_of_verification ?? null;
+            $finding->resolved_by_name      = $request->resolved_by_name ?: null;
+            $finding->meeting_date          = $request->resolved_date;
+            $finding->status                = 'complete';
             $finding->save();
 
             return response()->json([
@@ -1347,6 +1583,119 @@ class ProjectAjaxController extends Controller
                 'success' => true,
                 'message' => 'Inspection supprimée avec succès.',
             ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Mark a QA inspection as done (sets date_performed to today)
+     */
+    public function markInspectionDone(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id' => 'required|integer|exists:pro_qa_inspections,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $inspection = Pro_QaInspection::findOrFail($request->inspection_id);
+
+            if ($inspection->date_performed) {
+                return response()->json(['success' => false, 'message' => 'This inspection is already marked as done.'], 409);
+            }
+
+            // Block if project is archived
+            if ($inspection->project_id) {
+                $project = Pro_Project::find($inspection->project_id);
+                if ($project && $project->archived_at) {
+                    return response()->json(['success' => false, 'message' => 'This project is archived. No modifications are allowed.'], 403);
+                }
+            }
+
+            // Block Facility Inspection if not all sections are completed
+            if ($inspection->type_inspection === 'Facility Inspection') {
+                if ($inspection->facility_location === 'cove') {
+                    $facilityRecord = \App\Models\Pro_Cl_FacilityInspectionCove::where('inspection_id', $inspection->id)->first();
+                    $allSections    = ['a','b','c','d','e','f','g','h','i'];
+                } else {
+                    $facilityRecord = \App\Models\Pro_Cl_FacilityInspection::where('inspection_id', $inspection->id)->first();
+                    $allSections    = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
+                }
+                $sectionsDone = $facilityRecord ? (array)($facilityRecord->sections_done ?? []) : [];
+                $total        = count($allSections);
+                if (!empty(array_diff($allSections, $sectionsDone))) {
+                    $count = count($sectionsDone);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Facility Inspection Checklist.",
+                    ], 422);
+                }
+            }
+
+            // Block Process Inspection if not all sections are completed
+            if ($inspection->type_inspection === 'Process Inspection') {
+                $processRecord = \App\Models\Pro_Cl_ProcessInspection::where('inspection_id', $inspection->id)->first();
+                $allSections   = ['a','b','c','d','e'];
+                $sectionsDone  = $processRecord ? (array)($processRecord->sections_done ?? []) : [];
+                $total         = count($allSections);
+                if (!empty(array_diff($allSections, $sectionsDone))) {
+                    $count = count($sectionsDone);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Process Inspection Checklist.",
+                    ], 422);
+                }
+            }
+
+            $inspection->date_performed = now()->toDateString();
+            $inspection->save();
+
+            return response()->json(['success' => true, 'message' => 'Inspection marked as done.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Toggle a QA inspection's "completed" state.
+     * Requires date_performed to be set and at least one finding to exist.
+     */
+    public function toggleInspectionCompleted(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'inspection_id' => 'required|integer|exists:pro_qa_inspections,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $inspection = Pro_QaInspection::findOrFail($request->inspection_id);
+
+            if ($inspection->completed_at) {
+                // Reopen
+                $inspection->completed_at = null;
+                $inspection->save();
+                return response()->json(['success' => true, 'completed' => false, 'message' => 'Inspection reopened.']);
+            }
+
+            // Mark as completed — enforce prerequisites
+            if (!$inspection->date_performed) {
+                return response()->json(['success' => false, 'message' => 'The inspection form must be filled before marking as completed.'], 422);
+            }
+            if ($inspection->findings()->count() === 0) {
+                return response()->json(['success' => false, 'message' => 'Findings must be documented before marking as completed.'], 422);
+            }
+
+            $inspection->completed_at = now();
+            $inspection->save();
+
+            return response()->json(['success' => true, 'completed' => true, 'message' => 'Inspection marked as completed.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
         }
@@ -1411,5 +1760,350 @@ class ProjectAjaxController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Enregistrer un document de la Report Phase
+     */
+    public function saveReportDocument(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id'      => 'required|integer|exists:pro_projects,id',
+            'document_type'   => 'required|string|in:final_report,scientific_article,publication_link,shared_data,other',
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string|max:2000',
+            'url'             => 'nullable|url|max:500',
+            'doi'             => 'nullable|string|max:255',
+            'submission_date' => 'nullable|date',
+            'status'          => 'required|string|in:draft,submitted,published',
+            'file'            => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:20480',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all()),
+            ], 422);
+        }
+
+        try {
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $filePath = $request->file('file')->store('report_phase_documents', 'public');
+            }
+
+            $doc = Pro_ReportPhaseDocument::create([
+                'project_id'      => $request->project_id,
+                'document_type'   => $request->document_type,
+                'title'           => $request->title,
+                'description'     => $request->description,
+                'file_path'       => $filePath,
+                'url'             => $request->url,
+                'doi'             => $request->doi,
+                'submission_date' => $request->submission_date,
+                'status'          => $request->status,
+                'submitted_by'    => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Document enregistré avec succès.',
+                'document' => [
+                    'id'              => $doc->id,
+                    'document_type'   => $doc->document_type,
+                    'title'           => $doc->title,
+                    'description'     => $doc->description,
+                    'file_path'       => $doc->file_path ? asset('storage/' . $doc->file_path) : null,
+                    'url'             => $doc->url,
+                    'doi'             => $doc->doi,
+                    'submission_date' => $doc->submission_date,
+                    'status'          => $doc->status,
+                    'created_at'      => $doc->created_at->format('d/m/Y'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Supprimer un document de la Report Phase
+     */
+    public function deleteReportDocument(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'document_id' => 'required|integer|exists:pro_report_phase_documents,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $doc = Pro_ReportPhaseDocument::findOrFail($request->document_id);
+            if ($doc->file_path) {
+                \Storage::disk('public')->delete($doc->file_path);
+            }
+            $doc->delete();
+
+            return response()->json(['success' => true, 'message' => 'Document supprimé.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // Archiving Phase
+    // ─────────────────────────────────────────────
+
+    /**
+     * Archive a project (lock it)
+     */
+    public function archiveProject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required|integer|exists:pro_projects,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $project = Pro_Project::findOrFail($request->project_id);
+            $project->archived_at  = now();
+            $project->archived_by  = auth()->id();
+            $project->save();
+
+            return response()->json(['success' => true, 'message' => 'Projet archivé avec succès.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Unarchive a project (unlock it)
+     */
+    public function unarchiveProject(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required|integer|exists:pro_projects,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $project = Pro_Project::findOrFail($request->project_id);
+            $project->archived_at = null;
+            $project->archived_by = null;
+            $project->save();
+
+            return response()->json(['success' => true, 'message' => 'Projet désarchivé.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Save archive checklist (JSON of manual confirmations)
+     */
+    public function saveArchiveChecklist(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required|integer|exists:pro_projects,id',
+            'checklist'  => 'required|array',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $project = Pro_Project::findOrFail($request->project_id);
+            $project->archive_checklist = $request->checklist;
+            $project->save();
+
+            return response()->json(['success' => true, 'message' => 'Checklist enregistrée.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Upload an archiving document
+     */
+    public function saveArchivingDocument(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id'        => 'required|integer|exists:pro_projects,id',
+            'title'             => 'required|string|max:255',
+            'description'       => 'nullable|string|max:2000',
+            'document_type'     => 'nullable|string|max:100',
+            'physical_location' => 'nullable|string|max:255',
+            'archive_date'      => 'nullable|date',
+            'file'              => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip|max:30720',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $filePath = $request->file('file')->store('archiving_documents', 'public');
+            }
+
+            $doc = Pro_ArchivingDocument::create([
+                'project_id'        => $request->project_id,
+                'title'             => $request->title,
+                'description'       => $request->description,
+                'document_type'     => $request->document_type,
+                'physical_location' => $request->physical_location,
+                'archive_date'      => $request->archive_date,
+                'file_path'         => $filePath,
+                'uploaded_by'       => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Document d\'archivage enregistré.',
+                'document' => [
+                    'id'                => $doc->id,
+                    'title'             => $doc->title,
+                    'document_type'     => $doc->document_type,
+                    'physical_location' => $doc->physical_location,
+                    'archive_date'      => $doc->archive_date,
+                    'file_path'         => $doc->file_path ? asset('storage/' . $doc->file_path) : null,
+                    'created_at'        => $doc->created_at->format('d/m/Y'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Delete an archiving document
+     */
+    public function deleteArchivingDocument(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'document_id' => 'required|integer|exists:pro_archiving_documents,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        try {
+            $doc = Pro_ArchivingDocument::findOrFail($request->document_id);
+            if ($doc->file_path) {
+                \Storage::disk('public')->delete($doc->file_path);
+            }
+            $doc->delete();
+
+            return response()->json(['success' => true, 'message' => 'Document supprimé.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Toggle a project phase as completed / not completed.
+     */
+    public function togglePhaseCompleted(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required|integer|exists:pro_projects,id',
+            'phase'      => 'required|string|in:study_creation,protocol_details,protocol_development,planning,experimental,quality_assurance,reporting,archiving',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => implode(', ', $validator->errors()->all())], 422);
+        }
+
+        $project = Pro_Project::findOrFail($request->project_id);
+        $phases  = $project->phases_completed ?? [];
+        $phase   = $request->phase;
+        $pid     = $project->id;
+
+        $isMarking = !in_array($phase, $phases); // true = marking as done, false = unmarking
+
+        // ── Server-side gate when marking as done ──────────────────────────
+        if ($isMarking) {
+            $error = null;
+
+            switch ($phase) {
+                case 'study_creation':
+                    $basicOk = $project->project_code && $project->project_title
+                               && $project->study_director && $project->protocol_code;
+                    $apptOk  = DB::table('pro_study_director_appointment_forms')
+                                 ->where('project_id', $pid)->where('active', true)
+                                 ->whereNotNull('study_director')->whereNotNull('sd_appointment_date')->exists();
+                    if (!$basicOk) $error = 'Basic project information is incomplete.';
+                    elseif (!$apptOk) $error = 'Study Director Appointment form is not filled.';
+                    break;
+
+                case 'protocol_development':
+                    $total     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->count();
+                    $completed = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('complete', true)->count();
+                    if ($total === 0 || $completed < $total)
+                        $error = "Not all protocol development activities are completed ({$completed}/{$total}).";
+                    break;
+
+                case 'planning':
+                    $meetingDone   = DB::table('pro_studies_initiation_meetings')->where('project_id', $pid)->where('status', 'complete')->count() > 0;
+                    $criticalCount = DB::table('pro_studies_activities')->where('project_id', $pid)->where('phase_critique', 1)->count();
+                    if (!$meetingDone)    $error = 'The Study Initiation Meeting has not been completed.';
+                    elseif ($criticalCount === 0) $error = 'No critical phases have been identified.';
+                    break;
+
+                case 'experimental':
+                    $total     = DB::table('pro_studies_activities')->where('project_id', $pid)->count();
+                    $completed = DB::table('pro_studies_activities')->where('project_id', $pid)->where('status', 'completed')->count();
+                    if ($total === 0 || $completed < $total)
+                        $error = "Not all activities are completed ({$completed}/{$total}).";
+                    break;
+
+                case 'quality_assurance':
+                    $totalInsp     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
+                    $completedInsp = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('completed_at')->count();
+                    $totalNc       = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
+                    $resolvedNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'resolved')->count();
+                    if ($totalInsp === 0 || $completedInsp < $totalInsp)
+                        $error = "Not all inspections are completed ({$completedInsp}/{$totalInsp}).";
+                    elseif ($totalNc > 0 && $resolvedNc < $totalNc)
+                        $error = "Not all NC findings are resolved ({$resolvedNc}/{$totalNc}).";
+                    break;
+
+                case 'reporting':
+                    $count = DB::table('pro_report_phase_documents')->where('project_id', $pid)->count();
+                    if ($count === 0) $error = 'No report documents have been added yet.';
+                    break;
+
+                case 'archiving':
+                    $checklist = $project->archive_checklist ?? [];
+                    $total     = 5; // physical_docs_archived, raw_data_secured, electronic_backup, samples_stored, personnel_notified
+                    $checked   = count(array_filter($checklist));
+                    if ($checked < $total) $error = "Archiving checklist is incomplete ({$checked}/{$total} items checked).";
+                    break;
+            }
+
+            if ($error) {
+                return response()->json(['success' => false, 'message' => $error], 422);
+            }
+        }
+
+        if (in_array($phase, $phases)) {
+            $phases = array_values(array_filter($phases, fn($p) => $p !== $phase));
+            $done   = false;
+        } else {
+            $phases[] = $phase;
+            $done     = true;
+        }
+
+        $project->phases_completed = $phases;
+        $project->save();
+
+        return response()->json(['success' => true, 'done' => $done, 'phases' => $phases]);
     }
 }

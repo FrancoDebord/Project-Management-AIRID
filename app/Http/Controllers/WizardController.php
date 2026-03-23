@@ -11,11 +11,14 @@ class WizardController extends Controller
 {
     //
     public function index()
-{
-   
+    {
+        $projectsCount  = Pro_Project::count();
+        $activeUsers    = User::count();
+        $totalBudget    = 0;
+        $tasksInProgress = \App\Models\Pro_StudyActivities::where('status', 'in_progress')->count();
 
-    return view('manage-project', compact('projectsCount','activeUsers','totalBudget','tasksInProgress','months','budgetsByMonth'));
-}
+        return view('manage-project', compact('projectsCount', 'activeUsers', 'totalBudget', 'tasksInProgress'));
+    }
 
 
      public function submit(Request $request)

@@ -273,62 +273,205 @@
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                   
                 @endif
 
-                
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if($project && $project->archived_at)
+                <div class="alert mb-3 mt-2 d-flex align-items-center gap-3 py-2 px-3" style="background:linear-gradient(90deg,#1a3a6b 0%,#c41230 100%);color:#fff;border-radius:.6rem;border:none;">
+                    <i class="bi bi-lock-fill fs-5 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong>Archived project — read-only.</strong>
+                        All modifications are disabled. Go to <strong>Step 8 – Archiving Phase</strong> to unarchive.
+                    </div>
+                </div>
+                @endif
+
+                {{-- ── Phase Progress Banner ── --}}
+                @if(isset($project_phase) && $project->project_code)
+                @php
+                    $phaseBanners = [
+                        'study_creation' => [
+                            'bg'    => 'linear-gradient(90deg,#6c757d,#495057)',
+                            'icon'  => 'bi-hourglass',
+                            'phase' => 'Step 1–3 — Study Creation & Protocol',
+                            'next'  => 'Schedule the Study Initiation Meeting to start identifying critical phases.',
+                            'tab'   => '#step1',
+                        ],
+                        'planning' => [
+                            'bg'    => 'linear-gradient(90deg,#0d6efd,#0950c5)',
+                            'icon'  => 'bi-calendar2-week',
+                            'phase' => 'Step 4 — Planning Phase',
+                            'next'  => 'Define and schedule project activities, then identify critical phases.',
+                            'tab'   => '#step4',
+                        ],
+                        'experimental' => [
+                            'bg'    => 'linear-gradient(90deg,#fd7e14,#c96d0f)',
+                            'icon'  => 'bi-activity',
+                            'phase' => 'Step 5 — Experimental Phase',
+                            'next'  => ($phase_metrics['activities']['done'] ?? 0) . '/' . ($phase_metrics['activities']['total'] ?? 0) . ' activities completed. Execute remaining activities.',
+                            'tab'   => '#step5',
+                        ],
+                        'quality_assurance' => [
+                            'bg'    => 'linear-gradient(90deg,#6f42c1,#4e2d8e)',
+                            'icon'  => 'bi-shield-check',
+                            'phase' => 'Step 6 — Quality Assurance',
+                            'next'  => ($phase_metrics['inspections']['done'] ?? 0) . '/' . ($phase_metrics['inspections']['total'] ?? 0) . ' inspections completed — '
+                                     . ($phase_metrics['nc_findings']['done'] ?? 0) . '/' . ($phase_metrics['nc_findings']['total'] ?? 0) . ' NC findings resolved.',
+                            'tab'   => '#step6',
+                        ],
+                        'reporting' => [
+                            'bg'    => 'linear-gradient(90deg,#20c997,#0f9d6b)',
+                            'icon'  => 'bi-file-earmark-text',
+                            'phase' => 'Step 7 — Report Phase',
+                            'next'  => ($phase_metrics['report_docs']['done'] ?? 0) . '/' . ($phase_metrics['report_docs']['total'] ?? 0) . ' report documents submitted/published.',
+                            'tab'   => '#step7',
+                        ],
+                        'archiving' => [
+                            'bg'    => 'linear-gradient(90deg,#198754,#0d5c38)',
+                            'icon'  => 'bi-archive',
+                            'phase' => 'Step 8 — Archiving Phase',
+                            'next'  => 'All archiving documents uploaded. Archive the project to finalize.',
+                            'tab'   => '#step8',
+                        ],
+                        'archived' => [
+                            'bg'    => 'linear-gradient(90deg,#1a3a6b,#c41230)',
+                            'icon'  => 'bi-patch-check-fill',
+                            'phase' => 'Project Completed & Archived',
+                            'next'  => 'This project has been successfully archived.',
+                            'tab'   => '#step8',
+                        ],
+                    ];
+                    $banner = $phaseBanners[$project_phase] ?? $phaseBanners['study_creation'];
+                @endphp
+                <div class="d-flex align-items-center gap-3 mb-3 px-3 py-2 rounded-3"
+                     style="background:{{ $banner['bg'] }};color:#fff;border:none;">
+                    <i class="bi {{ $banner['icon'] }} fs-4 flex-shrink-0"></i>
+                    <div class="flex-grow-1 small lh-sm">
+                        <div class="fw-bold" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;opacity:.85;">
+                            Current Phase
+                        </div>
+                        <div class="fw-bold" style="font-size:.95rem;">{{ $banner['phase'] }}</div>
+                        <div style="opacity:.9;font-size:.82rem;">
+                            <i class="bi bi-arrow-right-circle me-1"></i>{{ $banner['next'] }}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 text-end">
+                        <div style="font-size:1.5rem;font-weight:700;line-height:1;">{{ $execution_rate }}%</div>
+                        <div style="font-size:.72rem;opacity:.8;">overall progress</div>
+                        @php $bannerTab = $banner['tab']; @endphp
+                        <button class="btn btn-sm mt-1 py-0 px-2"
+                                style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:.75rem;"
+                                onclick="(function(h){ var t=document.querySelector('[data-bs-toggle=tab][href=&quot;'+h+'&quot;]'); if(t) new bootstrap.Tab(t).show(); })('{{ $bannerTab }}')">
+                            Go to step →
+                        </button>
+                    </div>
+                </div>
+                @endif
+
+                @php $phasesCompleted = $project->phases_completed ?? []; @endphp
                 <ul class="wizard" id="myTab" role="tablist">
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study
-                            Creation</a></li>
-                    <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details</a></li>
-                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev.</a>
-                    {{-- <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Development</a> --}}
-                    </li>
-                    <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase</a></li>
-                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Exper. Phase</a></li>
-                    {{-- <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Experiment. Phase</a></li> --}}
-                    <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Qual. Assurance</a></li>
-                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase</a></li>
-                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase</a></li>
+                            Creation @if(in_array('study_creation',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details @if(in_array('protocol_details',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev. @if(in_array('protocol_development',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase @if(in_array('planning',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Exper. Phase @if(in_array('experimental',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Qual. Assurance @if(in_array('quality_assurance',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                 </ul>
 
                    <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active" id="step1" role="tabpanel">
                         @include('study_creation_step')
+                        @include('partials.phase-complete-bar', ['phase' => 'study_creation', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step2" role="tabpanel">
-                        {{-- <h4>Protocol Details</h4>
-                        <p>Contenu de la deuxième étape.</p> --}}
-
                         @include('protocol-details-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'protocol_details', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step3" role="tabpanel">
                         <h4>Protocol Development ({{ $project ? $project->project_code:"No project selected"}})</h4>
-                        {{-- <p>Contenu de la troisième étape.</p> --}}
                         @include('protocol-development')
+                        @include('partials.phase-complete-bar', ['phase' => 'protocol_development', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step4" role="tabpanel">
-                      
-                        {{-- <p>Contenu de la quatrième étape.</p> --}}
                         @include('planning-phase-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'planning', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step5" role="tabpanel">
                         <h4>Experimental Phase</h4>
                         @include('experimental-phase-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'experimental', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step6" role="tabpanel">
                         <h4>Quality Assurance</h4>
                         @include('partials.qa-assurance-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'quality_assurance', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step7" role="tabpanel">
-                        <h4>Report Phase</h4>
-                        <p>Contenu de la septième étape.</p>
+                        @include('partials.report-phase-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'reporting', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step8" role="tabpanel">
-                        <h4>Archiving Phase</h4>
-                        <p>Contenu de la huitième étape.</p>
+                        @include('partials.archiving-phase-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'archiving', 'phaseStatuses' => $phaseStatuses])
                     </div>
                 </div>
+
+                @if($project && $project->archived_at)
+                <script>
+                (function () {
+                    const LOCKED_STEPS = ['step1','step2','step3','step4','step5','step6','step7'];
+
+                    function lockSteps() {
+                        LOCKED_STEPS.forEach(function(stepId) {
+                            const pane = document.getElementById(stepId);
+                            if (!pane) return;
+
+                            // Disable all form controls
+                            pane.querySelectorAll('input, select, textarea').forEach(function(el) {
+                                el.disabled = true;
+                            });
+
+                            // Disable all buttons
+                            pane.querySelectorAll('button').forEach(function(el) {
+                                el.disabled = true;
+                                el.style.opacity = '0.45';
+                                el.style.cursor  = 'not-allowed';
+                            });
+
+                            // Disable all anchor-buttons (Bootstrap btn links)
+                            pane.querySelectorAll('a.btn').forEach(function(el) {
+                                el.classList.add('disabled');
+                                el.setAttribute('tabindex', '-1');
+                                el.setAttribute('aria-disabled', 'true');
+                                el.style.pointerEvents = 'none';
+                                el.style.opacity = '0.45';
+                            });
+
+                            // Add a subtle overlay tint on the pane
+                            pane.style.position = 'relative';
+                        });
+                    }
+
+                    // Run immediately and also after each Bootstrap tab shown (lazy-loaded content)
+                    document.addEventListener('DOMContentLoaded', lockSteps);
+                    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(tab) {
+                        tab.addEventListener('shown.bs.tab', lockSteps);
+                    });
+                    // Run now in case DOM is already ready
+                    if (document.readyState !== 'loading') lockSteps();
+                })();
+                </script>
+                @endif
 
                 @else
                 <div class="row">
@@ -353,5 +496,48 @@
         @endsection
 
         @section('js')
-         
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Activer l'onglet correspondant au hash de l'URL
+                const hash = window.location.hash;
+                if (hash) {
+                    const tabLink = document.querySelector('a[href="' + hash + '"]');
+                    if (tabLink) {
+                        new bootstrap.Tab(tabLink).show();
+                    }
+                }
+
+                // Mettre à jour le hash à chaque changement d'onglet
+                document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabEl) {
+                    tabEl.addEventListener('shown.bs.tab', function (e) {
+                        history.replaceState(null, null, e.target.getAttribute('href'));
+                    });
+                });
+            });
+
+            function togglePhaseComplete(phase, projectId, btn) {
+                btn.disabled = true;
+                fetch('{{ route("togglePhaseCompleted") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ project_id: projectId, phase: phase }),
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alertify.error(data.message || 'An error occurred.');
+                        btn.disabled = false;
+                    }
+                })
+                .catch(function() {
+                    alertify.error('Network error. Please try again.');
+                    btn.disabled = false;
+                });
+            }
+        </script>
         @endsection
