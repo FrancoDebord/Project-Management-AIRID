@@ -300,67 +300,92 @@
                         'study_creation' => [
                             'bg'    => 'linear-gradient(90deg,#6c757d,#495057)',
                             'icon'  => 'bi-hourglass',
-                            'phase' => 'Step 1–3 — Study Creation & Protocol',
-                            'next'  => 'Schedule the Study Initiation Meeting to start identifying critical phases.',
+                            'phase' => 'Step 1 — Study Creation',
                             'tab'   => '#step1',
+                        ],
+                        'protocol_details' => [
+                            'bg'    => 'linear-gradient(90deg,#495057,#343a40)',
+                            'icon'  => 'bi-file-earmark-ruled',
+                            'phase' => 'Step 2 — Protocol Details',
+                            'tab'   => '#step2',
+                        ],
+                        'protocol_development' => [
+                            'bg'    => 'linear-gradient(90deg,#1a3a6b,#2a5aaa)',
+                            'icon'  => 'bi-file-earmark-code',
+                            'phase' => 'Step 3 — Protocol Development',
+                            'tab'   => '#step3',
                         ],
                         'planning' => [
                             'bg'    => 'linear-gradient(90deg,#0d6efd,#0950c5)',
                             'icon'  => 'bi-calendar2-week',
                             'phase' => 'Step 4 — Planning Phase',
-                            'next'  => 'Define and schedule project activities, then identify critical phases.',
                             'tab'   => '#step4',
                         ],
                         'experimental' => [
                             'bg'    => 'linear-gradient(90deg,#fd7e14,#c96d0f)',
                             'icon'  => 'bi-activity',
                             'phase' => 'Step 5 — Experimental Phase',
-                            'next'  => ($phase_metrics['activities']['done'] ?? 0) . '/' . ($phase_metrics['activities']['total'] ?? 0) . ' activities completed. Execute remaining activities.',
                             'tab'   => '#step5',
                         ],
                         'quality_assurance' => [
                             'bg'    => 'linear-gradient(90deg,#6f42c1,#4e2d8e)',
                             'icon'  => 'bi-shield-check',
                             'phase' => 'Step 6 — Quality Assurance',
-                            'next'  => ($phase_metrics['inspections']['done'] ?? 0) . '/' . ($phase_metrics['inspections']['total'] ?? 0) . ' inspections completed — '
-                                     . ($phase_metrics['nc_findings']['done'] ?? 0) . '/' . ($phase_metrics['nc_findings']['total'] ?? 0) . ' NC findings resolved.',
                             'tab'   => '#step6',
                         ],
                         'reporting' => [
                             'bg'    => 'linear-gradient(90deg,#20c997,#0f9d6b)',
                             'icon'  => 'bi-file-earmark-text',
                             'phase' => 'Step 7 — Report Phase',
-                            'next'  => ($phase_metrics['report_docs']['done'] ?? 0) . '/' . ($phase_metrics['report_docs']['total'] ?? 0) . ' report documents submitted/published.',
                             'tab'   => '#step7',
                         ],
                         'archiving' => [
                             'bg'    => 'linear-gradient(90deg,#198754,#0d5c38)',
                             'icon'  => 'bi-archive',
                             'phase' => 'Step 8 — Archiving Phase',
-                            'next'  => 'All archiving documents uploaded. Archive the project to finalize.',
                             'tab'   => '#step8',
                         ],
-                        'archived' => [
+                        'all_done' => [
                             'bg'    => 'linear-gradient(90deg,#1a3a6b,#c41230)',
                             'icon'  => 'bi-patch-check-fill',
                             'phase' => 'Project Completed & Archived',
-                            'next'  => 'This project has been successfully archived.',
                             'tab'   => '#step8',
                         ],
                     ];
-                    $banner = $phaseBanners[$project_phase] ?? $phaseBanners['study_creation'];
+
+                    $phaseOrderBlade = [
+                        'study_creation', 'protocol_details', 'protocol_development',
+                        'planning', 'experimental', 'quality_assurance', 'reporting', 'archiving',
+                    ];
+
+                    $banner       = $phaseBanners[$project_phase] ?? $phaseBanners['study_creation'];
+                    $dynamicNext  = $phaseStatuses[$project_phase]['next'] ?? null;
+
+                    // Next phase label
+                    $curIdx        = array_search($project_phase, $phaseOrderBlade);
+                    $nextPhaseKey  = ($curIdx !== false && $curIdx < count($phaseOrderBlade) - 1)
+                                        ? $phaseOrderBlade[$curIdx + 1] : null;
+                    $nextPhaseLabel = $nextPhaseKey ? ($phaseBanners[$nextPhaseKey]['phase'] ?? null) : null;
+                    $canCompleteNow = $phaseStatuses[$project_phase]['can_complete'] ?? false;
                 @endphp
                 <div class="d-flex align-items-center gap-3 mb-3 px-3 py-2 rounded-3"
                      style="background:{{ $banner['bg'] }};color:#fff;border:none;">
                     <i class="bi {{ $banner['icon'] }} fs-4 flex-shrink-0"></i>
                     <div class="flex-grow-1 small lh-sm">
-                        <div class="fw-bold" style="font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;opacity:.85;">
+                        <div class="fw-bold" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;opacity:.75;">
                             Current Phase
                         </div>
                         <div class="fw-bold" style="font-size:.95rem;">{{ $banner['phase'] }}</div>
+                        @if($dynamicNext)
                         <div style="opacity:.9;font-size:.82rem;">
-                            <i class="bi bi-arrow-right-circle me-1"></i>{{ $banner['next'] }}
+                            <i class="bi bi-{{ $canCompleteNow ? 'check-circle' : 'arrow-right-circle' }} me-1"></i>{{ $dynamicNext }}
                         </div>
+                        @endif
+                        @if($nextPhaseLabel && $project_phase !== 'all_done')
+                        <div style="opacity:.7;font-size:.75rem;margin-top:.15rem;">
+                            <i class="bi bi-chevron-double-right me-1"></i>Next: <strong>{{ $nextPhaseLabel }}</strong>
+                        </div>
+                        @endif
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div style="font-size:1.5rem;font-weight:700;line-height:1;">{{ $execution_rate }}%</div>

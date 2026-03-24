@@ -121,13 +121,13 @@
                         <table class="table table-hover align-middle mb-0" id="rpDocTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width:5%">#</th>
+                                    <th style="width:4%">#</th>
                                     <th style="width:14%">Type</th>
                                     <th>Titre</th>
                                     <th style="width:10%">Statut</th>
-                                    <th style="width:12%">Date</th>
-                                    <th style="width:15%">Lien / Fichier</th>
-                                    <th style="width:5%" class="text-center">Suppr.</th>
+                                    <th style="width:11%">Date</th>
+                                    <th style="width:14%">Lien / Fichier</th>
+                                    <th style="width:8%" class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -173,6 +173,11 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
+                                        <button class="btn btn-outline-primary btn-sm py-0 px-2 me-1"
+                                                onclick="editRpDoc({id:{{ $doc->id }},document_type:'{{ $doc->document_type }}',title:{{ json_encode($doc->title) }},description:{{ json_encode($doc->description ?? '') }},url:{{ json_encode($doc->url ?? '') }},doi:{{ json_encode($doc->doi ?? '') }},submission_date:'{{ $doc->submission_date ?? '' }}',status:'{{ $doc->status }}'})"
+                                                title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
                                         <button class="btn btn-outline-danger btn-sm py-0 px-2"
                                                 onclick="deleteRpDoc({{ $doc->id }})"
                                                 title="Supprimer">
@@ -198,13 +203,14 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content rounded-4 overflow-hidden">
             <div class="modal-header" style="background:linear-gradient(135deg,#1a3a6b,#2a5aaa);color:#fff;">
-                <h5 class="modal-title fw-bold">
+                <h5 class="modal-title fw-bold" id="rpDocModalTitle">
                     <i class="bi bi-plus-circle me-2"></i>Ajouter un document — Report Phase
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div id="rpDocError" class="alert alert-danger d-none mb-3"></div>
+                <input type="hidden" id="rpDocId" value="">
 
                 <div class="row g-3">
                     {{-- Type --}}
@@ -285,6 +291,7 @@
 
 <script>
 function openRpModal() {
+    document.getElementById('rpDocId').value          = '';
     document.getElementById('rpDocType').value        = '';
     document.getElementById('rpDocStatus').value      = 'draft';
     document.getElementById('rpDocTitle').value       = '';
@@ -294,6 +301,25 @@ function openRpModal() {
     document.getElementById('rpDocDoi').value         = '';
     document.getElementById('rpDocDate').value        = '';
     document.getElementById('rpDocError').classList.add('d-none');
+    document.getElementById('rpDocModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Ajouter un document — Report Phase';
+    document.getElementById('btnSaveRpDoc').innerHTML = '<i class="bi bi-save me-1"></i>Enregistrer';
+    rpToggleFields();
+    new bootstrap.Modal(document.getElementById('rpDocModal')).show();
+}
+
+function editRpDoc(doc) {
+    document.getElementById('rpDocId').value          = doc.id;
+    document.getElementById('rpDocType').value        = doc.document_type;
+    document.getElementById('rpDocStatus').value      = doc.status;
+    document.getElementById('rpDocTitle').value       = doc.title;
+    document.getElementById('rpDocDescription').value = doc.description;
+    document.getElementById('rpDocFile').value        = '';
+    document.getElementById('rpDocUrl').value         = doc.url;
+    document.getElementById('rpDocDoi').value         = doc.doi;
+    document.getElementById('rpDocDate').value        = doc.submission_date;
+    document.getElementById('rpDocError').classList.add('d-none');
+    document.getElementById('rpDocModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Modifier le document — Report Phase';
+    document.getElementById('btnSaveRpDoc').innerHTML = '<i class="bi bi-save me-1"></i>Mettre à jour';
     rpToggleFields();
     new bootstrap.Modal(document.getElementById('rpDocModal')).show();
 }
@@ -310,6 +336,8 @@ function rpToggleFields() {
 }
 
 function saveRpDoc() {
+    const docId       = document.getElementById('rpDocId').value;
+    const isEdit      = docId !== '';
     const type        = document.getElementById('rpDocType').value;
     const title       = document.getElementById('rpDocTitle').value.trim();
     const status      = document.getElementById('rpDocStatus').value;
@@ -343,18 +371,29 @@ function saveRpDoc() {
     if (fileInput.files.length > 0) {
         fd.append('file', fileInput.files[0]);
     }
+    if (isEdit) {
+        fd.append('document_id', docId);
+    }
 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Enregistrement…';
 
-    fetch('/ajax/save-report-document', { method: 'POST', body: fd })
+    const endpoint = isEdit ? '/ajax/update-report-document' : '/ajax/save-report-document';
+
+    fetch(endpoint, { method: 'POST', body: fd })
         .then(r => r.json())
         .then(data => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-save me-1"></i>Enregistrer';
+            btn.innerHTML = isEdit
+                ? '<i class="bi bi-save me-1"></i>Mettre à jour'
+                : '<i class="bi bi-save me-1"></i>Enregistrer';
             if (data.success) {
                 bootstrap.Modal.getInstance(document.getElementById('rpDocModal')).hide();
-                rpAddDocRow(data.document);
+                if (isEdit) {
+                    location.reload();
+                } else {
+                    rpAddDocRow(data.document);
+                }
             } else {
                 errDiv.textContent = data.message || 'Une erreur est survenue.';
                 errDiv.classList.remove('d-none');
@@ -362,7 +401,9 @@ function saveRpDoc() {
         })
         .catch(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-save me-1"></i>Enregistrer';
+            btn.innerHTML = isEdit
+                ? '<i class="bi bi-save me-1"></i>Mettre à jour'
+                : '<i class="bi bi-save me-1"></i>Enregistrer';
             errDiv.textContent = 'Erreur réseau.';
             errDiv.classList.remove('d-none');
         });

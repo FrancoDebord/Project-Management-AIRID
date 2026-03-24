@@ -127,6 +127,15 @@
                     ];
                 }
 
+                // IDs of critical-phase activities that already have an inspection performed
+                $inspectedCriticalIds = \DB::table('pro_qa_inspections')
+                    ->whereNotNull('activity_id')
+                    ->whereNotNull('date_performed')
+                    ->pluck('activity_id')
+                    ->toArray();
+
+                // Whether the experimental phase has been manually marked as completed
+                $experimentalPhaseDone = in_array('experimental', $project->phases_completed ?? []);
 
             @endphp
             <div class="card-body">
@@ -175,6 +184,11 @@
                                 <td>{{ $activite->personneResponsable ? $activite->personneResponsable->prenom . ' ' . $activite->personneResponsable->nom : 'N/A' }}
                                 </td>
                                 <td>
+                                    @php
+                                        $canReset = $activite->status === 'completed'
+                                            && !$experimentalPhaseDone
+                                            && !($activite->phase_critique && in_array($activite->id, $inspectedCriticalIds));
+                                    @endphp
                                     @if ($activite->status !== 'completed')
                                         <button class="btn btn-success btn-sm" onclick="openExecuteActivityModal({{ $activite->id }}, '{{ addslashes($activite->study_activity_name) }}')">
                                             <i class="bi bi-play-circle"></i> Exécuter
@@ -182,9 +196,19 @@
                                     @else
                                         <div class="d-flex flex-column gap-1">
                                             <span class="badge bg-success">✓ Done</span>
-                                            <button class="btn btn-outline-secondary btn-sm" onclick="resetActivityStatus({{ $activite->id }})">
-                                                <i class="bi bi-arrow-counterclockwise"></i> Revenir en pending
-                                            </button>
+                                            @if($canReset)
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="resetActivityStatus({{ $activite->id }})">
+                                                    <i class="bi bi-arrow-counterclockwise"></i> Revenir en pending
+                                                </button>
+                                            @elseif($experimentalPhaseDone)
+                                                <span class="text-muted" style="font-size:.72rem;">
+                                                    <i class="bi bi-lock me-1"></i>Phase complétée
+                                                </span>
+                                            @else
+                                                <span class="text-muted" style="font-size:.72rem;">
+                                                    <i class="bi bi-shield-check me-1"></i>Inspection réalisée
+                                                </span>
+                                            @endif
                                         </div>
                                     @endif
                                 </td>
@@ -270,6 +294,8 @@
 
     const events_all_activities = @json($events_all_activities);
 
+    let experimentalCalendar = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         const calendarEl = document.getElementById('calendar-experimental-phase');
         const dateInput = document.getElementById('actualActivityDate');
@@ -278,7 +304,7 @@
             dateInput.setAttribute('max', today);
         }
 
-        const calendar = new FullCalendar.Calendar(calendarEl, {
+        experimentalCalendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             headerToolbar: {
                 left: 'prev,next today',
@@ -291,19 +317,17 @@
             navLinks: true,
             height: 'auto',
             events: events_all_activities,
-            eventDidMount: function(arg) {
-                // ensure contrast: if dark bg make text white
-                // FullCalendar already uses textColor if provided
-            },
-            // show tooltip (title) on hover (simple)
-            eventMouseEnter: function(info) {
-                // optional: custom behavior
-            }
         });
 
-        calendar.render();
+        experimentalCalendar.render();
 
-
+        // Re-calculate dimensions each time the experimental tab becomes visible
+        const step5Tab = document.getElementById('step5-tab');
+        if (step5Tab) {
+            step5Tab.addEventListener('shown.bs.tab', function () {
+                experimentalCalendar.updateSize();
+            });
+        }
     });
 
     function showToast(message, type = 'success') {

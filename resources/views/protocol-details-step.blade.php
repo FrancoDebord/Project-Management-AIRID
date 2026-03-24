@@ -531,7 +531,7 @@
 @include('partials.supprimer-activite-dialog')
 
 <script>
-    // Gestion locale des filtres par zone
+    // ── Gestion locale des filtres par zone ──
     document.querySelectorAll('.zone-block').forEach(zone => {
         const chips = zone.querySelectorAll('.btn-chip');
         const rows = zone.querySelectorAll('tbody tr');

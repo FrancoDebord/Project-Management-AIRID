@@ -44,6 +44,7 @@
     .qa-dash .type-facility    { background: #0d6efd; }
     .qa-dash .type-process     { background: #6f42c1; }
     .qa-dash .type-study       { background: #198754; }
+    .qa-dash .type-protocol    { background: #0d9488; }
     .qa-dash .type-critical    { background: var(--qa-brand); }
     .qa-dash .insp-row:hover   { background: #fdf3f3; cursor: pointer; }
     .qa-dash .insp-row.selected { background: #fce8e8; }
@@ -194,11 +195,12 @@
                                 @foreach($all_inspections as $insp)
                                 @php
                                     $typeClass = match($insp->type_inspection) {
-                                        'Facility Inspection'       => 'type-facility',
-                                        'Process Inspection'        => 'type-process',
-                                        'Study Inspection'          => 'type-study',
-                                        'Critical Phase Inspection' => 'type-critical',
-                                        default                     => 'type-study',
+                                        'Facility Inspection'        => 'type-facility',
+                                        'Process Inspection'         => 'type-process',
+                                        'Study Inspection'           => 'type-study',
+                                        'Study Protocol Inspection'  => 'type-protocol',
+                                        'Critical Phase Inspection'  => 'type-critical',
+                                        default                      => 'type-study',
                                     };
                                     $isDone = !is_null($insp->date_performed);
                                 @endphp
@@ -242,6 +244,11 @@
                                         @elseif ($insp->type_inspection === 'Process Inspection')
                                         <a href="{{ route('checklist.processPrint', $insp->id) }}?mode=filled" target="_blank"
                                            class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1" title="Imprimer Process Checklist">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                        @elseif ($insp->type_inspection === 'Study Protocol Inspection')
+                                        <a href="{{ route('checklist.studyProtocolPrint', $insp->id) }}?mode=filled" target="_blank"
+                                           class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1" title="Imprimer Study Protocol Checklist">
                                             <i class="bi bi-printer"></i>
                                         </a>
                                         @endif

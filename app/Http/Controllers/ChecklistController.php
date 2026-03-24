@@ -288,6 +288,138 @@ class ChecklistController extends Controller
     }
 
     /**
+     * Amendment/Deviation Inspection Checklist (QA-PR-1-004/06).
+     * Single section, 8 YES/NO/NA questions + extra header fields.
+     * Used for both "Study Protocol Amendment/Deviation Inspection"
+     * and "Study Report Amendment Inspection".
+     */
+    private static function amendmentDeviationForm(): array
+    {
+        return [
+            'model'   => \App\Models\Pro_Cl_AmendmentDeviationInspection::class,
+            'letter'  => 'AD',
+            'title'   => 'Amendment & Deviations',
+            'doc_ref' => 'QA-PR-1-004/06',
+            'questions' => [
+                1 => 'Is there an amendment/ deviation N°',
+                2 => 'Is the number of pages over the total number of pages visible?',
+                3 => 'Is the study code written?',
+                4 => 'Is the study title stated?',
+                5 => 'Was the amendment/ deviation described appropriately?',
+                6 => 'Is the reason for the amendment/ deviation described stated?',
+                7 => 'Is the impact on the study described?',
+                8 => 'Was the amendment/ deviation signed by the Study Director?',
+            ],
+        ];
+    }
+
+    /** Returns true if the type uses the amendment/deviation form. */
+    private static function isAmendmentType(string $type): bool
+    {
+        return in_array($type, [
+            'Study Protocol Amendment/Deviation Inspection',
+            'Study Report Amendment Inspection',
+        ]);
+    }
+
+    /**
+     * Study Protocol Inspection — 6 sections (A–F).
+     */
+    private static function studyProtocolForms(): array
+    {
+        $model = \App\Models\Pro_Cl_StudyProtocolInspection::class;
+        return [
+            'sp-a' => [
+                'model'   => $model,
+                'section' => 'a',
+                'letter'  => 'A',
+                'title'   => 'General',
+                'questions' => [
+                    1  => 'Is the Study code provided?',
+                    2  => 'Is the Study title stated?',
+                    3  => 'Is the page number on each page and the total number of pages in the document?',
+                    4  => 'Are Study purpose/objectives clearly stated?',
+                    5  => 'Are the Sponsor name and address provided?',
+                    6  => 'Are Testing facility name and address provided?',
+                    7  => 'Is the Identity of study participants/test sites complete?',
+                    8  => 'Is the Proposed start date included?',
+                    9  => 'Is the Proposed termination date included?',
+                    10 => 'Is the Name of Study Director, Principal Investigator (where applicable) included?',
+                    11 => 'Is there a space for the Study Director, Management, the Principal Investigator (where applicable) and the Sponsor to sign and approve protocol?',
+                    12 => 'Are records to be maintained listed?',
+                    13 => 'Is the archive location of the list of records to be retained and length of time for which records will be retained stated?',
+                    14 => 'Is reference to test guideline(s) and/or method(s) used (where applicable)?',
+                    15 => 'Is the description of any acceptance criteria that must be fulfilled for the study to be considered to be valid (if applicable) stated?',
+                    16 => 'Is there a statement stating that the study is to GLP or not?',
+                    17 => 'Is there a space to show that the QAU Manager has verified the protocol?',
+                    18 => 'Are the procedures for the production of amendments and deviations described?',
+                    19 => 'Is a distribution list of the protocol included?',
+                    20 => 'Is the study timeline included?',
+                ],
+            ],
+            'sp-b' => [
+                'model'   => $model,
+                'section' => 'b',
+                'letter'  => 'B',
+                'title'   => 'Test System',
+                'questions' => [
+                    1 => 'Is the Test system described?',
+                    2 => 'Is the Source of test system stated?',
+                    3 => 'Are the Characteristics/status of test system described?',
+                    4 => 'Is the number of test system defined?',
+                ],
+            ],
+            'sp-c' => [
+                'model'   => $model,
+                'section' => 'c',
+                'letter'  => 'C',
+                'title'   => 'Test, Control & Reference Articles',
+                'questions' => [
+                    1 => 'Is the Name, CAS number or code number provided?',
+                    2 => 'Is the Supplier of test, control & ref. substance stated?',
+                    3 => 'Are Storage conditions information for the test, control, ref. substance stated?',
+                    4 => 'Is the Carrier or vehicle identified?',
+                    5 => 'Is the Concentration of test material stated?',
+                    6 => 'Is the frequency of applications stated?',
+                ],
+            ],
+            'sp-d' => [
+                'model'   => $model,
+                'section' => 'd',
+                'letter'  => 'D',
+                'title'   => 'Equipment',
+                'questions' => [
+                    1 => 'Are the Equipment needed for study available?',
+                    2 => 'Are Equipment calibrated and well maintained?',
+                ],
+            ],
+            'sp-e' => [
+                'model'   => $model,
+                'section' => 'e',
+                'letter'  => 'E',
+                'title'   => 'SOPs',
+                'questions' => [
+                    1 => 'Are SOPs to be used listed in the study protocol?',
+                    2 => 'Are the SOPs to be used in the study available?',
+                    3 => 'Have the SOPs been approved?',
+                    4 => 'Have the study personnel read, understood the SOPs to be used in the study?',
+                ],
+            ],
+            'sp-f' => [
+                'model'   => $model,
+                'section' => 'f',
+                'letter'  => 'F',
+                'title'   => 'Study Personnel',
+                'type'    => 'study_personnel', // special rendering
+                'questions' => [
+                    1 => 'Are study personnel appointed for study sufficient?',
+                ],
+                'staff_count' => 15,
+            ],
+        ];
+    }
+
+    /**
      * Index : liste des formulaires pour une inspection donnée.
      * Pour les Facility Inspections, affiche les 15 sections avec progression.
      */
@@ -335,7 +467,6 @@ class ChecklistController extends Controller
             $total          = count($processForms);
             $progress       = count($sectionsDone);
 
-            // Finding counts per section
             $findingCounts = \App\Models\Pro_QaInspectionFinding::where('inspection_id', $inspection_id)
                 ->whereNotNull('facility_section')
                 ->selectRaw('facility_section, count(*) as cnt')
@@ -350,6 +481,39 @@ class ChecklistController extends Controller
 
             return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
                 ->with('forms', $processForms);
+        }
+
+        if (self::isAmendmentType($inspection->type_inspection)) {
+            $form       = self::amendmentDeviationForm();
+            $modelClass = $form['model'];
+            $statuses   = ['amendment-deviation' => $modelClass::where('inspection_id', $inspection_id)->exists()];
+            $forms      = ['amendment-deviation' => $form];
+            return view('checklists.index', compact('inspection', 'forms', 'statuses'));
+        }
+
+        if ($inspection->type_inspection === 'Study Protocol Inspection') {
+            $spForms    = self::studyProtocolForms();
+            $firstForm  = reset($spForms);
+            $modelClass = $firstForm['model'];
+            $spRecord   = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $spRecord ? (array)($spRecord->sections_done ?? []) : [];
+            $total      = count($spForms);
+            $progress   = count($sectionsDone);
+
+            $findingCounts = \App\Models\Pro_QaInspectionFinding::where('inspection_id', $inspection_id)
+                ->whereNotNull('facility_section')
+                ->selectRaw('facility_section, count(*) as cnt')
+                ->groupBy('facility_section')
+                ->pluck('cnt', 'facility_section')
+                ->toArray();
+
+            $statuses = [];
+            foreach ($spForms as $slug => $form) {
+                $statuses[$slug] = in_array($form['section'], $sectionsDone);
+            }
+
+            return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
+                ->with('forms', $spForms);
         }
 
         $forms      = self::forms();
@@ -375,6 +539,18 @@ class ChecklistController extends Controller
                 ->with('error', 'Cette inspection ne peut pas être remplie avant sa date prévue (' . \Carbon\Carbon::parse($inspection->date_scheduled)->format('d/m/Y') . ').');
         }
 
+        // Amendment / Deviation Inspection (single-form, no prefix)
+        if ($slug === 'amendment-deviation' && self::isAmendmentType($inspection->type_inspection)) {
+            $form    = self::amendmentDeviationForm();
+            $record  = $form['model']::where('inspection_id', $inspection_id)->first();
+            $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
+                ->where('inspection_id', $inspection_id)
+                ->orderBy('id')
+                ->get();
+            $personnels = \App\Models\Pro_Personnel::orderBy('nom')->get();
+            return view('checklists.form', compact('inspection', 'slug', 'form', 'record', 'sectionFindings', 'personnels'));
+        }
+
         $facilityForms = self::getFacilityForms($inspection);
         if (isset($facilityForms[$slug])) {
             $form        = $facilityForms[$slug];
@@ -395,6 +571,21 @@ class ChecklistController extends Controller
         $processForms = self::processInspectionForms();
         if (isset($processForms[$slug])) {
             $form        = $processForms[$slug];
+            $record      = $form['model']::where('inspection_id', $inspection_id)->first();
+            $fieldPrefix = $form['section'] . '_';
+            $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
+                ->where('inspection_id', $inspection_id)
+                ->where('facility_section', $slug)
+                ->orderBy('id')
+                ->get();
+            $personnels = \App\Models\Pro_Personnel::orderBy('nom')->get();
+            return view('checklists.form', compact('inspection', 'slug', 'form', 'record', 'fieldPrefix', 'sectionFindings', 'personnels'));
+        }
+
+        // Study Protocol Inspection sections
+        $spForms = self::studyProtocolForms();
+        if (isset($spForms[$slug])) {
+            $form        = $spForms[$slug];
             $record      = $form['model']::where('inspection_id', $inspection_id)->first();
             $fieldPrefix = $form['section'] . '_';
             $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
@@ -450,6 +641,34 @@ class ChecklistController extends Controller
                 ->with('error', 'This inspection has been marked as completed. The form can no longer be modified.');
         }
 
+        // Amendment / Deviation Inspection
+        if ($slug === 'amendment-deviation' && self::isAmendmentType($inspection->type_inspection)) {
+            $form       = self::amendmentDeviationForm();
+            $modelClass = $form['model'];
+
+            $data = [
+                'inspection_id'    => $inspection_id,
+                'filled_by'        => auth()->id() ?? null,
+                'document_type'    => $request->input('document_type'),
+                'deviation_number' => $request->input('deviation_number'),
+                'amendment_number' => $request->input('amendment_number'),
+                'comments'         => $request->input('comments'),
+            ];
+            foreach (array_keys($form['questions']) as $n) {
+                $data["q{$n}"] = $request->input("q{$n}");
+            }
+
+            $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
+
+            if (!$inspection->date_performed) {
+                $inspection->date_performed = now()->toDateString();
+                $inspection->save();
+            }
+
+            return redirect('/project/create?project_id=' . $inspection->project_id . '#step6')
+                ->with('success', 'Amendment/Deviation checklist enregistré avec succès.');
+        }
+
         $facilityForms = self::getFacilityForms($inspection);
         if (isset($facilityForms[$slug])) {
             $form       = $facilityForms[$slug];
@@ -500,6 +719,48 @@ class ChecklistController extends Controller
                 $data["{$prefix}q{$n}"] = $request->input("{$prefix}q{$n}");
             }
             $data["{$prefix}comments"] = $request->input("{$prefix}comments");
+
+            // Append section to sections_done if not already present
+            $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $existing ? (array)($existing->sections_done ?? []) : [];
+            if (!in_array($section, $sectionsDone)) {
+                $sectionsDone[] = $section;
+            }
+            $data['sections_done'] = $sectionsDone;
+
+            $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
+
+            return redirect()->route('checklist.index', $inspection_id)
+                ->with('success', 'Section "' . strtoupper($section) . '. ' . $form['title'] . '" enregistrée avec succès.');
+        }
+
+        // Study Protocol Inspection sections
+        $spForms = self::studyProtocolForms();
+        if (isset($spForms[$slug])) {
+            $form       = $spForms[$slug];
+            $modelClass = $form['model'];
+            $section    = $form['section'];
+            $prefix     = $section . '_';
+
+            $data = [
+                'inspection_id' => $inspection_id,
+                'filled_by'     => auth()->id() ?? null,
+            ];
+
+            foreach (array_keys($form['questions']) as $n) {
+                $data["{$prefix}q{$n}"] = $request->input("{$prefix}q{$n}");
+            }
+            $data["{$prefix}comments"] = $request->input("{$prefix}comments");
+
+            // Section F special: staff training records
+            if (($form['type'] ?? '') === 'study_personnel') {
+                $staffCount = $form['staff_count'] ?? 15;
+                for ($i = 1; $i <= $staffCount; $i++) {
+                    $data["f_staff_{$i}_result"]  = $request->input("f_staff_{$i}_result");
+                    $data["f_staff_{$i}_level"]   = $request->input("f_staff_{$i}_level");
+                    $data["f_staff_{$i}_remarks"] = $request->input("f_staff_{$i}_remarks");
+                }
+            }
 
             // Append section to sections_done if not already present
             $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
@@ -623,6 +884,44 @@ class ChecklistController extends Controller
     }
 
     /**
+     * Study Protocol Inspection print view.
+     * ?mode=empty pour formulaire vierge, ?mode=filled (défaut) pour formulaire rempli.
+     */
+    public function studyProtocolPrint(int $inspection_id, Request $request)
+    {
+        $inspection  = Pro_QaInspection::with('inspector', 'project')->findOrFail($inspection_id);
+        abort_if($inspection->type_inspection !== 'Study Protocol Inspection', 404);
+
+        $spForms = self::studyProtocolForms();
+        $record  = \App\Models\Pro_Cl_StudyProtocolInspection::where('inspection_id', $inspection_id)->first();
+        $mode    = $request->query('mode', 'filled');
+        $keyPersonnels = self::keyPersonnels();
+
+        return view('checklists.study-protocol-print', compact(
+            'inspection', 'spForms', 'record', 'mode', 'keyPersonnels'
+        ));
+    }
+
+    /**
+     * Amendment/Deviation Inspection print view.
+     * ?mode=empty pour formulaire vierge, ?mode=filled (défaut) pour formulaire rempli.
+     */
+    public function amendmentPrint(int $inspection_id, Request $request)
+    {
+        $inspection  = Pro_QaInspection::with('inspector', 'project')->findOrFail($inspection_id);
+        abort_if(!self::isAmendmentType($inspection->type_inspection), 404);
+
+        $form   = self::amendmentDeviationForm();
+        $record = $form['model']::where('inspection_id', $inspection_id)->first();
+        $mode   = $request->query('mode', 'filled');
+        $keyPersonnels = self::keyPersonnels();
+
+        return view('checklists.amendment-print', compact(
+            'inspection', 'form', 'record', 'mode', 'keyPersonnels'
+        ));
+    }
+
+    /**
      * Report : génère le rapport QA Unit Report pour une inspection.
      */
     public function report(int $inspection_id)
@@ -636,7 +935,7 @@ class ChecklistController extends Controller
         $forms        = self::forms();
         $keyPersonnels = self::keyPersonnels();
 
-        // Section metadata for grouping findings (Facility/Process only)
+        // Section metadata for grouping findings (Facility/Process/StudyProtocol only)
         $sectionsMeta = [];
         if ($inspection->type_inspection === 'Facility Inspection') {
             $facilityForms = self::getFacilityForms($inspection);
@@ -646,6 +945,11 @@ class ChecklistController extends Controller
         } elseif ($inspection->type_inspection === 'Process Inspection') {
             $processForms = self::processInspectionForms();
             foreach ($processForms as $slug => $form) {
+                $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
+            }
+        } elseif ($inspection->type_inspection === 'Study Protocol Inspection') {
+            $spForms = self::studyProtocolForms();
+            foreach ($spForms as $slug => $form) {
                 $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
             }
         }
@@ -666,7 +970,7 @@ class ChecklistController extends Controller
 
         $keyPersonnels = self::keyPersonnels();
 
-        // Section metadata for grouping findings (Facility/Process only)
+        // Section metadata for grouping findings (Facility/Process/StudyProtocol only)
         $sectionsMeta = [];
         if ($inspection->type_inspection === 'Facility Inspection') {
             $facilityForms = self::getFacilityForms($inspection);
@@ -676,6 +980,11 @@ class ChecklistController extends Controller
         } elseif ($inspection->type_inspection === 'Process Inspection') {
             $processForms = self::processInspectionForms();
             foreach ($processForms as $slug => $form) {
+                $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
+            }
+        } elseif ($inspection->type_inspection === 'Study Protocol Inspection') {
+            $spForms = self::studyProtocolForms();
+            foreach ($spForms as $slug => $form) {
                 $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
             }
         }

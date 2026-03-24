@@ -32,18 +32,14 @@
 
                      <div class="row">
                          <div class="mb-3 col">
-                             <label for="study_sub_category_id" class="form-label">Study Type</label>
-                             <select name="study_sub_category_id" id="study_sub_category_id" class="form-control selectpicker   show-tick"
-                                 required data-live-search="true">
-                                 {{-- <option value="">Select a Study Type...</option> --}}
+                             <label for="study_sub_category_id" class="form-label">Sub-Category</label>
+                             <select name="study_sub_category_id" id="study_sub_category_id" class="form-select" required>
                              </select>
                          </div>
 
-
                          <div class="mb-3 col">
                              <label for="parent_activity_id" class="form-label">Parent Activity</label>
-                             <select name="parent_activity_id" id="parent_activity_id" class="form-control selectpicker show-tick" data-live-search="true">
-                                 {{-- <option value="">Select a Parent Activity...</option> --}}
+                             <select name="parent_activity_id" id="parent_activity_id" class="form-select">
                              </select>
                          </div>
 
@@ -79,11 +75,7 @@
                              <label for="should_be_performed_by" class="form-label">Responsible Person for this activity
                              </label>
                              <select name="should_be_performed_by" id="should_be_performed_by"
-                                 class="form-control selectpicker  show-tick " data-live-search="true" required>
-                                 {{-- @foreach ($all_personnels as $personnel)
-                                     <option value="{{ $personnel->id }}">{{ $personnel->prenom }} {{ $personnel->nom }}
-                                     </option>
-                                 @endforeach --}}
+                                 class="form-select" required>
                              </select>
                          </div>
                      </div>

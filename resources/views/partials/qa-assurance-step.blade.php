@@ -430,10 +430,11 @@
                                         <td>
                                             @php
                                                 $typeColor = match($inspection->type_inspection) {
-                                                    'Critical Phase Inspection' => '#6f42c1',
-                                                    'Study Inspection'          => '#0d6efd',
-                                                    'Process Inspection'        => '#fd7e14',
-                                                    default                     => '#6c757d',
+                                                    'Critical Phase Inspection'  => '#6f42c1',
+                                                    'Study Inspection'           => '#0d6efd',
+                                                    'Study Protocol Inspection'  => '#0d9488',
+                                                    'Process Inspection'         => '#fd7e14',
+                                                    default                      => '#6c757d',
                                                 };
                                             @endphp
                                             @if ($inspection->inspection_name)
@@ -671,10 +672,11 @@
                                 @foreach ($all_project_findings as $fi)
                                     @php
                                         $inspColor = match($fi->inspection?->type_inspection) {
-                                            'Critical Phase Inspection' => '#6f42c1',
-                                            'Study Inspection'          => '#0d6efd',
-                                            'Process Inspection'        => '#fd7e14',
-                                            default                     => '#6c757d',
+                                            'Critical Phase Inspection'  => '#6f42c1',
+                                            'Study Inspection'           => '#0d6efd',
+                                            'Study Protocol Inspection'  => '#0d9488',
+                                            'Process Inspection'         => '#fd7e14',
+                                            default                      => '#6c757d',
                                         };
                                     @endphp
                                     <tr class="finding-row" data-inspection-id="{{ $fi->inspection_id }}">
@@ -864,6 +866,7 @@
                             <option value="">— Sélectionner un type —</option>
                             <option value="Critical Phase Inspection">Critical Phase Inspection</option>
                             <option value="Study Inspection">Study Inspection</option>
+                            <option value="Study Protocol Inspection">Study Protocol Inspection</option>
                             <option value="Process Inspection">Process Inspection</option>
                             <option value="Facility Inspection">Facility Inspection</option>
                         </select>

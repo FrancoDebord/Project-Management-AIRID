@@ -109,14 +109,48 @@
                         aria-valuemin="0" aria-valuemax="100">{{ $execution_rate }}%</div>
                 </div>
 
-                <p class="mt-3 mb-0">Overall project execution rate: <strong>{{ $execution_rate }}%</strong></p>
+                <p class="mt-3 mb-0 small text-muted">Overall execution rate: <strong class="{{ $execution_rate >= 100 ? 'text-success' : ($execution_rate >= 60 ? 'text-primary' : 'text-danger') }}">{{ $execution_rate }}%</strong></p>
                 @if(!empty($phase_metrics))
-                <ul class="list-unstyled small text-muted mt-2 mb-0" style="font-size:.82rem;">
-                    <li><i class="bi bi-check2-circle me-1"></i>Activities: <strong>{{ $phase_metrics['activities']['done'] }}/{{ $phase_metrics['activities']['total'] }}</strong></li>
-                    <li><i class="bi bi-shield-check me-1"></i>QA Inspections: <strong>{{ $phase_metrics['inspections']['done'] }}/{{ $phase_metrics['inspections']['total'] }}</strong></li>
-                    <li><i class="bi bi-exclamation-triangle me-1"></i>NC Findings resolved: <strong>{{ $phase_metrics['nc_findings']['done'] }}/{{ $phase_metrics['nc_findings']['total'] }}</strong></li>
-                    <li><i class="bi bi-file-earmark-text me-1"></i>Report documents: <strong>{{ $phase_metrics['report_docs']['done'] }}/{{ $phase_metrics['report_docs']['total'] }}</strong></li>
-                    <li><i class="bi bi-archive me-1"></i>Archiving: <strong>{{ $phase_metrics['archiving']['done'] ? 'Done' : 'Pending' }}</strong></li>
+                @php
+                    $metricRows = [
+                        ['key' => 'activities',   'label' => 'Activités de l\'étude',     'icon' => 'bi-list-check',          'type' => 'count'],
+                        ['key' => 'protocol_dev', 'label' => 'Documents Protocol Dev',    'icon' => 'bi-file-earmark-code',   'type' => 'count'],
+                        ['key' => 'inspections',  'label' => 'Inspections QA',             'icon' => 'bi-shield-check',        'type' => 'count'],
+                        ['key' => 'nc_findings',  'label' => 'NC findings résolus',        'icon' => 'bi-exclamation-triangle','type' => 'count'],
+                        ['key' => 'report_docs',  'label' => 'Rapport (document soumis)',  'icon' => 'bi-file-earmark-text',   'type' => 'milestone'],
+                        ['key' => 'archiving',    'label' => 'Archivage',                  'icon' => 'bi-archive',             'type' => 'milestone'],
+                    ];
+                @endphp
+                <ul class="list-unstyled mt-2 mb-0">
+                    @foreach($metricRows as $row)
+                        @php
+                            $m = $phase_metrics[$row['key']] ?? ['total' => 0, 'done' => 0];
+                            if ($row['type'] === 'milestone') {
+                                $isDone  = (bool) $m['done'];
+                                $label   = $isDone ? 'Fait' : 'En attente';
+                                $isNA    = false;
+                            } else {
+                                $isNA    = $m['total'] === 0;
+                                $isDone  = !$isNA && $m['done'] >= $m['total'];
+                                $label   = $isNA ? 'N/A' : $m['done'] . '/' . $m['total'];
+                            }
+                        @endphp
+                        <li class="d-flex align-items-center gap-2 py-1 border-bottom" style="font-size:.8rem;">
+                            @if($isNA)
+                                <i class="bi bi-dash-circle text-secondary flex-shrink-0" style="font-size:.9rem;"></i>
+                                <span class="text-muted flex-grow-1">{{ $row['label'] }}</span>
+                                <span class="badge bg-light text-secondary border" style="font-size:.68rem;">N/A</span>
+                            @elseif($isDone)
+                                <i class="bi bi-check-circle-fill text-success flex-shrink-0" style="font-size:.9rem;"></i>
+                                <span class="text-muted flex-grow-1">{{ $row['label'] }}</span>
+                                <span class="badge bg-success" style="font-size:.68rem;">{{ $label }}</span>
+                            @else
+                                <i class="bi bi-x-circle-fill text-danger flex-shrink-0" style="font-size:.9rem;"></i>
+                                <span class="fw-semibold flex-grow-1" style="color:#dc3545;">{{ $row['label'] }}</span>
+                                <span class="badge bg-danger" style="font-size:.68rem;">{{ $label }}</span>
+                            @endif
+                        </li>
+                    @endforeach
                 </ul>
                 @endif
 

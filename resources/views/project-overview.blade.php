@@ -55,7 +55,7 @@
             {{ ucfirst($project->project_stage ?? 'Unknown') }}
             @if($project->archived_at) <i class="bi bi-lock-fill ms-1"></i>@endif
         </span>
-        <a href="{{ route('index', ['project_id' => $project->id]) }}" class="btn btn-light btn-sm fw-semibold">
+        <a href="{{ route('project.create', ['project_id' => $project->id]) }}" class="btn btn-light btn-sm fw-semibold">
             <i class="bi bi-pencil-square me-1"></i>Manage
         </a>
     </div>

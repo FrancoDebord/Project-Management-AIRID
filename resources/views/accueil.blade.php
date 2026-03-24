@@ -30,178 +30,306 @@
 @section('content')
     <h1 class="h3 fw-semibold mb-4">Tableau de bord</h1>
 
-    {{-- KPI --}}
-    <div class="row g-4 mb-5">
-        {{-- KPI 1 --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card bg-white p-3">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon bg-primary text-white me-3"><i class="bi bi-graph-up"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Projets soumis</h6>
-                        <h3 class="fw-semibold mb-0">{{ $projectsCount }}</h3>
+    {{-- ── KPI Cards ── --}}
+    <div class="row g-3 mb-4">
+
+        {{-- KPI 1 : Projets en cours --}}
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #198754 !important;">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width:48px;height:48px;background:#d1e7dd;">
+                        <i class="bi bi-play-circle-fill fs-4" style="color:#198754;"></i>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="text-muted small mb-1">Projets en cours</div>
+                        <div class="fw-bold" style="font-size:1.6rem;line-height:1;color:#198754;">{{ $kpiInProgress }}</div>
+                        <div class="text-muted mt-1" style="font-size:.72rem;">
+                            sur {{ $totalProjects }} projet{{ $totalProjects > 1 ? 's' : '' }} au total
+                            @if($kpiByStage['suspended'] > 0)
+                                · <span class="text-warning">{{ $kpiByStage['suspended'] }} suspendu{{ $kpiByStage['suspended'] > 1 ? 's' : '' }}</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- KPI 2 --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card bg-white p-3">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon bg-success text-white me-3"><i class="bi bi-people"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Utilisateurs actifs</h6>
-                        <h3 class="fw-semibold mb-0">{{ $activeUsers }}</h3>
+        {{-- KPI 2 : NC ouvertes --}}
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #dc3545 !important;">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width:48px;height:48px;background:#f8d7da;">
+                        <i class="bi bi-exclamation-triangle-fill fs-4" style="color:#dc3545;"></i>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="text-muted small mb-1">Non-conformités ouvertes</div>
+                        <div class="fw-bold {{ $kpiOpenNc > 0 ? 'text-danger' : 'text-success' }}" style="font-size:1.6rem;line-height:1;">{{ $kpiOpenNc }}</div>
+                        <div class="text-muted mt-1" style="font-size:.72rem;">
+                            @if($kpiOpenNc === 0)
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>Tout est résolu</span>
+                            @else
+                                findings en attente de résolution
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- KPI 3 --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card bg-white p-3">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon bg-warning text-white me-3"><i class="bi bi-cash-stack"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Budget total (€)</h6>
-                        <h3 class="fw-semibold mb-0">{{ number_format($totalBudget, 2, ',', ' ') }}</h3>
+        {{-- KPI 3 : Inspections en attente --}}
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #6f42c1 !important;">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width:48px;height:48px;background:#e9d8fd;">
+                        <i class="bi bi-shield-exclamation fs-4" style="color:#6f42c1;"></i>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="text-muted small mb-1">Inspections QA en attente</div>
+                        <div class="fw-bold" style="font-size:1.6rem;line-height:1;color:#6f42c1;">{{ $kpiPendingInspections }}</div>
+                        <div class="text-muted mt-1" style="font-size:.72rem;">
+                            @if(count($projectsNeedingInspection) > 0)
+                                <span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i>{{ count($projectsNeedingInspection) }} projet{{ count($projectsNeedingInspection) > 1 ? 's' : '' }} nécessitent une inspection</span>
+                            @else
+                                inspections non encore clôturées
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- KPI 4 --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card kpi-card bg-white p-3">
-                <div class="d-flex align-items-center">
-                    <div class="kpi-icon bg-danger text-white me-3"><i class="bi bi-list-task"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Tâches en cours</h6>
-                        <h3 class="fw-semibold mb-0">{{ $tasksInProgress }}</h3>
+        {{-- KPI 4 : Taux d'achèvement moyen --}}
+        <div class="col-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #0d6efd !important;">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width:48px;height:48px;background:#cfe2ff;">
+                        <i class="bi bi-speedometer2 fs-4" style="color:#0d6efd;"></i>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="text-muted small mb-1">Achèvement moyen</div>
+                        <div class="fw-bold text-primary" style="font-size:1.6rem;line-height:1;">{{ $kpiAvgCompletion }}%</div>
+                        <div class="mt-1" style="font-size:.72rem;">
+                            <div class="progress" style="height:4px;border-radius:2px;">
+                                <div class="progress-bar bg-primary" style="width:{{ $kpiAvgCompletion }}%;"></div>
+                            </div>
+                            <span class="text-muted mt-1 d-block">
+                                {{ $kpiByStage['completed'] + $kpiByStage['archived'] }} terminé{{ ($kpiByStage['completed'] + $kpiByStage['archived']) > 1 ? 's' : '' }}
+                                / archivé{{ ($kpiByStage['completed'] + $kpiByStage['archived']) > 1 ? 's' : '' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
 
+    <style>
+        .proj-card {
+            border-radius: .75rem;
+            border: 1px solid #e8ecf0;
+            transition: box-shadow .15s, transform .15s;
+        }
+        .proj-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
+        .proj-stage-bar { width: 4px; border-radius: .75rem 0 0 .75rem; flex-shrink: 0; min-height: 100%; }
+        .proj-stat-cell { background: #f4f6fb; border-radius: .4rem; padding: .3rem .4rem; text-align: center; }
+        .proj-stat-cell .count { font-size: .92rem; font-weight: 700; line-height: 1.1; }
+        .proj-stat-cell .lbl   { font-size: .62rem; color: #888; line-height: 1.1; }
+        .proj-milestone { font-size: .75rem; }
+        .stage-filter-link { text-decoration: none; border-radius: .4rem; padding: .3rem .65rem; font-size: .8rem; display: inline-flex; align-items: center; gap: .3rem; opacity: .7; transition: opacity .15s, box-shadow .15s; }
+        .stage-filter-link:hover, .stage-filter-link.active { opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,.15); font-weight: 700; }
+    </style>
 
-    {{-- Graphique budgets --}}
-    {{-- <div class="card shadow-sm border-0 rounded-4 p-4">
-        <h5 class="mb-3">Évolution du budget par mois</h5>
-        <canvas id="budgetChart" height="100"></canvas>
-    </div> --}}
-
-
-    <div class="row mt-3" style="background-color: #fff; padding: 10px; border-radius: 10px;">
-        <div class="col-12 mt-2">
-            <h1 class="mt-3">Overview of all projects</h1>
-        </div>
-
-        <div class="col-12 mt-3 text-center">
-            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                <button type="button" class="btn btn-outline-danger all_projects">All Projects</button>
-                <button type="button" class="btn btn-outline-warning not_started_projects">Not started
-                    Projects</button>
-                <button type="button" class="btn btn-outline-success in_progress_project">In progress</button>
-                <button type="button" class="btn btn-outline-primary suspended_projects">Suspended</button>
-                <button type="button" class="btn btn-outline-secondary completed_projects">Completed</button>
-                <button type="button" class="btn btn-outline-dark archived_projects">Archived</button>
+    <div class="mt-4">
+        {{-- Section header + filters --}}
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-grid-3x3-gap me-2 text-danger"></i>Vue d'ensemble des projets
+                @php $displayCount = $all_projects->total(); @endphp
+                <span class="badge bg-secondary ms-2" style="font-size:.75rem;">{{ $displayCount }}</span>
+            </h5>
+            <div class="d-flex flex-wrap gap-1">
+                @php
+                    $filterLinks = [
+                        'all'         => ['label' => 'Tous',         'count' => $totalProjects,               'bg' => '#343a40', 'color' => '#fff'],
+                        'in_progress' => ['label' => 'En cours',     'count' => $kpiByStage['in_progress'],   'bg' => '#d1e7dd', 'color' => '#0a3622'],
+                        'not_started' => ['label' => 'Non démarré',  'count' => $kpiByStage['not_started'],   'bg' => '#e9ecef', 'color' => '#495057'],
+                        'suspended'   => ['label' => 'Suspendu',     'count' => $kpiByStage['suspended'],     'bg' => '#fff3cd', 'color' => '#664d03'],
+                        'completed'   => ['label' => 'Terminé',      'count' => $kpiByStage['completed'],     'bg' => '#cfe2ff', 'color' => '#084298'],
+                        'archived'    => ['label' => 'Archivé',      'count' => $kpiByStage['archived'],      'bg' => '#dee2e6', 'color' => '#212529'],
+                    ];
+                @endphp
+                @foreach($filterLinks as $key => $fl)
+                    <a href="{{ route('indexPage', array_filter(['stage' => $key === 'all' ? null : $key])) }}"
+                       class="stage-filter-link {{ $stageFilter === $key || ($key === 'all' && $stageFilter === 'all') ? 'active' : '' }}"
+                       style="background:{{ $fl['bg'] }};color:{{ $fl['color'] }};">
+                        {{ $fl['label'] }}
+                        <span class="badge ms-1" style="background:rgba(0,0,0,.18);color:#fff;font-size:.65rem;">{{ $fl['count'] }}</span>
+                    </a>
+                @endforeach
             </div>
         </div>
 
-        <div class="col-12 ">
-            <div class="row">
-                @forelse ($all_projects as $project)
-                    @php
-                        $phase = $project->project_stage;
+        {{-- Project grid --}}
+        <div class="row g-3">
+            @forelse ($all_projects as $project)
+                @php
+                    $stage = $project->project_stage ?? '';
+                    $stageLabel = match($stage) {
+                        'in progress' => 'En cours',
+                        'not_started' => 'Non démarré',
+                        'suspended'   => 'Suspendu',
+                        'completed'   => 'Terminé',
+                        'archived'    => 'Archivé',
+                        'NA'          => 'N/A',
+                        default       => $stage ?: '—',
+                    };
+                    $stageBadge = match($stage) {
+                        'in progress' => 'bg-success',
+                        'not_started' => 'bg-secondary',
+                        'suspended'   => 'bg-warning text-dark',
+                        'completed'   => 'bg-primary',
+                        'archived'    => 'bg-dark',
+                        default       => 'bg-light text-dark border',
+                    };
+                    $stageColor = match($stage) {
+                        'in progress' => '#198754',
+                        'not_started' => '#adb5bd',
+                        'suspended'   => '#ffc107',
+                        'completed'   => '#0d6efd',
+                        'archived'    => '#343a40',
+                        default       => '#dee2e6',
+                    };
 
-                        $class_phase = 'all projet ';
-                        $progress_class = '';
+                    $sc  = $projectScores[$project->id] ?? [
+                        'overall'=>0,'totalAct'=>0,'doneAct'=>0,'totalInsp'=>0,'doneInsp'=>0,
+                        'totalNc'=>0,'doneNc'=>0,'reportMilestone'=>0,'archiveMilestone'=>0,'phasesCount'=>0,
+                    ];
+                    $pct      = $sc['overall'];
+                    $barColor = $pct >= 80 ? '#198754' : ($pct >= 50 ? '#ffc107' : '#dc3545');
+                    $pctColor = $pct >= 80 ? 'text-success' : ($pct >= 50 ? 'text-warning' : 'text-danger');
+                    $needsQa  = in_array($project->id, $projectsNeedingInspection);
+                    $startDate = $project->date_debut_effective
+                        ? \Carbon\Carbon::parse($project->date_debut_effective)->format('d/m/Y') : '—';
+                    $endDate = $project->date_fin_effective
+                        ? \Carbon\Carbon::parse($project->date_fin_effective)->format('d/m/Y') : '—';
+                @endphp
 
-                        if ($phase == 'in progress') {
-                            $class_phase .= '  in_progress';
-                            $progress_class = 'bg-success';
-                        } elseif ($phase == 'not_started') {
-                            $class_phase .= '  not_started';
-                            $progress_class = 'bg-danger';
-                        } elseif ($phase == 'suspended') {
-                            $class_phase .= '  suspended';
-                            $progress_class = 'bg-primary';
-                        } elseif ($phase == 'completed') {
-                            $class_phase .= '  completed';
-                            $progress_class = 'bg-secondary';
-                        } elseif ($phase == 'archived') {
-                            $class_phase .= '  archived';
-                            $progress_class = 'bg-dark';
-                        }
+                <div class="col-12 col-sm-6 col-xl-4">
+                    <div class="proj-card bg-white d-flex h-100 overflow-hidden">
+                        <div class="proj-stage-bar" style="background:{{ $stageColor }};"></div>
+                        <div class="p-3 flex-grow-1 d-flex flex-column" style="min-width:0;">
 
-                    @endphp
-                    <div class="col-12 col-sm-6 col-md-4 mt-3 {{ $class_phase }}">
-                        <div class="row div-project" style="{{ in_array($project->id, $projectsNeedingInspection) ? 'border: 2px solid #f0ad4e !important;' : '' }}">
-                            <div class="col-12 d-flex align-items-center justify-content-between gap-2">
-                                <h6 class="project-title mb-0">Project : {{ $project->project_code }}</h6>
-                                @if(in_array($project->id, $projectsNeedingInspection))
-                                <span class="badge bg-warning text-dark"
-                                      title="Des activités critiques exécutées n'ont pas d'inspection QA programmée"
-                                      style="font-size:.72rem; white-space:nowrap;">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Inspection QA requise
+                            {{-- Header --}}
+                            <div class="d-flex align-items-start justify-content-between mb-1 gap-2">
+                                <div style="min-width:0;">
+                                    <div class="fw-bold text-dark" style="font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                        {{ $project->project_code ?? '—' }}
+                                    </div>
+                                    <div class="text-muted small text-truncate">{{ $project->project_title ?? '—' }}</div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                                    <span class="badge {{ $stageBadge }}" style="font-size:.68rem;">{{ $stageLabel }}</span>
+                                    @if($needsQa)
+                                        <span class="badge bg-warning text-dark" title="Activités critiques sans inspection QA" style="font-size:.65rem;">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> QA
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Dates --}}
+                            <div class="text-muted mb-2" style="font-size:.73rem;">
+                                <i class="bi bi-calendar2-range me-1"></i>{{ $startDate }} → {{ $endDate }}
+                            </div>
+
+                            {{-- Progress --}}
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1" style="font-size:.78rem;">
+                                    <span class="text-muted">Progression</span>
+                                    <span class="fw-bold {{ $pctColor }}">{{ $pct }}%</span>
+                                </div>
+                                <div class="progress" style="height:6px; border-radius:3px; background:#e9ecef;">
+                                    <div class="progress-bar" style="width:{{ $pct }}%; background:{{ $barColor }}; border-radius:3px;"></div>
+                                </div>
+                            </div>
+
+                            {{-- Stats --}}
+                            <div class="row g-1 mb-2">
+                                <div class="col-4">
+                                    <div class="proj-stat-cell">
+                                        <div class="count text-primary">{{ $sc['doneAct'] }}<span class="text-muted fw-normal">/{{ $sc['totalAct'] }}</span></div>
+                                        <div class="lbl">Activités</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="proj-stat-cell">
+                                        <div class="count" style="color:#6f42c1;">{{ $sc['doneInsp'] }}<span class="text-muted fw-normal">/{{ $sc['totalInsp'] }}</span></div>
+                                        <div class="lbl">Inspections</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="proj-stat-cell">
+                                        <div class="count text-danger">{{ $sc['doneNc'] }}<span class="text-muted fw-normal">/{{ $sc['totalNc'] }}</span></div>
+                                        <div class="lbl">NC résolues</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Milestones --}}
+                            <div class="d-flex align-items-center flex-wrap gap-2 mb-2" style="font-size:.75rem;">
+                                <span class="{{ $sc['reportMilestone'] ? 'text-success' : 'text-muted' }}">
+                                    <i class="bi {{ $sc['reportMilestone'] ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-x' }} me-1"></i>Rapport
                                 </span>
-                                @endif
-                            </div>
-                            <div class="col-12">
-                                <p class="project-title">Date Start :
-                                    {{ $project->date_debut_effective ? date('d/m/Y', strtotime($project->date_debut_effective)) : 'Unknown' }}
-                                </p>
-                            </div>
-                            <div class="col-12">
-                                <p class="project-title">Date End :
-                                    {{ $project->date_fin_effective ? date('d/m/Y', strtotime($project->date_fin_effective)) : 'Unknown' }}
-                                </p>
-                            </div>
-                            <div class="col-12">
-                                <p class="project-title">Stage : {{ $project->project_stage }}</p>
+                                <span class="{{ $sc['archiveMilestone'] ? 'text-success' : 'text-muted' }}">
+                                    <i class="bi {{ $sc['archiveMilestone'] ? 'bi-archive-fill' : 'bi-archive' }} me-1"></i>Archivage
+                                </span>
+                                <span class="ms-auto text-muted" style="font-size:.7rem;">
+                                    <i class="bi bi-check2-square me-1"></i>{{ $sc['phasesCount'] }}/8 phases
+                                </span>
                             </div>
 
-                            @php
-                        $sc = $projectScores[$project->id] ?? ['overall'=>0,'actScore'=>0,'critScore'=>0,'findScore'=>0,'reportScore'=>0,'archiveScore'=>0];
-                        $pct = $sc['overall'];
-                        $barColor = $pct >= 80 ? 'bg-success' : ($pct >= 50 ? 'bg-warning' : 'bg-danger');
-                    @endphp
-                            <div class="col-12 mt-2">
-                                <div class="d-flex justify-content-between small text-muted mb-1">
-                                    <span>Progress</span><span class="fw-semibold">{{ $pct }}%</span>
-                                </div>
-                                <div class="progress" style="height:8px;">
-                                    <div class="progress-bar {{ $barColor }}"
-                                         role="progressbar"
-                                         style="width:{{ $pct }}%"
-                                         aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 mt-1" style="font-size:.68rem;">
-                                    <span class="badge bg-light text-dark border" title="Activities">Act {{ $sc['actScore'] }}%</span>
-                                    <span class="badge bg-light text-dark border" title="Inspections">Insp {{ $sc['critScore'] }}%</span>
-                                    <span class="badge bg-light text-dark border" title="Findings">Find {{ $sc['findScore'] }}%</span>
-                                    <span class="badge bg-light text-dark border" title="Report">Rep {{ $sc['reportScore'] }}%</span>
-                                    <span class="badge bg-light text-dark border" title="Archiving">Arch {{ $sc['archiveScore'] }}%</span>
-                                </div>
-                            </div>
-                            <div class="col-12 mt-2">
-                                <a href="{{ route('projectOverview', $project->id) }}" class="btn btn-outline-danger btn-sm">
-                                    <i class="bi bi-bar-chart-line me-1"></i>Details
+                            {{-- Actions --}}
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="{{ route('project.create', ['project_id' => $project->id]) }}"
+                                   class="btn btn-sm btn-danger flex-grow-1" style="font-size:.78rem;">
+                                    <i class="bi bi-kanban me-1"></i>Gérer
+                                </a>
+                                <a href="{{ route('projectOverview', $project->id) }}"
+                                   class="btn btn-sm btn-outline-secondary" title="Vue d'ensemble" style="font-size:.78rem;">
+                                    <i class="bi bi-bar-chart-line"></i>
                                 </a>
                             </div>
+
                         </div>
                     </div>
-                @empty
-                    <div class="col-12">
-                        <p class="alert alert-danger text-center mt-2">
-                            <i class="fa fa-exclamation-circle">&nbsp;</i> No projects registered yet.
-                        </p>
+                </div>
+            @empty
+                <div class="col-12">
+                    <div class="alert alert-warning text-center mt-2 mb-0">
+                        <i class="bi bi-folder2-open me-2"></i>Aucun projet dans cette catégorie.
                     </div>
-                @endforelse
+                </div>
+            @endforelse
+        </div>
+
+        {{-- Pagination --}}
+        @if($all_projects->hasPages())
+        <div class="d-flex align-items-center justify-content-between mt-4 flex-wrap gap-2">
+            <div class="text-muted small">
+                Projets <strong>{{ $all_projects->firstItem() }}–{{ $all_projects->lastItem() }}</strong>
+                sur <strong>{{ $all_projects->total() }}</strong>
+            </div>
+            <div>
+                {{ $all_projects->links('pagination::bootstrap-5') }}
             </div>
         </div>
+        @endif
+
     </div>
 @endsection

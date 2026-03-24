@@ -231,29 +231,35 @@
 <script>
     const events = @json($events);
 
+    let planningCalendar = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         const calendarEl = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarEl, {
+
+        planningCalendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            locale: 'en', // calendrier en français
+            locale: 'en',
             themeSystem: 'bootstrap5',
+            height: 'auto',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
-            // buttonText: {
-            //     today: 'Aujourd\'hui',
-            //     month: 'Mois',
-            //     week: 'Semaine',
-            //     day: 'Jour',
-            //     list: 'Liste'
-            // },
             events: events,
             eventClick: function(info) {
                 alert("📌 " + info.event.title + "\n📅 " + info.event.start.toLocaleDateString());
             }
         });
-        calendar.render();
+
+        planningCalendar.render();
+
+        // Re-calculate dimensions each time the planning tab becomes visible
+        const step4Tab = document.getElementById('step4-tab');
+        if (step4Tab) {
+            step4Tab.addEventListener('shown.bs.tab', function () {
+                planningCalendar.updateSize();
+            });
+        }
     });
 </script>

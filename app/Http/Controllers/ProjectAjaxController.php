@@ -845,24 +845,28 @@ class ProjectAjaxController extends Controller
             }
         }
 
+        $path = $record_activity->document_file_path; // keep existing if no new file
         if ($request->hasFile('document_file')) {
             $file = $request->file('document_file');
             if (!$file->isValid()) {
                 return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
             }
+            // Delete old file if replacing
+            if ($path) {
+                \Storage::disk('public')->delete($path);
+            }
             $path = $file->store('protocol_dev', 'public');
-        } else {
-            return response()->json(['message' => 'The document file is required.', "code_erreur" => 1], 200);
+        } elseif (!$path) {
+            return response()->json(['message' => 'A document file is required for the first submission.', "code_erreur" => 1], 200);
         }
 
-
         $documentData = [
-            'id' => $request->input('protocol_dev_activity_project_id'),
-            'date_performed' => $request->input('date_performed'),
-            'document_file_path' => $path,
-            'complete' => true,
+            'id'                  => $request->input('protocol_dev_activity_project_id'),
+            'date_performed'      => $request->input('date_performed'),
+            'document_file_path'  => $path,
+            'complete'            => true,
             'real_date_performed' => now(),
-            'staff_id_performed' => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
+            'staff_id_performed'  => FacadesAuth::user() ? FacadesAuth::user()->personnel->id : null,
         ];
 
         $record_activity->update($documentData);
@@ -874,6 +878,30 @@ class ProjectAjaxController extends Controller
         return response()->json(['message' => $message_success, "code_erreur" => 0], 200);
     }
 
+    /**
+     * Supprimer le document soumis pour une activité Protocol Dev (réinitialise l'activité)
+     */
+    public function deleteProtocolDevDocument(Request $request)
+    {
+        $record = Pro_ProtocolDevActivityProject::find($request->record_id);
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'Record not found.'], 404);
+        }
+
+        if ($record->document_file_path) {
+            \Storage::disk('public')->delete($record->document_file_path);
+        }
+
+        $record->update([
+            'document_file_path'  => null,
+            'complete'            => false,
+            'date_performed'      => null,
+            'real_date_performed' => null,
+            'staff_id_performed'  => null,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Document supprimé, activité réinitialisée.']);
+    }
 
     /**
      * schedule meeting
@@ -1178,6 +1206,31 @@ class ProjectAjaxController extends Controller
 
             if (!$activity) {
                 return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+            }
+
+            // Block if experimental phase is already marked as completed
+            if ($activity->project_id) {
+                $project = Pro_Project::find($activity->project_id);
+                if ($project && in_array('experimental', $project->phases_completed ?? [])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La phase expérimentale est déjà marquée comme complétée. Vous ne pouvez plus remettre une activité en attente.',
+                    ], 422);
+                }
+            }
+
+            // Block if the activity is a critical phase and already has an inspection performed
+            if ($activity->phase_critique) {
+                $inspectionDone = DB::table('pro_qa_inspections')
+                    ->where('activity_id', $activity->id)
+                    ->whereNotNull('date_performed')
+                    ->exists();
+                if ($inspectionDone) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Une inspection QA a déjà été réalisée pour cette phase critique. Vous ne pouvez plus remettre l\'activité en attente.',
+                    ], 422);
+                }
             }
 
             // Remettre l'activité en pending et nettoyer les infos d'exécution
@@ -1852,6 +1905,69 @@ class ProjectAjaxController extends Controller
         }
     }
 
+    /**
+     * Mettre à jour un document de la Report Phase
+     */
+    public function updateReportDocument(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'document_id'     => 'required|integer|exists:pro_report_phase_documents,id',
+            'document_type'   => 'required|string|in:final_report,scientific_article,publication_link,shared_data,other',
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string|max:2000',
+            'url'             => 'nullable|url|max:500',
+            'doi'             => 'nullable|string|max:255',
+            'submission_date' => 'nullable|date',
+            'status'          => 'required|string|in:draft,submitted,published',
+            'file'            => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:20480',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => implode(', ', $validator->errors()->all()),
+            ], 422);
+        }
+
+        try {
+            $doc = Pro_ReportPhaseDocument::findOrFail($request->document_id);
+
+            if ($request->hasFile('file')) {
+                if ($doc->file_path) {
+                    \Storage::disk('public')->delete($doc->file_path);
+                }
+                $doc->file_path = $request->file('file')->store('report_phase_documents', 'public');
+            }
+
+            $doc->document_type   = $request->document_type;
+            $doc->title           = $request->title;
+            $doc->description     = $request->description;
+            $doc->url             = $request->url;
+            $doc->doi             = $request->doi;
+            $doc->submission_date = $request->submission_date;
+            $doc->status          = $request->status;
+            $doc->save();
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Document mis à jour.',
+                'document' => [
+                    'id'              => $doc->id,
+                    'document_type'   => $doc->document_type,
+                    'title'           => $doc->title,
+                    'description'     => $doc->description,
+                    'file_path'       => $doc->file_path ? asset('storage/' . $doc->file_path) : null,
+                    'url'             => $doc->url,
+                    'doi'             => $doc->doi,
+                    'submission_date' => $doc->submission_date,
+                    'status'          => $doc->status,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()], 500);
+        }
+    }
+
     // ─────────────────────────────────────────────
     // Archiving Phase
     // ─────────────────────────────────────────────
@@ -1870,8 +1986,9 @@ class ProjectAjaxController extends Controller
 
         try {
             $project = Pro_Project::findOrFail($request->project_id);
-            $project->archived_at  = now();
-            $project->archived_by  = auth()->id();
+            $project->archived_at    = now();
+            $project->archived_by    = auth()->id();
+            $project->project_stage  = 'archived';
             $project->save();
 
             return response()->json(['success' => true, 'message' => 'Projet archivé avec succès.']);
@@ -1894,8 +2011,9 @@ class ProjectAjaxController extends Controller
 
         try {
             $project = Pro_Project::findOrFail($request->project_id);
-            $project->archived_at = null;
-            $project->archived_by = null;
+            $project->archived_at   = null;
+            $project->archived_by   = null;
+            $project->project_stage = 'in progress';
             $project->save();
 
             return response()->json(['success' => true, 'message' => 'Projet désarchivé.']);
@@ -2034,12 +2152,16 @@ class ProjectAjaxController extends Controller
 
             switch ($phase) {
                 case 'study_creation':
-                    $basicOk = $project->project_code && $project->project_title
-                               && $project->study_director && $project->protocol_code;
+                    // study_director accepted from either the project record OR the appointment form
+                    $sdFromAppt = DB::table('pro_study_director_appointment_forms')
+                                    ->where('project_id', $pid)->where('active', true)
+                                    ->whereNotNull('study_director')->value('study_director');
+                    $sdOk    = !empty($project->study_director) || !empty($sdFromAppt);
+                    $basicOk = !empty($project->project_code) && !empty($project->project_title) && $sdOk;
                     $apptOk  = DB::table('pro_study_director_appointment_forms')
                                  ->where('project_id', $pid)->where('active', true)
                                  ->whereNotNull('study_director')->whereNotNull('sd_appointment_date')->exists();
-                    if (!$basicOk) $error = 'Basic project information is incomplete.';
+                    if (!$basicOk) $error = 'Basic project information is incomplete (project code, title, and study director are required).';
                     elseif (!$apptOk) $error = 'Study Director Appointment form is not filled.';
                     break;
 
@@ -2051,7 +2173,11 @@ class ProjectAjaxController extends Controller
                     break;
 
                 case 'planning':
-                    $meetingDone   = DB::table('pro_studies_initiation_meetings')->where('project_id', $pid)->where('status', 'complete')->count() > 0;
+                    $meetingDone   = DB::table('pro_studies_initiation_meetings')
+                        ->where('project_id', $pid)
+                        ->where('status', '!=', 'cancelled')
+                        ->where('date_scheduled', '<=', now()->toDateString())
+                        ->count() > 0;
                     $criticalCount = DB::table('pro_studies_activities')->where('project_id', $pid)->where('phase_critique', 1)->count();
                     if (!$meetingDone)    $error = 'The Study Initiation Meeting has not been completed.';
                     elseif ($criticalCount === 0) $error = 'No critical phases have been identified.';
@@ -2066,9 +2192,9 @@ class ProjectAjaxController extends Controller
 
                 case 'quality_assurance':
                     $totalInsp     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
-                    $completedInsp = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('completed_at')->count();
+                    $completedInsp = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('date_performed')->count();
                     $totalNc       = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
-                    $resolvedNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'resolved')->count();
+                    $resolvedNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'complete')->count();
                     if ($totalInsp === 0 || $completedInsp < $totalInsp)
                         $error = "Not all inspections are completed ({$completedInsp}/{$totalInsp}).";
                     elseif ($totalNc > 0 && $resolvedNc < $totalNc)

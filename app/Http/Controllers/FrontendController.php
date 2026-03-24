@@ -18,23 +18,59 @@ class FrontendController extends Controller
 
     function indexPage(Request $request)
     {
-        $projectsCount   = Pro_Project::count();
-        $activeUsers     = User::where('active', true)->count();
-        $totalBudget     = 0;
-        $tasksInProgress = Pro_Project::where('project_stage', 'in progress')->count();
+        // ── Stage filter from query string ─────────────────────────────
+        $stageFilter = $request->get('stage', 'all');
+        $dbStage = match($stageFilter) {
+            'in_progress' => 'in progress',
+            'not_started' => 'not_started',
+            'suspended'   => 'suspended',
+            'completed'   => 'completed',
+            'archived'    => 'archived',
+            default       => null,
+        };
 
-        $months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'];
-        $budgetsByMonth = array_fill(0, 12, 0);
+        // ── KPIs — always across ALL projects ──────────────────────────
+        $totalProjects = Pro_Project::count();
+        $kpiInProgress = Pro_Project::where('project_stage', 'in progress')->count();
 
-        $all_projects = Pro_Project::orderBy("date_debut_effective", "desc")->get();
+        $kpiOpenNc = DB::table('pro_qa_inspections_findings')
+            ->where('is_conformity', 0)
+            ->where('status', '!=', 'complete')
+            ->count();
 
-        $projectScores           = $this->computeProjectScores($all_projects);
-        $projectsNeedingInspection = $projectScores['needingInspection'];
-        $projectScores           = $projectScores['scores'];
+        $kpiPendingInspections = DB::table('pro_qa_inspections')
+            ->whereNull('date_performed')
+            ->count();
+
+        $kpiByStage = [
+            'in_progress' => $kpiInProgress,
+            'not_started' => Pro_Project::where('project_stage', 'not_started')->count(),
+            'suspended'   => Pro_Project::where('project_stage', 'suspended')->count(),
+            'completed'   => Pro_Project::where('project_stage', 'completed')->count(),
+            'archived'    => Pro_Project::where('project_stage', 'archived')->count(),
+        ];
+
+        // Avg completion needs scores for ALL projects
+        $allProjects   = Pro_Project::orderBy("date_debut_effective", "desc")->get();
+        $allScores     = $this->computeProjectScores($allProjects);
+        $projectsNeedingInspection = $allScores['needingInspection'];
+        $allScores     = $allScores['scores'];
+
+        $kpiAvgCompletion = $totalProjects > 0
+            ? (int) round(collect($allScores)->avg('overall'))
+            : 0;
+
+        // ── Paginated projects for display (6 per page) ────────────────
+        $query = Pro_Project::orderBy("date_debut_effective", "desc");
+        if ($dbStage) {
+            $query->where('project_stage', $dbStage);
+        }
+        $all_projects  = $query->paginate(6)->withQueryString();
+        $projectScores = $allScores; // scores pre-computed for all, view filters by id
 
         return view("accueil", compact(
-            "all_projects", 'projectsCount', 'activeUsers', 'totalBudget',
-            'tasksInProgress', 'months', 'budgetsByMonth',
+            "all_projects", "totalProjects", "stageFilter",
+            "kpiInProgress", "kpiOpenNc", "kpiPendingInspections", "kpiAvgCompletion", "kpiByStage",
             'projectsNeedingInspection', 'projectScores'
         ));
     }
@@ -98,7 +134,7 @@ class FrontendController extends Controller
             return ['scores' => [], 'needingInspection' => []];
         }
 
-        // Activity stats per project
+        // 1. Activities per project
         $actStats = DB::table('pro_studies_activities')
             ->select('project_id',
                 DB::raw('COUNT(*) as total'),
@@ -107,73 +143,102 @@ class FrontendController extends Controller
             ->groupBy('project_id')
             ->get()->keyBy('project_id');
 
-        // Critical activities per project (id + project_id)
+        // 2. QA Inspections (done = date_performed not null)
+        $inspStats = DB::table('pro_qa_inspections')
+            ->select('project_id',
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN date_performed IS NOT NULL THEN 1 ELSE 0 END) as completed'))
+            ->whereIn('project_id', $ids)
+            ->groupBy('project_id')
+            ->get()->keyBy('project_id');
+
+        // 3. NC Findings (is_conformity=0, resolved = status='complete')
+        $findStats = DB::table('pro_qa_inspections_findings')
+            ->select('project_id',
+                DB::raw('COUNT(*) as total'),
+                DB::raw("SUM(CASE WHEN status='complete' THEN 1 ELSE 0 END) as resolved"))
+            ->where('is_conformity', 0)
+            ->whereIn('project_id', $ids)
+            ->groupBy('project_id')
+            ->get()->keyBy('project_id');
+
+        // 4. Protocol Dev documents (applicable, complete=true)
+        $protoStats = DB::table('pro_protocols_devs_activities_projects')
+            ->select('project_id',
+                DB::raw('SUM(CASE WHEN applicable=1 THEN 1 ELSE 0 END) as total'),
+                DB::raw('SUM(CASE WHEN applicable=1 AND complete=1 THEN 1 ELSE 0 END) as completed'))
+            ->whereIn('project_id', $ids)
+            ->groupBy('project_id')
+            ->get()->keyBy('project_id');
+
+        // 5. Report milestone (≥1 submitted or published doc)
+        $reportDoneIds = DB::table('pro_report_phase_documents')
+            ->whereIn('project_id', $ids)
+            ->whereIn('status', ['submitted', 'published'])
+            ->pluck('project_id')->unique()->toArray();
+
+        // "Needing inspection" alert: critical activity completed but not yet inspected
         $criticalRows = DB::table('pro_studies_activities')
             ->select('id', 'project_id', 'status')
             ->where('phase_critique', 1)
             ->whereIn('project_id', $ids)
             ->get();
 
-        // Completed inspections linked to activities
-        $inspectedActivityIds = Pro_QaInspection::whereNotNull('activity_id')
+        $inspectedActivityIds = DB::table('pro_qa_inspections')
+            ->whereNotNull('activity_id')
             ->whereNotNull('date_performed')
             ->pluck('activity_id')
             ->toArray();
 
-        // Projects needing inspection: critical activity completed but no inspection
         $needingInspection = $criticalRows
             ->where('status', 'completed')
             ->whereNotIn('id', $inspectedActivityIds)
             ->pluck('project_id')->unique()->toArray();
 
-        // Group critical rows by project
-        $critByProject = $criticalRows->groupBy('project_id');
-
-        // Finding stats per project (non-conformities)
-        $findStats = DB::table('pro_qa_inspections_findings as f')
-            ->join('pro_qa_inspections as i', 'i.id', '=', 'f.inspection_id')
-            ->select('i.project_id',
-                DB::raw('COUNT(*) as total'),
-                DB::raw("SUM(CASE WHEN f.status='pending' THEN 1 ELSE 0 END) as pending"))
-            ->where('f.is_conformity', 0)
-            ->whereIn('i.project_id', $ids)
-            ->groupBy('i.project_id')
-            ->get()->keyBy('project_id');
-
-        // Projects that have at least one report document
-        $withReport = DB::table('pro_report_phase_documents')
-            ->whereIn('project_id', $ids)
-            ->pluck('project_id')->unique()->toArray();
-
         $scores = [];
         foreach ($projects as $p) {
-            $pid = $p->id;
+            $pid             = $p->id;
+            $phasesCompleted = $p->phases_completed ?? [];
 
-            $acts       = $actStats[$pid]     ?? null;
-            $actScore   = (!$acts || $acts->total == 0) ? 100
-                          : (int) round($acts->completed / $acts->total * 100);
+            $acts      = $actStats[$pid]  ?? null;
+            $totalAct  = $acts  ? (int) $acts->total     : 0;
+            $doneAct   = $acts  ? (int) $acts->completed : 0;
 
-            $crits      = $critByProject[$pid] ?? collect();
-            $totalCrit  = $crits->count();
-            $doneCrit   = $crits->whereIn('id', $inspectedActivityIds)->count();
-            $critScore  = $totalCrit == 0 ? 100 : (int) round($doneCrit / $totalCrit * 100);
+            $insps     = $inspStats[$pid] ?? null;
+            $totalInsp = $insps ? (int) $insps->total     : 0;
+            $doneInsp  = $insps ? (int) $insps->completed : 0;
 
-            $finds      = $findStats[$pid] ?? null;
-            $findScore  = (!$finds || $finds->total == 0) ? 100
-                          : (int) round(($finds->total - $finds->pending) / $finds->total * 100);
+            $finds     = $findStats[$pid] ?? null;
+            $totalNc   = $finds ? (int) $finds->total    : 0;
+            $doneNc    = $finds ? (int) $finds->resolved : 0;
 
-            $reportScore   = in_array($pid, $withReport)  ? 100 : 0;
-            $archiveScore  = $p->archived_at              ? 100 : 0;
+            $proto      = $protoStats[$pid] ?? null;
+            $totalProto = $proto ? (int) $proto->total     : 0;
+            $doneProto  = $proto ? (int) $proto->completed : 0;
 
-            $overall = (int) round(
-                $actScore    * 0.40 +
-                $critScore   * 0.25 +
-                $findScore   * 0.20 +
-                $reportScore * 0.10 +
-                $archiveScore* 0.05
-            );
+            $reportMilestone  = in_array($pid, $reportDoneIds) ? 1 : 0;
+            $archiveMilestone = ($p->archived_at || in_array('archiving', $phasesCompleted)) ? 1 : 0;
 
-            $scores[$pid] = compact('overall','actScore','critScore','findScore','reportScore','archiveScore');
+            // Equal-weight per-item overall (same algorithm as ProjectController)
+            $totalItems     = $totalAct + $totalProto + $totalInsp + $totalNc + 1 + 1;
+            $completedItems = $doneAct  + $doneProto  + $doneInsp  + $doneNc  + $reportMilestone + $archiveMilestone;
+            $overall = $totalItems > 0 ? (int) round($completedItems / $totalItems * 100) : 0;
+
+            // Per-dimension % kept for backward compat (project-overview.blade.php)
+            $actScore    = $totalAct  > 0 ? (int) round($doneAct  / $totalAct  * 100) : 100;
+            $critScore   = $totalInsp > 0 ? (int) round($doneInsp / $totalInsp * 100) : 100;
+            $findScore   = $totalNc   > 0 ? (int) round($doneNc   / $totalNc   * 100) : 100;
+            $reportScore  = $reportMilestone  * 100;
+            $archiveScore = $archiveMilestone * 100;
+
+            $protoScore  = $totalProto > 0 ? (int) round($doneProto / $totalProto * 100) : 100;
+
+            $scores[$pid] = compact(
+                'overall',
+                'actScore', 'critScore', 'findScore', 'reportScore', 'archiveScore', 'protoScore',
+                'totalAct', 'doneAct', 'totalInsp', 'doneInsp',
+                'totalNc',  'doneNc',  'totalProto', 'doneProto', 'reportMilestone', 'archiveMilestone'
+            ) + ['phasesCount' => count($phasesCompleted)];
         }
 
         return ['scores' => $scores, 'needingInspection' => $needingInspection];

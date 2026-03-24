@@ -90,12 +90,32 @@
         <div>
             <h4 class="mb-1 fw-bold">
                 <i class="bi bi-clipboard2-check me-2"></i>
-                @if(isset($progress))Facility Inspection Checklists @else Critical Phase Inspection Checklists @endif
+                @if(isset($progress))
+                    @if($inspection->type_inspection === 'Study Protocol Inspection')
+                        Study Protocol Inspection Checklists
+                    @elseif($inspection->type_inspection === 'Process Inspection')
+                        Process Inspection Checklists
+                    @else
+                        Facility Inspection Checklists
+                    @endif
+                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                    Amendment/Deviation Inspection Checklist
+                @else
+                    Critical Phase Inspection Checklists
+                @endif
             </h4>
             <small class="opacity-75">
                 @if(isset($progress))
-                    {{ $inspection->facility_location === 'cove' ? 'QA-PR-1-001B/06' : 'QA-PR-1-001A/06' }}
-                    — {{ $inspection->facility_location === 'cove' ? 'Covè' : 'Cotonou' }}
+                    @if($inspection->type_inspection === 'Study Protocol Inspection')
+                        QA-PR-1-002/06
+                    @elseif($inspection->type_inspection === 'Process Inspection')
+                        QA-PR-1-008/05
+                    @else
+                        {{ $inspection->facility_location === 'cove' ? 'QA-PR-1-001B/06' : 'QA-PR-1-001A/06' }}
+                        — {{ $inspection->facility_location === 'cove' ? 'Covè' : 'Cotonou' }}
+                    @endif
+                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                    QA-PR-1-004/06
                 @else
                     QA-PR-1-003/05
                 @endif
@@ -105,9 +125,14 @@
         <div class="d-flex gap-2 flex-wrap">
             @if(isset($progress))
                 @php
-                    $printRoute = $inspection->type_inspection === 'Process Inspection'
-                        ? 'checklist.processPrint'
-                        : 'checklist.facilityPrint';
+                    $printRoute = match($inspection->type_inspection) {
+                        'Process Inspection'        => 'checklist.processPrint',
+                        'Study Protocol Inspection' => 'checklist.studyProtocolPrint',
+                        default                     => 'checklist.facilityPrint',
+                    };
+                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                @php
+                    $printRoute = 'checklist.amendmentPrint';
                 @endphp
                 <a href="{{ route($printRoute, $inspection->id) }}?mode=filled"
                    class="btn btn-back" target="_blank">

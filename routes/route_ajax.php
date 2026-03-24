@@ -17,6 +17,7 @@ Route::prefix('ajax')->group(function () {
     Route::post('/delete-activity-project', [ProjectAjaxController::class,"supprimerActivite"])->name("supprimerActivite");
     Route::post('/generate-protocol-dev-activity-project', [ProjectAjaxController::class,"generateProtocolDevActivitiesForProject"])->name("generateProtocolDevActivitiesForProject");
     Route::post('/update-protocol-dev-activity-project', [ProjectAjaxController::class,"saveProtocolDevelopmentActivityCompleted"])->name("saveProtocolDevelopmentActivityCompleted");
+    Route::post('/delete-protocol-dev-document',         [ProjectAjaxController::class,"deleteProtocolDevDocument"])->name("deleteProtocolDevDocument");
     Route::post('/execute-activity', [ProjectAjaxController::class,"executeActivity"])->name("executeActivity");
     Route::post('/reset-activity', [ProjectAjaxController::class,"resetActivityExecution"])->name("resetActivityExecution");
     
@@ -45,6 +46,7 @@ Route::prefix('ajax')->group(function () {
 
     // Report Phase
     Route::post('/save-report-document',   [ProjectAjaxController::class, 'saveReportDocument'])->name('saveReportDocument');
+    Route::post('/update-report-document', [ProjectAjaxController::class, 'updateReportDocument'])->name('updateReportDocument');
     Route::post('/delete-report-document', [ProjectAjaxController::class, 'deleteReportDocument'])->name('deleteReportDocument');
 
     // Archiving Phase

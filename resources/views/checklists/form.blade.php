@@ -166,11 +166,35 @@
         <div>
             <h5 class="mb-1 fw-bold">
                 <i class="bi bi-clipboard2-check me-2"></i>
-                @if(isset($fieldPrefix))Facility Inspection Checklist @else Critical Phase Inspection Checklist @endif
+                @if(isset($fieldPrefix))
+                    @if($inspection->type_inspection === 'Study Protocol Inspection')
+                        Study Protocol Inspection Checklist
+                    @elseif($inspection->type_inspection === 'Process Inspection')
+                        Process Inspection Checklist
+                    @else
+                        Facility Inspection Checklist
+                    @endif
+                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                    Amendment/Deviation Inspection Checklist
+                @else
+                    Critical Phase Inspection Checklist
+                @endif
                 — {{ $form['letter'] }}. {{ $form['title'] }}
             </h5>
             <small class="opacity-75">
-                @if(isset($fieldPrefix))QA-PR-1-001A/06 @else QA-PR-1-003/05 @endif
+                @if(isset($fieldPrefix))
+                    @if($inspection->type_inspection === 'Study Protocol Inspection')
+                        QA-PR-1-002/06
+                    @elseif($inspection->type_inspection === 'Process Inspection')
+                        QA-PR-1-008/05
+                    @else
+                        {{ $inspection->facility_location === 'cove' ? 'QA-PR-1-001B/06' : 'QA-PR-1-001A/06' }}
+                    @endif
+                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                    QA-PR-1-004/06
+                @else
+                    QA-PR-1-003/05
+                @endif
                 — SANAS OECD GLP COMPLIANT FACILITY N° G0028
             </small>
         </div>
@@ -253,7 +277,50 @@
             <input type="hidden" name="project_id"   value="{{ $inspection->project_id }}">
             <input type="hidden" name="project_code" value="{{ $inspection->project->project_code ?? '' }}">
 
+            {{-- Amendment/Deviation extra header fields --}}
+            @if(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+            <div class="mb-4 p-3 rounded-3" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                <h6 class="fw-bold mb-3" style="color:var(--qa-brand);">
+                    <i class="bi bi-file-earmark-text me-2"></i>Document Information
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Document Type</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="document_type" id="doc_type_protocol"
+                                       value="Study Protocol"
+                                       {{ old('document_type', $record->document_type ?? '') === 'Study Protocol' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="doc_type_protocol">Study Protocol</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="document_type" id="doc_type_report"
+                                       value="Study Report"
+                                       {{ old('document_type', $record->document_type ?? '') === 'Study Report' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="doc_type_report">Study Report</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="deviation_number" class="form-label fw-semibold small">Deviation N°</label>
+                        <input type="text" id="deviation_number" name="deviation_number"
+                               class="form-control form-control-sm"
+                               value="{{ old('deviation_number', $record->deviation_number ?? '') }}"
+                               placeholder="e.g. DEV-001">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="amendment_number" class="form-label fw-semibold small">Amendment N°</label>
+                        <input type="text" id="amendment_number" name="amendment_number"
+                               class="form-control form-control-sm"
+                               value="{{ old('amendment_number', $record->amendment_number ?? '') }}"
+                               placeholder="e.g. AMD-001">
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Questions table --}}
+            @php $fp = $fieldPrefix ?? ''; @endphp
             <div class="table-responsive">
                 <table class="table questions-table align-middle mb-4">
                     <thead>
@@ -264,7 +331,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $fp = $fieldPrefix ?? ''; @endphp
                         @foreach ($form['questions'] as $n => $question)
                             @php $val = $record ? $record->{"{$fp}q{$n}"} : null; @endphp
                             <tr>
@@ -309,6 +375,74 @@
                 </table>
             </div>
 
+            {{-- Section F (Study Personnel): staff training records table --}}
+            @if(($form['type'] ?? '') === 'study_personnel')
+            @php $staffCount = $form['staff_count'] ?? 15; @endphp
+            <h6 class="fw-bold mb-3 mt-2" style="color:var(--qa-brand);">
+                <i class="bi bi-people me-2"></i>Study Personnel Training Records
+            </h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered align-middle" style="font-size:.85rem;">
+                    <thead>
+                        <tr style="background:#f8f8f8;">
+                            <th style="width:40px;">#</th>
+                            <th style="width:160px;">Name / Code</th>
+                            <th class="text-center" style="width:180px;">Training done?</th>
+                            <th>Level of Training</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for ($i = 1; $i <= $staffCount; $i++)
+                            @php
+                                $staffResult  = $record ? $record->{"f_staff_{$i}_result"}  : null;
+                                $staffLevel   = $record ? $record->{"f_staff_{$i}_level"}   : null;
+                                $staffRemarks = $record ? $record->{"f_staff_{$i}_remarks"} : null;
+                            @endphp
+                            <tr>
+                                <td class="text-center fw-bold text-muted">{{ $i }}</td>
+                                <td class="text-muted fst-italic" style="font-size:.78rem;">Staff {{ $i }}</td>
+                                <td>
+                                    <div class="radio-group">
+                                        <div class="radio-opt">
+                                            <input type="radio" id="f_staff_{{ $i }}_yes"
+                                                   name="f_staff_{{ $i }}_result" value="yes"
+                                                   {{ $staffResult === 'yes' ? 'checked' : '' }}>
+                                            <label for="f_staff_{{ $i }}_yes">YES</label>
+                                        </div>
+                                        <div class="radio-opt">
+                                            <input type="radio" id="f_staff_{{ $i }}_no"
+                                                   name="f_staff_{{ $i }}_result" value="no"
+                                                   {{ $staffResult === 'no' ? 'checked' : '' }}>
+                                            <label for="f_staff_{{ $i }}_no">NO</label>
+                                        </div>
+                                        <div class="radio-opt">
+                                            <input type="radio" id="f_staff_{{ $i }}_na"
+                                                   name="f_staff_{{ $i }}_result" value="na"
+                                                   {{ $staffResult === 'na' ? 'checked' : '' }}>
+                                            <label for="f_staff_{{ $i }}_na">N/A</label>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="f_staff_{{ $i }}_level"
+                                           class="form-control form-control-sm"
+                                           value="{{ old("f_staff_{$i}_level", $staffLevel) }}"
+                                           placeholder="e.g. Basic, Advanced…">
+                                </td>
+                                <td>
+                                    <input type="text" name="f_staff_{{ $i }}_remarks"
+                                           class="form-control form-control-sm"
+                                           value="{{ old("f_staff_{$i}_remarks", $staffRemarks) }}"
+                                           placeholder="Remarks…">
+                                </td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
             {{-- Comments --}}
             @php $commentsField = ($fieldPrefix ?? '') . 'comments'; @endphp
             <div class="mb-4">
@@ -320,8 +454,9 @@
                           placeholder="Observations, remarques, non-conformités…">{{ old($commentsField, $record->{$commentsField} ?? '') }}</textarea>
             </div>
 
-            {{-- Conclusion (Critical Phase Inspections only — no fieldPrefix) --}}
-            @if (!isset($fieldPrefix))
+            {{-- Conclusion (Critical Phase Inspections only — no fieldPrefix, not amendment type) --}}
+            @php $isAmendment = in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']); @endphp
+            @if (!isset($fieldPrefix) && !$isAmendment)
             <div class="mb-4 p-4 rounded-3" style="background:#f8f9fa; border: 2px solid #e9ecef;">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--qa-brand),var(--qa-brand-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;">
@@ -504,7 +639,8 @@
         if (!text) { errDiv.textContent = 'Le texte du finding est requis.'; errDiv.style.display=''; return; }
         errDiv.style.display = 'none';
 
-        const isSectioned = @json(in_array($inspection->type_inspection, ['Facility Inspection', 'Process Inspection']));
+        @php $isSectionedType = in_array($inspection->type_inspection, ['Facility Inspection', 'Process Inspection', 'Study Protocol Inspection']); @endphp
+        const isSectioned = @json($isSectionedType);
         const projectId   = @json($inspection->project_id);
 
         const payload = {
