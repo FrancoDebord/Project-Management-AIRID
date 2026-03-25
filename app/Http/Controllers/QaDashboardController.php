@@ -78,7 +78,12 @@ class QaDashboardController extends Controller
             'Facility Inspection',
             'Process Inspection',
             'Study Inspection',
+            'Study Protocol Inspection',
+            'Study Report Inspection',
+            'Data Quality Inspection',
             'Critical Phase Inspection',
+            'Study Protocol Amendment/Deviation Inspection',
+            'Study Report Amendment Inspection',
         ];
 
         // Determine which facility inspections have already started (any section filled)

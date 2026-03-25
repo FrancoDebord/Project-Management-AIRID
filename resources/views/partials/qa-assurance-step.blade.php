@@ -486,19 +486,38 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
+                                                @php
+                                                    $isMultiSection = in_array($inspection->type_inspection, [
+                                                        'Facility Inspection',
+                                                        'Process Inspection',
+                                                        'Study Protocol Inspection',
+                                                        'Study Report Inspection',
+                                                        'Data Quality Inspection',
+                                                    ]);
+                                                @endphp
                                                 @if ($inspection->date_performed)
-                                                <button class="btn btn-qa-findings btn-sm"
-                                                        onclick="openFindingsModal(
-                                                            {{ $inspection->id }},
-                                                            '{{ addslashes($inspection->inspection_name ?? $inspection->type_inspection) }}',
-                                                            '{{ $inspection->date_scheduled ? \Carbon\Carbon::parse($inspection->date_scheduled)->format("d/m/Y") : "" }}',
-                                                            {{ $inspection->completed_at ? 'true' : 'false' }}
-                                                        )">
-                                                    <i class="bi bi-journal-text me-1"></i>Findings
-                                                    @if ($inspection->findings_count > 0)
-                                                        <span class="badge bg-white text-primary ms-1">{{ $inspection->findings_count }}</span>
+                                                    @if ($isMultiSection)
+                                                    <a href="{{ route('checklist.index', $inspection->id) }}"
+                                                       class="btn btn-qa-findings btn-sm">
+                                                        <i class="bi bi-journal-text me-1"></i>Findings
+                                                        @if ($inspection->findings_count > 0)
+                                                            <span class="badge bg-white text-primary ms-1">{{ $inspection->findings_count }}</span>
+                                                        @endif
+                                                    </a>
+                                                    @else
+                                                    <button class="btn btn-qa-findings btn-sm"
+                                                            onclick="openFindingsModal(
+                                                                {{ $inspection->id }},
+                                                                '{{ addslashes($inspection->inspection_name ?? $inspection->type_inspection) }}',
+                                                                '{{ $inspection->date_scheduled ? \Carbon\Carbon::parse($inspection->date_scheduled)->format("d/m/Y") : "" }}',
+                                                                {{ $inspection->completed_at ? 'true' : 'false' }}
+                                                            )">
+                                                        <i class="bi bi-journal-text me-1"></i>Findings
+                                                        @if ($inspection->findings_count > 0)
+                                                            <span class="badge bg-white text-primary ms-1">{{ $inspection->findings_count }}</span>
+                                                        @endif
+                                                    </button>
                                                     @endif
-                                                </button>
                                                 @else
                                                 <button class="btn btn-secondary btn-sm" disabled
                                                         title="Remplissez d'abord le checklist d'inspection">
@@ -586,6 +605,7 @@
                                                     <i class="bi bi-check-all me-1"></i>Terminer
                                                 </button>
                                                 @endif
+                                                @if (!$inspection->completed_at)
                                                 <button class="btn btn-qa-delete btn-sm"
                                                         onclick="deleteQaInspection(
                                                             {{ $inspection->id }},
@@ -594,6 +614,7 @@
                                                         title="Supprimer cette inspection">
                                                     <i class="bi bi-trash3"></i>
                                                 </button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -738,10 +759,31 @@
                                         </td>
                                         <td>
                                             @if ($fi->action_point)
-                                                <div class="p-2 rounded"
+                                                <div class="p-2 rounded mb-1"
                                                      style="background:#e8f5e9; font-size:.83rem; color:#1a5c2a; white-space:pre-wrap; word-break:break-word;">
                                                     {{ $fi->action_point }}
+                                                    @if($fi->means_of_verification)
+                                                        <div class="mt-1" style="font-size:.78rem; color:#2d6a4f;">
+                                                            <strong>MoV :</strong> {{ $fi->means_of_verification }}
+                                                        </div>
+                                                    @endif
                                                 </div>
+                                                @if(!$fi->inspection?->completed_at)
+                                                <div class="d-flex gap-1">
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            style="font-size:.7rem; padding:.15rem .4rem;"
+                                                            onclick="toggleTableEditForm({{ $fi->id }})"
+                                                            title="Modifier la résolution">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm"
+                                                            style="font-size:.7rem; padding:.15rem .4rem;"
+                                                            onclick="deleteCorrectiveActionFromTable({{ $fi->id }})"
+                                                            title="Supprimer la résolution">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </div>
+                                                @endif
                                             @elseif($fi->is_conformity)
                                                 <span class="text-muted fst-italic small">—</span>
                                             @else
@@ -758,9 +800,17 @@
                                                     <i class="bi bi-check-circle me-1"></i>Conforme
                                                 </span>
                                             @else
-                                                <span class="badge bg-warning text-dark rounded-pill">
+                                                <span class="badge bg-warning text-dark rounded-pill d-block mb-1">
                                                     <i class="bi bi-hourglass-split me-1"></i>En attente
                                                 </span>
+                                                @if(!$fi->inspection?->completed_at)
+                                                <button class="btn btn-outline-success btn-sm rounded-3"
+                                                        style="font-size:.72rem; white-space:nowrap;"
+                                                        onclick="toggleTableResolveForm({{ $fi->id }})"
+                                                        title="Saisir la corrective action">
+                                                    <i class="bi bi-check2-circle me-1"></i>Résoudre
+                                                </button>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="text-center">
@@ -771,6 +821,88 @@
                                             </button>
                                         </td>
                                     </tr>
+                                    {{-- Ligne d'édition de la résolution (non-conformity complete) --}}
+                                    @if(!$fi->is_conformity && $fi->status === 'complete' && !$fi->inspection?->completed_at)
+                                    <tr id="table-edit-row-{{ $fi->id }}" style="display:none; background:#fffbeb;">
+                                        <td colspan="9" class="p-3">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-md-5">
+                                                    <label class="form-label fw-semibold small mb-1">
+                                                        Action corrective <span class="text-danger">*</span>
+                                                    </label>
+                                                    <textarea id="tbl-edit-action-{{ $fi->id }}" rows="2"
+                                                              class="form-control form-control-sm">{{ $fi->action_point }}</textarea>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-semibold small mb-1">Moyen de vérification</label>
+                                                    <input type="text" id="tbl-edit-mov-{{ $fi->id }}"
+                                                           class="form-control form-control-sm"
+                                                           value="{{ $fi->means_of_verification ?? '' }}">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label class="form-label fw-semibold small mb-1">Date <span class="text-danger">*</span></label>
+                                                    <input type="date" id="tbl-edit-date-{{ $fi->id }}"
+                                                           class="form-control form-control-sm"
+                                                           value="{{ $fi->meeting_date ?? now()->toDateString() }}">
+                                                </div>
+                                                <div class="col-md-2 d-flex gap-1">
+                                                    <button class="btn btn-warning btn-sm flex-grow-1"
+                                                            onclick="submitTableEdit({{ $fi->id }})">
+                                                        <i class="bi bi-floppy me-1"></i>Enregistrer
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            onclick="toggleTableEditForm({{ $fi->id }})">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="tbl-edit-error-{{ $fi->id }}" class="col-12 text-danger small" style="display:none;"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endif
+
+                                    {{-- Ligne de résolution inline (non-conformity pending) --}}
+                                    @if(!$fi->is_conformity && $fi->status !== 'complete')
+                                    <tr id="table-resolve-row-{{ $fi->id }}" style="display:none; background:#f0fdf4;">
+                                        <td colspan="9" class="p-3">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-md-5">
+                                                    <label class="form-label fw-semibold small mb-1">
+                                                        Action corrective <span class="text-danger">*</span>
+                                                    </label>
+                                                    <textarea id="tbl-resolve-action-{{ $fi->id }}" rows="2"
+                                                              class="form-control form-control-sm"
+                                                              placeholder="Décrivez la mesure corrective…"></textarea>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-semibold small mb-1">Moyen de vérification</label>
+                                                    <input type="text" id="tbl-resolve-mov-{{ $fi->id }}"
+                                                           class="form-control form-control-sm"
+                                                           placeholder="Ex: rapport, photo…">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label class="form-label fw-semibold small mb-1">
+                                                        Date <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="date" id="tbl-resolve-date-{{ $fi->id }}"
+                                                           class="form-control form-control-sm"
+                                                           value="{{ now()->toDateString() }}">
+                                                </div>
+                                                <div class="col-md-2 d-flex gap-1">
+                                                    <button class="btn btn-success btn-sm flex-grow-1"
+                                                            onclick="submitTableResolve({{ $fi->id }})">
+                                                        <i class="bi bi-floppy me-1"></i>Valider
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            onclick="toggleTableResolveForm({{ $fi->id }})">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="tbl-resolve-error-{{ $fi->id }}" class="col-12 text-danger small" style="display:none;"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -867,6 +999,10 @@
                             <option value="Critical Phase Inspection">Critical Phase Inspection</option>
                             <option value="Study Inspection">Study Inspection</option>
                             <option value="Study Protocol Inspection">Study Protocol Inspection</option>
+                            <option value="Study Report Inspection">Study Report Inspection</option>
+                            <option value="Data Quality Inspection">Data Quality Inspection</option>
+                            <option value="Study Protocol Amendment/Deviation Inspection">Study Protocol Amendment/Deviation Inspection</option>
+                            <option value="Study Report Amendment Inspection">Study Report Amendment Inspection</option>
                             <option value="Process Inspection">Process Inspection</option>
                             <option value="Facility Inspection">Facility Inspection</option>
                         </select>
@@ -1679,6 +1815,104 @@ function deleteQaFinding(findingId) {
                 }
             } else {
                 showQaToast(data.message || 'Erreur lors de la suppression.', 'error');
+            }
+        })
+        .catch(() => showQaToast('Erreur réseau.', 'error'));
+}
+
+function toggleTableResolveForm(findingId) {
+    const row = document.getElementById('table-resolve-row-' + findingId);
+    row.style.display = (row.style.display === 'none' || row.style.display === '') ? '' : 'none';
+}
+
+function submitTableResolve(findingId) {
+    const action  = document.getElementById('tbl-resolve-action-' + findingId).value.trim();
+    const mov     = document.getElementById('tbl-resolve-mov-' + findingId).value.trim();
+    const date    = document.getElementById('tbl-resolve-date-' + findingId).value;
+    const errDiv  = document.getElementById('tbl-resolve-error-' + findingId);
+
+    if (!action || !date) {
+        errDiv.textContent = 'L\'action corrective et la date sont requises.';
+        errDiv.style.display = '';
+        return;
+    }
+    errDiv.style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('finding_id',            findingId);
+    fd.append('action_point',          action);
+    fd.append('means_of_verification', mov);
+    fd.append('resolved_date',         date);
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+    fetch('/ajax/resolve-qa-finding', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showQaToast('Finding résolu avec succès !', 'success');
+                setTimeout(() => location.reload(), 900);
+            } else {
+                errDiv.textContent = data.message || 'Erreur.';
+                errDiv.style.display = '';
+            }
+        })
+        .catch(() => { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = ''; });
+}
+
+function toggleTableEditForm(findingId) {
+    const row = document.getElementById('table-edit-row-' + findingId);
+    row.style.display = (row.style.display === 'none' || row.style.display === '') ? '' : 'none';
+}
+
+function submitTableEdit(findingId) {
+    const action  = document.getElementById('tbl-edit-action-' + findingId).value.trim();
+    const mov     = document.getElementById('tbl-edit-mov-' + findingId).value.trim();
+    const date    = document.getElementById('tbl-edit-date-' + findingId).value;
+    const errDiv  = document.getElementById('tbl-edit-error-' + findingId);
+
+    if (!action || !date) {
+        errDiv.textContent = 'L\'action corrective et la date sont requises.';
+        errDiv.style.display = '';
+        return;
+    }
+    errDiv.style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('finding_id',            findingId);
+    fd.append('action_point',          action);
+    fd.append('means_of_verification', mov);
+    fd.append('resolved_date',         date);
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+    fetch('/ajax/resolve-qa-finding', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showQaToast('Résolution mise à jour !', 'success');
+                setTimeout(() => location.reload(), 900);
+            } else {
+                errDiv.textContent = data.message || 'Erreur.';
+                errDiv.style.display = '';
+            }
+        })
+        .catch(() => { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = ''; });
+}
+
+function deleteCorrectiveActionFromTable(findingId) {
+    if (!confirm('Supprimer cette résolution ?\n\nLe finding sera remis en statut "En attente".')) return;
+
+    const fd = new FormData();
+    fd.append('finding_id', findingId);
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+    fetch('/ajax/delete-corrective-action', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showQaToast('Résolution supprimée. Finding remis en attente.', 'success');
+                setTimeout(() => location.reload(), 900);
+            } else {
+                showQaToast(data.message || 'Erreur.', 'error');
             }
         })
         .catch(() => showQaToast('Erreur réseau.', 'error'));

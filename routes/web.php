@@ -38,7 +38,9 @@ Route::get('/checklist/{inspection_id}/followup',       [ChecklistController::cl
 Route::get('/checklist/{inspection_id}/facility-print', [ChecklistController::class, 'facilityPrint'])->name('checklist.facilityPrint');
 Route::get('/checklist/{inspection_id}/process-print', [ChecklistController::class, 'processPrint'])->name('checklist.processPrint');
 Route::get('/checklist/{inspection_id}/study-protocol-print', [ChecklistController::class, 'studyProtocolPrint'])->name('checklist.studyProtocolPrint');
+Route::get('/checklist/{inspection_id}/study-report-print', [ChecklistController::class, 'studyReportPrint'])->name('checklist.studyReportPrint');
 Route::get('/checklist/{inspection_id}/amendment-print', [ChecklistController::class, 'amendmentPrint'])->name('checklist.amendmentPrint');
+Route::get('/checklist/{inspection_id}/data-quality-print', [ChecklistController::class, 'dataQualityPrint'])->name('checklist.dataQualityPrint');
 Route::get('/checklist/{inspection_id}/{slug}', [ChecklistController::class, 'show'])->name('checklist.show');
 Route::post('/checklist/{inspection_id}/{slug}',[ChecklistController::class, 'save'])->name('checklist.save');
 Route::get('/ajax/get-checklist-statuses',      [ChecklistController::class, 'statuses'])->name('getChecklistStatuses');

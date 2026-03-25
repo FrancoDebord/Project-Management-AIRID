@@ -420,6 +420,238 @@ class ChecklistController extends Controller
     }
 
     /**
+     * Study Report Inspection — 5 sections (A–E).
+     */
+    private static function studyReportForms(): array
+    {
+        $model = \App\Models\Pro_Cl_StudyReportInspection::class;
+        return [
+            'sr-a' => [
+                'model'    => $model,
+                'section'  => 'a',
+                'letter'   => 'A',
+                'title'    => 'General',
+                'doc_ref'  => 'QA-PR-1-005/06',
+                'questions' => [
+                    1  => 'Is the Project code provided?',
+                    2  => 'Is the Protocol code provided?',
+                    3  => 'Is the Study title stated?',
+                    4  => 'Is the Study director clearly identified?',
+                    5  => 'Is the Study Report date stated?',
+                    6  => 'Is the number on each page and the total number of pages visible in the entire document?',
+                    7  => 'Is the Name and address of testing facility provided?',
+                    8  => 'Is the Name and address of sponsor provided?',
+                    9  => 'Is there a table of content?',
+                    10 => 'Is there a list of annexes?',
+                    11 => 'Is there a list of tables?',
+                    12 => 'Is there a list of figures?',
+                    13 => 'Is there a signed SD Statement on GLP compliance included in the report?',
+                    14 => 'Is the certificate of affirmation issued by the FM dated, signed and included in the report?',
+                    15 => 'Is there a copy of GLP accreditation certificate included?',
+                    16 => 'Is the study start date and end date included?',
+                    17 => 'Are references guidelines enumerated?',
+                    18 => 'Are the Names of all scientists and key personnel involved mentioned?',
+                    19 => 'Were the tests performed during the study, test procedures and outcome measures mentioned?',
+                    20 => 'Is the list of SOPs used during the study enumerated?',
+                    21 => 'Are Protocol amendments/deviations all signed and made available in the study report?',
+                    22 => 'Is the list of equipment used during the study and their respective codes enumerated?',
+                    23 => 'Is there a list of acronyms?',
+                    24 => 'Are all study related documents archived, listed and available?',
+                    25 => 'Are all pages of the final report clear and readable?',
+                    26 => 'Is the description of all circumstances affecting the quality of integrity of the data (major and minor incident) mentioned?',
+                    27 => 'Does the report contain all details necessary to summarize the study procedures and conclusions?',
+                    28 => 'Is there a distribution list of Study report?',
+                ],
+            ],
+            'sr-b' => [
+                'model'    => $model,
+                'section'  => 'b',
+                'letter'   => 'B',
+                'title'    => 'Test, Control and Reference Substances',
+                'doc_ref'  => 'QA-PR-1-005/06',
+                'questions' => [
+                    1 => 'Is the Name, CAS or code number of test and control or reference substance mentioned in the final report?',
+                    2 => 'Is the supplier of test and control or reference substance stated?',
+                    3 => 'Are storage conditions information for test and control or reference substance monitored and mentioned?',
+                ],
+            ],
+            'sr-c' => [
+                'model'    => $model,
+                'section'  => 'c',
+                'letter'   => 'C',
+                'title'    => 'Test System Description',
+                'doc_ref'  => 'QA-PR-1-005/06',
+                'questions' => [
+                    1 => 'Are the following described about the test system? (a-Strain, b-Age, c-Source, d-Resistance status, e-Number)',
+                    2 => 'Is the test condition (temperature) mentioned?',
+                ],
+            ],
+            'sr-d' => [
+                'model'    => $model,
+                'section'  => 'd',
+                'letter'   => 'D',
+                'title'    => 'Data Management and Statistical Analysis',
+                'doc_ref'  => 'QA-PR-1-005/06',
+                'questions' => [
+                    1 => 'Is there evidence of the validation of the software used for data entry and is it included in the final report?',
+                    2 => 'Are all data double entered?',
+                    3 => 'Are all relevant raw data reported and omissions (if applicable) explained?',
+                    4 => 'Is there a description of: a-Summary of analysis of data, b-Conclusions drawn from data',
+                ],
+            ],
+            'sr-e' => [
+                'model'    => $model,
+                'section'  => 'e',
+                'letter'   => 'E',
+                'title'    => 'Quality Assurance',
+                'doc_ref'  => 'QA-PR-1-005/06',
+                'questions' => [
+                    1 => 'Are all QA audit/inspection reports complete with findings addressed?',
+                    2 => 'Was a QA statement issued and included in the report?',
+                    3 => 'Is a Quality Assurance statement accurate, complete, signed and dated by the QA Manager?',
+                    4 => 'Is the QA file for the Study complete?',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Data Quality Inspection — 5 sections (A–E).
+     * QA-PR-1-018/03
+     */
+    private static function dataQualityForms(): array
+    {
+        $model = \App\Models\Pro_Cl_DataQualityInspection::class;
+        return [
+            'dq-a' => [
+                'model'      => $model,
+                'section'    => 'a',
+                'letter'     => 'A',
+                'title'      => 'Staff Training',
+                'doc_ref'    => 'QA-PR-1-018/03',
+                'form_type'  => 'dq_standard',
+                'has_header' => true,
+                'questions'  => [
+                    '1' => 'Are all staff trained on GLP?',
+                    '2' => 'Are all key study personnel trained on Data Management?',
+                    '3' => 'Are all key study personnel trained on study related activities?',
+                ],
+            ],
+            'dq-b' => [
+                'model'     => $model,
+                'section'   => 'b',
+                'letter'    => 'B',
+                'title'     => 'Computerised Systems and Softwares Validation',
+                'doc_ref'   => 'QA-PR-1-018/03',
+                'form_type' => 'dq_standard',
+                'questions' => [
+                    '1'  => 'Are computerised systems (Computers, data loggers etc.) to be used for GLP study clearly identified?',
+                    '2'  => 'Are softwares (Excel, Stata etc.) to be used during GLP study clearly identified?',
+                    '3'  => 'Are computerised systems validated before study start date?',
+                    '4'  => 'Are softwares validated before study start date?',
+                    '5'  => 'Is the maintenance of computerised systems used for study up to date?',
+                    '6'  => 'Are all computers to be used equipped with an up-to-date anti-virus programme?',
+                    '7'  => 'Was a computerised system risk assessment performed for study?',
+                    '8'  => 'Is the Data-base established before study start date?',
+                    '9'  => 'Is the Data-base approved by Study Director and Facility Manager?',
+                    '10' => 'Is the study code clearly identified?',
+                    '11' => 'Is / Are the type(s) of test(s) clearly stated?',
+                    '12' => 'Has there been any amendment made to the database since first validation?',
+                ],
+            ],
+            'dq-c' => [
+                'model'     => $model,
+                'section'   => 'c',
+                'letter'    => 'C',
+                'title'     => 'Data Validity',
+                'doc_ref'   => 'QA-PR-1-018/03',
+                'form_type' => 'dual_verification',
+                'questions' => [
+                    '1'  => 'Are expected outcome measures (Knock-down, mortality, passage rate, blood feeding, blood feeding inhibition, hut entry or deterrence etc.) clearly stated',
+                    '2'  => 'Are test validity criteria clearly defined?',
+                    '3'  => 'Is there a description of all circumstances affecting the quality of integrity of Data (major and minor incidents)?',
+                    '4'  => 'Are test performed valid? (Check if KD or mortality etc. in controls are not inferior to acceptable range, check if environmental conditions are all within required range)',
+                    '5'  => 'Was the first data entry performed and signed?',
+                    '6'  => 'Are data received by data management verified to ensure they are not corrupted during transfer? Was a data verification conducted by data management?',
+                    '7'  => 'Was a second data entry performed and signed?',
+                    '8'  => 'Are there any issues raised from data verification performed?',
+                    '9'  => 'Was there any data retrieved from server?',
+                    '10' => 'Is the procedure for request for data retrieval from server respected?',
+                ],
+            ],
+            'dq-d' => [
+                'model'      => $model,
+                'section'    => 'd',
+                'letter'     => 'D',
+                'title'      => 'Data Sheet Information',
+                'doc_ref'    => 'QA-PR-1-018/03',
+                'form_type'  => 'dual_verification',
+                'sub_items'  => ['2a','2b','2c','2d','2e','2f','2g','2h','2i','2j','2k','2l','2m','2n'],
+                'questions'  => [
+                    '1'  => 'Is the correct data sheet used for each type of test or to record raw data?',
+                    '2'  => 'Is the information on each data sheet complete?',
+                    '2a' => 'a. Is the heading completely filled?',
+                    '2b' => 'b. Is the date at which data was recorded clearly stated?',
+                    '2c' => 'c. Is the study code clearly identified?',
+                    '2d' => 'd. Is the mosquito strain clearly identified?',
+                    '2e' => 'e. Is the mosquito age clearly identified?',
+                    '2f' => 'f. Is the environmental condition clearly identified?',
+                    '2g' => 'g. Are data recorded directly, legibly and indelibly?',
+                    '2h' => 'h. Are each data sheet verified by Supervisor and/or Study Director?',
+                    '2i' => 'i. Are each data sheet signed by the Supervisor and/or Study Director?',
+                    '2j' => 'j. Are error resolution procedures for data respected?',
+                    '2k' => 'k. Are alterations to data (due to wrong entry) such that they do not obscure the original and indicate the person making the alteration, the date of alteration and the reason for alteration using the appropriate error correction code where appropriate?',
+                    '2l' => 'l. Are there data missing?',
+                    '2m' => 'm. Are there repeated data?',
+                    '2n' => 'n. Are there incorrect data?',
+                    '3'  => 'Are all raw data organised?',
+                    '4'  => 'Are all raw data complete?',
+                ],
+            ],
+            'dq-e' => [
+                'model'     => $model,
+                'section'   => 'e',
+                'letter'    => 'E',
+                'title'     => 'Study Box',
+                'doc_ref'   => 'QA-PR-1-018/03',
+                'form_type' => 'study_box',
+                'questions' => [
+                    '1'  => 'Is there a SD appointment form?',
+                    '2'  => 'Is there a copy of the study protocol?',
+                    '3'  => 'Is there a copy of the study initiation meeting minutes with SD, study personnel and safety officer?',
+                    '4'  => 'Are there certificates of analysis of test items?',
+                    '5'  => 'Acknowledgement of receipt of test items?',
+                    '6'  => 'Is there a folder for decontamination sheets?',
+                    '7'  => 'Is there a folder for material safety data sheets?',
+                    '8'  => 'Is there a folder for ethical approval documents?',
+                    '9'  => 'Is there a folder for consent forms?',
+                    '10' => 'Is there a folder for the selection and training of volunteer sleepers?',
+                    '11' => 'Is there a folder for study participant information sheets?',
+                    '12' => 'Is there a copy of the risk assessment performed by safety officer?',
+                    '13' => 'Is there a copy of software and program validation documents?',
+                    '14' => 'Is there a folder for each type of test performed?',
+                    '15' => 'Is there a copy of treatment and sleepers rotation plan?',
+                    '16' => 'Is there a copy of net washing calendar?',
+                    '17' => 'Is there a folder for amendments or deviations?',
+                    '18' => 'Is there a folder for material transfer sheets?',
+                    '19' => 'Is there a folder for records of procedures sheets?',
+                    '20' => 'Is there a folder for net cutting sheets?',
+                    '21' => 'Is there a folder for collection of mosquitoes in experimental huts sheets?',
+                    '22' => 'Is there a folder for surprise visit checklist?',
+                    '23' => 'Is there a folder for cleaning of experimental huts checklists?',
+                    '24' => 'Is there a folder for animals\' related documents?',
+                    '25' => 'Is there a folder for test item transport condition forms?',
+                    '26' => 'Is there a study director activity checklist?',
+                    '27' => 'Is the project journal available?',
+                    '28' => 'Are there any documents available? If yes… List them.',
+                    '29' => 'Are all documents signed appropriately and blank spaces filled up?',
+                    '30' => 'Is there a copy of the Study final report?',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Index : liste des formulaires pour une inspection donnée.
      * Pour les Facility Inspections, affiche les 15 sections avec progression.
      */
@@ -455,7 +687,8 @@ class ChecklistController extends Controller
             }
 
             return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
-                ->with('forms', $facilityForms);
+                ->with('forms', $facilityForms)
+                ->with('conformities', []);
         }
 
         if ($inspection->type_inspection === 'Process Inspection') {
@@ -480,15 +713,18 @@ class ChecklistController extends Controller
             }
 
             return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
-                ->with('forms', $processForms);
+                ->with('forms', $processForms)
+                ->with('conformities', []);
         }
 
         if (self::isAmendmentType($inspection->type_inspection)) {
             $form       = self::amendmentDeviationForm();
             $modelClass = $form['model'];
-            $statuses   = ['amendment-deviation' => $modelClass::where('inspection_id', $inspection_id)->exists()];
-            $forms      = ['amendment-deviation' => $form];
-            return view('checklists.index', compact('inspection', 'forms', 'statuses'));
+            $record     = $modelClass::where('inspection_id', $inspection_id)->first();
+            $statuses      = ['amendment-deviation' => (bool) $record];
+            $conformities  = ['amendment-deviation' => $record?->is_conforming];
+            $forms         = ['amendment-deviation' => $form];
+            return view('checklists.index', compact('inspection', 'forms', 'statuses', 'conformities'));
         }
 
         if ($inspection->type_inspection === 'Study Protocol Inspection') {
@@ -507,24 +743,83 @@ class ChecklistController extends Controller
                 ->pluck('cnt', 'facility_section')
                 ->toArray();
 
-            $statuses = [];
+            $statuses     = [];
+            $conformities = [];
             foreach ($spForms as $slug => $form) {
-                $statuses[$slug] = in_array($form['section'], $sectionsDone);
+                $statuses[$slug]     = in_array($form['section'], $sectionsDone);
+                $conformities[$slug] = $spRecord ? $spRecord->{$form['section'] . '_is_conforming'} : null;
             }
 
-            return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
+            return view('checklists.index', compact('inspection', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'))
                 ->with('forms', $spForms);
         }
 
-        $forms      = self::forms();
+        if ($inspection->type_inspection === 'Study Report Inspection') {
+            $srForms    = self::studyReportForms();
+            $firstForm  = reset($srForms);
+            $modelClass = $firstForm['model'];
+            $srRecord   = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $srRecord ? (array)($srRecord->sections_done ?? []) : [];
+            $total      = count($srForms);
+            $progress   = count($sectionsDone);
 
-        $statuses = [];
-        foreach ($forms as $slug => $form) {
-            $modelClass       = $form['model'];
-            $statuses[$slug]  = $modelClass::where('inspection_id', $inspection_id)->exists();
+            $findingCounts = \App\Models\Pro_QaInspectionFinding::where('inspection_id', $inspection_id)
+                ->whereNotNull('facility_section')
+                ->selectRaw('facility_section, count(*) as cnt')
+                ->groupBy('facility_section')
+                ->pluck('cnt', 'facility_section')
+                ->toArray();
+
+            $statuses     = [];
+            $conformities = [];
+            foreach ($srForms as $slug => $form) {
+                $statuses[$slug]     = in_array($form['section'], $sectionsDone);
+                $conformities[$slug] = $srRecord ? $srRecord->{$form['section'] . '_is_conforming'} : null;
+            }
+
+            return view('checklists.index', compact('inspection', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'))
+                ->with('forms', $srForms);
         }
 
-        return view('checklists.index', compact('inspection', 'forms', 'statuses'));
+        if ($inspection->type_inspection === 'Data Quality Inspection') {
+            $dqForms    = self::dataQualityForms();
+            $firstForm  = reset($dqForms);
+            $modelClass = $firstForm['model'];
+            $dqRecord   = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $dqRecord ? (array)($dqRecord->sections_done ?? []) : [];
+            $total      = count($dqForms);
+            $progress   = count($sectionsDone);
+
+            $findingCounts = \App\Models\Pro_QaInspectionFinding::where('inspection_id', $inspection_id)
+                ->whereNotNull('facility_section')
+                ->selectRaw('facility_section, count(*) as cnt')
+                ->groupBy('facility_section')
+                ->pluck('cnt', 'facility_section')
+                ->toArray();
+
+            $statuses     = [];
+            $conformities = [];
+            foreach ($dqForms as $slug => $form) {
+                $statuses[$slug]     = in_array($form['section'], $sectionsDone);
+                $conformities[$slug] = $dqRecord ? $dqRecord->{$form['section'] . '_is_conforming'} : null;
+            }
+
+            return view('checklists.index', compact('inspection', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'))
+                ->with('forms', $dqForms);
+        }
+
+        $forms = self::forms();
+
+        $statuses     = [];
+        $conformities = [];
+        foreach ($forms as $slug => $form) {
+            $modelClass          = $form['model'];
+            $record              = $modelClass::where('inspection_id', $inspection_id)->first();
+            $statuses[$slug]     = (bool) $record;
+            $conformities[$slug] = $record?->is_conforming;
+        }
+
+        return view('checklists.index', compact('inspection', 'forms', 'statuses', 'conformities'));
     }
 
     /**
@@ -597,6 +892,69 @@ class ChecklistController extends Controller
             return view('checklists.form', compact('inspection', 'slug', 'form', 'record', 'fieldPrefix', 'sectionFindings', 'personnels'));
         }
 
+        // Study Report Inspection sections
+        $srForms = self::studyReportForms();
+        if (isset($srForms[$slug])) {
+            $form        = $srForms[$slug];
+            $record      = $form['model']::where('inspection_id', $inspection_id)->first();
+            $fieldPrefix = $form['section'] . '_';
+            $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
+                ->where('inspection_id', $inspection_id)
+                ->where('facility_section', $slug)
+                ->orderBy('id')
+                ->get();
+            $personnels = \App\Models\Pro_Personnel::orderBy('nom')->get();
+            return view('checklists.form', compact('inspection', 'slug', 'form', 'record', 'fieldPrefix', 'sectionFindings', 'personnels'));
+        }
+
+        // Data Quality Inspection sections
+        $dqForms = self::dataQualityForms();
+        if (isset($dqForms[$slug])) {
+            $form        = $dqForms[$slug];
+            $record      = $form['model']::where('inspection_id', $inspection_id)->first();
+            $fieldPrefix = $form['section'] . '_';
+            $section     = $form['section'];
+            $formType    = $form['form_type'];
+
+            $dqAnswers   = [];
+            $dqV1Answers = [];
+            $dqV2Answers = [];
+            if ($record) {
+                if (in_array($formType, ['dq_standard', 'study_box'])) {
+                    $dqAnswers = (array)($record->{$section . '_answers'} ?? []);
+                } else {
+                    $dqV1Answers = (array)($record->{$section . '_v1_answers'} ?? []);
+                    $dqV2Answers = (array)($record->{$section . '_v2_answers'} ?? []);
+                }
+            }
+
+            $all_personnels = \App\Models\Pro_Personnel::orderBy('prenom')->get();
+            $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
+                ->where('inspection_id', $inspection_id)
+                ->where('facility_section', $slug)
+                ->orderBy('id')
+                ->get();
+            $personnels = $all_personnels;
+
+            // Load QA Manager for pre-filling header info in section A
+            $dqQaManagerId = \DB::table('pro_key_facility_personnels')
+                ->where('staff_role', 'Quality Assurance')
+                ->where('active', 1)
+                ->value('personnel_id');
+            $dqQaManager = $dqQaManagerId ? \App\Models\Pro_Personnel::find($dqQaManagerId) : null;
+
+            // Load project with studyDirector relation
+            $dqProject = $inspection->project_id
+                ? \App\Models\Pro_Project::with('studyDirector')->find($inspection->project_id)
+                : null;
+
+            return view('checklists.form', compact(
+                'inspection', 'slug', 'form', 'record', 'fieldPrefix',
+                'all_personnels', 'dqAnswers', 'dqV1Answers', 'dqV2Answers',
+                'sectionFindings', 'personnels', 'dqQaManager', 'dqProject'
+            ));
+        }
+
         $forms = self::forms();
 
         abort_if(!isset($forms[$slug]), 404, 'Formulaire introuvable.');
@@ -657,6 +1015,7 @@ class ChecklistController extends Controller
             foreach (array_keys($form['questions']) as $n) {
                 $data["q{$n}"] = $request->input("q{$n}");
             }
+            $data['is_conforming'] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
 
             $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
 
@@ -752,6 +1111,9 @@ class ChecklistController extends Controller
             }
             $data["{$prefix}comments"] = $request->input("{$prefix}comments");
 
+            // Conclusion : conformité pour toutes les sections du Study Protocol
+            $data["{$prefix}is_conforming"] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
+
             // Section F special: staff training records
             if (($form['type'] ?? '') === 'study_personnel') {
                 $staffCount = $form['staff_count'] ?? 15;
@@ -771,6 +1133,137 @@ class ChecklistController extends Controller
             $data['sections_done'] = $sectionsDone;
 
             $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
+
+            // Auto-finaliser quand toutes les sections A–F sont complétées
+            $allSpSections = ['a','b','c','d','e','f'];
+            if (!$inspection->date_performed && !array_diff($allSpSections, $sectionsDone)) {
+                $inspection->date_performed = now()->toDateString();
+                $inspection->save();
+            }
+
+            return redirect()->route('checklist.index', $inspection_id)
+                ->with('success', 'Section "' . strtoupper($section) . '. ' . $form['title'] . '" enregistrée avec succès.');
+        }
+
+        // Study Report Inspection sections
+        $srForms = self::studyReportForms();
+        if (isset($srForms[$slug])) {
+            $form       = $srForms[$slug];
+            $modelClass = $form['model'];
+            $section    = $form['section'];
+            $prefix     = $section . '_';
+
+            $data = [
+                'inspection_id' => $inspection_id,
+                'filled_by'     => auth()->id() ?? null,
+            ];
+
+            foreach (array_keys($form['questions']) as $n) {
+                $data["{$prefix}q{$n}"] = $request->input("{$prefix}q{$n}");
+            }
+            $data["{$prefix}comments"] = $request->input("{$prefix}comments");
+
+            // Conformity per section
+            $data["{$prefix}is_conforming"] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
+
+            // Append section to sections_done if not already present
+            $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $existing ? (array)($existing->sections_done ?? []) : [];
+            if (!in_array($section, $sectionsDone)) {
+                $sectionsDone[] = $section;
+            }
+            $data['sections_done'] = $sectionsDone;
+
+            $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
+
+            // Auto-finaliser quand toutes les sections A–E sont complétées
+            $allSrSections = ['a','b','c','d','e'];
+            if (!$inspection->date_performed && !array_diff($allSrSections, $sectionsDone)) {
+                $inspection->date_performed = now()->toDateString();
+                $inspection->save();
+            }
+
+            return redirect()->route('checklist.index', $inspection_id)
+                ->with('success', 'Section "' . strtoupper($section) . '. ' . $form['title'] . '" enregistrée avec succès.');
+        }
+
+        // Data Quality Inspection sections
+        $dqForms = self::dataQualityForms();
+        if (isset($dqForms[$slug])) {
+            $form     = $dqForms[$slug];
+            $modelClass = $form['model'];
+            $section  = $form['section'];
+            $formType = $form['form_type'];
+
+            $data = ['inspection_id' => $inspection_id];
+
+            if ($formType === 'dq_standard') {
+                $answers = [];
+                foreach (array_keys($form['questions']) as $n) {
+                    $answers[(string)$n] = $request->input("q_{$n}");
+                }
+                $data["{$section}_answers"]          = $answers;
+                $data["{$section}_date_performed"]   = $request->input("{$section}_date_performed") ?: null;
+                $data["{$section}_qa_personnel_id"]  = $request->input("{$section}_qa_personnel_id") ?: null;
+                $data["{$section}_comments"]         = $request->input("{$section}_comments");
+                $data["{$section}_is_conforming"]    = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+
+                // Header info only for section A
+                if ($section === 'a') {
+                    $data['aspects_inspected']   = $request->input('aspects_inspected', []);
+                    $data['study_start_date']    = $request->input('study_start_date') ?: null;
+                    $data['study_end_date']      = $request->input('study_end_date') ?: null;
+                    $data['study_director_name'] = $request->input('study_director_name');
+                    $data['qa_inspector_phone']  = $request->input('qa_inspector_phone');
+                    $data['qa_inspector_email']  = $request->input('qa_inspector_email');
+                    $data['personnel_involved']  = $request->input('personnel_involved', []);
+                }
+            } elseif ($formType === 'dual_verification') {
+                $v1 = [];
+                $v2 = [];
+                foreach (array_keys($form['questions']) as $n) {
+                    $v1[(string)$n] = $request->input("v1_q_{$n}");
+                    $v2[(string)$n] = $request->input("v2_q_{$n}");
+                }
+                $data["{$section}_v1_answers"]          = $v1;
+                $data["{$section}_v1_date_performed"]   = $request->input("{$section}_v1_date_performed") ?: null;
+                $data["{$section}_v1_qa_personnel_id"]  = $request->input("{$section}_v1_qa_personnel_id") ?: null;
+                $data["{$section}_v2_answers"]          = $v2;
+                $data["{$section}_v2_date_performed"]   = $request->input("{$section}_v2_date_performed") ?: null;
+                $data["{$section}_v2_qa_personnel_id"]  = $request->input("{$section}_v2_qa_personnel_id") ?: null;
+                $data["{$section}_comments"]            = $request->input("{$section}_comments");
+                $data["{$section}_is_conforming"]       = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+            } elseif ($formType === 'study_box') {
+                $answers = [];
+                foreach (array_keys($form['questions']) as $n) {
+                    $answers[(string)$n] = [
+                        'response' => $request->input("q_{$n}_response"),
+                        'signed'   => $request->input("q_{$n}_signed"),
+                    ];
+                }
+                $data["{$section}_answers"]         = $answers;
+                $data["{$section}_date_performed"]  = $request->input("{$section}_date_performed") ?: null;
+                $data["{$section}_qa_personnel_id"] = $request->input("{$section}_qa_personnel_id") ?: null;
+                $data["{$section}_comments"]        = $request->input("{$section}_comments");
+                $data["{$section}_is_conforming"]   = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+            }
+
+            // Append section to sections_done
+            $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
+            $sectionsDone = $existing ? (array)($existing->sections_done ?? []) : [];
+            if (!in_array($section, $sectionsDone)) {
+                $sectionsDone[] = $section;
+            }
+            $data['sections_done'] = $sectionsDone;
+
+            $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
+
+            // Auto-finaliser quand toutes les sections A–E sont complétées
+            $allDqSections = ['a', 'b', 'c', 'd', 'e'];
+            if (!$inspection->date_performed && !array_diff($allDqSections, $sectionsDone)) {
+                $inspection->date_performed = now()->toDateString();
+                $inspection->save();
+            }
 
             return redirect()->route('checklist.index', $inspection_id)
                 ->with('success', 'Section "' . strtoupper($section) . '. ' . $form['title'] . '" enregistrée avec succès.');
@@ -903,6 +1396,43 @@ class ChecklistController extends Controller
     }
 
     /**
+     * Study Report Inspection print view.
+     * ?mode=empty pour formulaire vierge, ?mode=filled (défaut) pour formulaire rempli.
+     */
+    public function studyReportPrint(int $inspection_id, Request $request)
+    {
+        $inspection  = Pro_QaInspection::with('inspector', 'project')->findOrFail($inspection_id);
+        abort_if($inspection->type_inspection !== 'Study Report Inspection', 404);
+
+        $srForms = self::studyReportForms();
+        $record  = \App\Models\Pro_Cl_StudyReportInspection::where('inspection_id', $inspection_id)->first();
+        $mode    = $request->query('mode', 'filled');
+        $keyPersonnels = self::keyPersonnels();
+
+        return view('checklists.study-report-print', compact(
+            'inspection', 'srForms', 'record', 'mode', 'keyPersonnels'
+        ));
+    }
+
+    /**
+     * Data Quality Inspection print view.
+     */
+    public function dataQualityPrint(int $inspection_id, Request $request)
+    {
+        $inspection = Pro_QaInspection::with('inspector', 'project')->findOrFail($inspection_id);
+        abort_if($inspection->type_inspection !== 'Data Quality Inspection', 404);
+
+        $dqForms = self::dataQualityForms();
+        $record  = \App\Models\Pro_Cl_DataQualityInspection::where('inspection_id', $inspection_id)->first();
+        $mode    = $request->query('mode', 'filled');
+        $keyPersonnels = self::keyPersonnels();
+
+        return view('checklists.data-quality-print', compact(
+            'inspection', 'dqForms', 'record', 'mode', 'keyPersonnels'
+        ));
+    }
+
+    /**
      * Amendment/Deviation Inspection print view.
      * ?mode=empty pour formulaire vierge, ?mode=filled (défaut) pour formulaire rempli.
      */
@@ -952,6 +1482,11 @@ class ChecklistController extends Controller
             foreach ($spForms as $slug => $form) {
                 $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
             }
+        } elseif ($inspection->type_inspection === 'Study Report Inspection') {
+            $srForms = self::studyReportForms();
+            foreach ($srForms as $slug => $form) {
+                $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
+            }
         }
 
         return view('checklists.report', compact('inspection', 'forms', 'keyPersonnels', 'sectionsMeta'));
@@ -985,6 +1520,11 @@ class ChecklistController extends Controller
         } elseif ($inspection->type_inspection === 'Study Protocol Inspection') {
             $spForms = self::studyProtocolForms();
             foreach ($spForms as $slug => $form) {
+                $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
+            }
+        } elseif ($inspection->type_inspection === 'Study Report Inspection') {
+            $srForms = self::studyReportForms();
+            foreach ($srForms as $slug => $form) {
                 $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
             }
         }

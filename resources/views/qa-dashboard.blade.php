@@ -45,7 +45,10 @@
     .qa-dash .type-process     { background: #6f42c1; }
     .qa-dash .type-study       { background: #198754; }
     .qa-dash .type-protocol    { background: #0d9488; }
+    .qa-dash .type-report      { background: #2563eb; }
+    .qa-dash .type-dq          { background: #7c3aed; }
     .qa-dash .type-critical    { background: var(--qa-brand); }
+    .qa-dash .type-amendment   { background: #f97316; }
     .qa-dash .insp-row:hover   { background: #fdf3f3; cursor: pointer; }
     .qa-dash .insp-row.selected { background: #fce8e8; }
 
@@ -195,12 +198,16 @@
                                 @foreach($all_inspections as $insp)
                                 @php
                                     $typeClass = match($insp->type_inspection) {
-                                        'Facility Inspection'        => 'type-facility',
-                                        'Process Inspection'         => 'type-process',
-                                        'Study Inspection'           => 'type-study',
-                                        'Study Protocol Inspection'  => 'type-protocol',
-                                        'Critical Phase Inspection'  => 'type-critical',
-                                        default                      => 'type-study',
+                                        'Facility Inspection'                          => 'type-facility',
+                                        'Process Inspection'                           => 'type-process',
+                                        'Study Inspection'                             => 'type-study',
+                                        'Study Protocol Inspection'                    => 'type-protocol',
+                                        'Study Report Inspection'                      => 'type-report',
+                                        'Data Quality Inspection'                      => 'type-dq',
+                                        'Critical Phase Inspection'                    => 'type-critical',
+                                        'Study Protocol Amendment/Deviation Inspection',
+                                        'Study Report Amendment Inspection'            => 'type-amendment',
+                                        default                                        => 'type-study',
                                     };
                                     $isDone = !is_null($insp->date_performed);
                                 @endphp
@@ -249,6 +256,16 @@
                                         @elseif ($insp->type_inspection === 'Study Protocol Inspection')
                                         <a href="{{ route('checklist.studyProtocolPrint', $insp->id) }}?mode=filled" target="_blank"
                                            class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1" title="Imprimer Study Protocol Checklist">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                        @elseif ($insp->type_inspection === 'Study Report Inspection')
+                                        <a href="{{ route('checklist.studyReportPrint', $insp->id) }}?mode=filled" target="_blank"
+                                           class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1" title="Imprimer Study Report Checklist">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                        @elseif ($insp->type_inspection === 'Data Quality Inspection')
+                                        <a href="{{ route('checklist.dataQualityPrint', $insp->id) }}?mode=filled" target="_blank"
+                                           class="btn btn-xs btn-outline-secondary btn-sm py-0 px-1" title="Imprimer Data Quality Checklist">
                                             <i class="bi bi-printer"></i>
                                         </a>
                                         @endif
@@ -328,11 +345,13 @@
                                         </button>
                                         @endif
                                         @endif
+                                        @if (!$insp->completed_at)
                                         <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-1"
                                                 title="Delete"
                                                 onclick="deleteInspection({{ $insp->id }}, this)">
                                             <i class="bi bi-trash"></i>
                                         </button>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -378,7 +397,11 @@
                 <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#0d6efd;margin-right:4px;"></span>Facility</span>
                 <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#6f42c1;margin-right:4px;"></span>Process</span>
                 <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#198754;margin-right:4px;"></span>Study</span>
+                <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#0d9488;margin-right:4px;"></span>Study Protocol</span>
+                <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#2563eb;margin-right:4px;"></span>Study Report</span>
+                <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7c3aed;margin-right:4px;"></span>Data Quality</span>
                 <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#C10202;margin-right:4px;"></span>Critical Phase</span>
+                <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f97316;margin-right:4px;"></span>Amendment</span>
                 <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#adb5bd;margin-right:4px;"></span>Complétée</span>
             </div>
         </div>
@@ -690,10 +713,14 @@
 
         document.getElementById('findingsPanelTitle').textContent = name;
 
-        // For facility/process inspections, hide the global "Add Finding" button (each section has its own)
+        // For multi-section inspections, hide the global "Add Finding" button (each section has its own)
         // Also hide if the inspection is marked as completed
+        const MULTI_SECTION_TYPES = [
+            'Facility Inspection', 'Process Inspection',
+            'Study Protocol Inspection', 'Study Report Inspection', 'Data Quality Inspection',
+        ];
         const actionsEl = document.getElementById('findingsPanelActions');
-        if (type === 'Facility Inspection' || type === 'Process Inspection' || isCompleted) {
+        if (MULTI_SECTION_TYPES.includes(type) || isCompleted) {
             actionsEl.classList.add('d-none');
         } else {
             actionsEl.classList.remove('d-none');
@@ -745,6 +772,12 @@
                 renderSectionedFindings(findings, FACILITY_SECTIONS_META[data.facility_location] || FACILITY_SECTIONS_META.cotonou, data.sections_done || []);
             } else if (data.is_process) {
                 renderSectionedFindings(findings, PROCESS_SECTIONS_META, data.sections_done || []);
+            } else if (data.is_study_protocol) {
+                renderSectionedFindings(findings, SP_SECTIONS_META, data.sections_done || []);
+            } else if (data.is_study_report) {
+                renderSectionedFindings(findings, SR_SECTIONS_META, data.sections_done || []);
+            } else if (data.is_data_quality) {
+                renderSectionedFindings(findings, DQ_SECTIONS_META, data.sections_done || []);
             } else {
                 renderFindings(findings);
             }
@@ -1053,7 +1086,8 @@
         const btn = document.getElementById('afSaveBtn');
         btn.disabled = true;
 
-        const isFacilityInsp = (selectedInspectionType === 'Facility Inspection');
+        const FACILITY_LIKE_TYPES = ['Facility Inspection', 'Process Inspection'];
+        const isFacilityLike = FACILITY_LIKE_TYPES.includes(selectedInspectionType);
 
         const payload = {
             inspection_id:    selectedInspectionId,
@@ -1062,10 +1096,10 @@
             assigned_to:      assigned || null,
             deadline_date:    document.getElementById('af-deadline').value || null,
         };
-        if (!isFacilityInsp) {
+        if (!isFacilityLike) {
             payload.project_id = selectedInspectionProjectId;
         }
-        if (isFacilityInsp && currentFacilitySection) {
+        if (currentFacilitySection) {
             payload.facility_section = currentFacilitySection;
         }
 
@@ -1301,6 +1335,31 @@
         ],
     };
 
+    const SP_SECTIONS_META = [
+        { slug: 'sp-a', letter: 'A', title: 'General',                              count: 20 },
+        { slug: 'sp-b', letter: 'B', title: 'Test System',                           count:  4 },
+        { slug: 'sp-c', letter: 'C', title: 'Test, Control & Reference Articles',    count:  6 },
+        { slug: 'sp-d', letter: 'D', title: 'Equipment',                             count:  2 },
+        { slug: 'sp-e', letter: 'E', title: 'SOPs',                                  count:  4 },
+        { slug: 'sp-f', letter: 'F', title: 'Study Personnel',                       count:  1 },
+    ];
+
+    const SR_SECTIONS_META = [
+        { slug: 'sr-a', letter: 'A', title: 'General',                                         count: 28 },
+        { slug: 'sr-b', letter: 'B', title: 'Test, Control and Reference Substances',           count:  3 },
+        { slug: 'sr-c', letter: 'C', title: 'Test System Description',                         count:  2 },
+        { slug: 'sr-d', letter: 'D', title: 'Data Management and Statistical Analysis',        count:  4 },
+        { slug: 'sr-e', letter: 'E', title: 'Quality Assurance',                               count:  4 },
+    ];
+
+    const DQ_SECTIONS_META = [
+        { slug: 'dq-a', letter: 'A', title: 'Staff Training',                                  count:  3 },
+        { slug: 'dq-b', letter: 'B', title: 'Computerised Systems and Softwares Validation',   count: 12 },
+        { slug: 'dq-c', letter: 'C', title: 'Data Validity',                                   count: 10 },
+        { slug: 'dq-d', letter: 'D', title: 'Data Sheet Information',                          count: 17 },
+        { slug: 'dq-e', letter: 'E', title: 'Study Box',                                       count: 30 },
+    ];
+
     window.openDashboardChecklistModal = function(inspectionId, inspectionName, inspectionType, facilityLocation) {
         document.getElementById('dashPickerSubtitle').textContent = inspectionName;
 
@@ -1534,10 +1593,15 @@
 <script>
 (function() {
     const TYPE_COLORS = {
-        'Facility Inspection':       '#0d6efd',
-        'Process Inspection':        '#6f42c1',
-        'Study Inspection':          '#198754',
-        'Critical Phase Inspection': '#C10202',
+        'Facility Inspection':                          '#0d6efd',
+        'Process Inspection':                           '#6f42c1',
+        'Study Inspection':                             '#198754',
+        'Study Protocol Inspection':                    '#0d9488',
+        'Study Report Inspection':                      '#2563eb',
+        'Data Quality Inspection':                      '#7c3aed',
+        'Critical Phase Inspection':                    '#C10202',
+        'Study Protocol Amendment/Deviation Inspection':'#f97316',
+        'Study Report Amendment Inspection':            '#f97316',
     };
 
     const rawEvents = @json($calendar_inspections);

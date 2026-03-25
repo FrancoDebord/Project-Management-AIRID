@@ -1264,7 +1264,7 @@ class ProjectAjaxController extends Controller
             'project_id'       => $isCritical ? 'required|integer|exists:pro_projects,id' : 'nullable|integer|exists:pro_projects,id',
             'qa_inspector_id'  => 'required|integer|exists:personnels,id',
             'date_scheduled'   => 'required|date',
-            'type_inspection'  => 'required|string|in:Facility Inspection,Process Inspection,Study Inspection,Critical Phase Inspection',
+            'type_inspection'  => 'required|string|max:100',
             'activity_id'      => 'nullable|integer|exists:pro_studies_activities,id',
         ];
 
@@ -1435,6 +1435,27 @@ class ProjectAjaxController extends Controller
         if ($inspection && $inspection->type_inspection === 'Process Inspection') {
             $response['is_process'] = true;
             $clRecord = \App\Models\Pro_Cl_ProcessInspection::where('inspection_id', $inspection->id)->first();
+            $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+        }
+
+        // Study Protocol Inspection
+        if ($inspection && $inspection->type_inspection === 'Study Protocol Inspection') {
+            $response['is_study_protocol'] = true;
+            $clRecord = \App\Models\Pro_Cl_StudyProtocolInspection::where('inspection_id', $inspection->id)->first();
+            $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+        }
+
+        // Study Report Inspection
+        if ($inspection && $inspection->type_inspection === 'Study Report Inspection') {
+            $response['is_study_report'] = true;
+            $clRecord = \App\Models\Pro_Cl_StudyReportInspection::where('inspection_id', $inspection->id)->first();
+            $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+        }
+
+        // Data Quality Inspection
+        if ($inspection && $inspection->type_inspection === 'Data Quality Inspection') {
+            $response['is_data_quality'] = true;
+            $clRecord = \App\Models\Pro_Cl_DataQualityInspection::where('inspection_id', $inspection->id)->first();
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
         }
 
@@ -1625,6 +1646,13 @@ class ProjectAjaxController extends Controller
         try {
             $inspection = Pro_QaInspection::findOrFail($request->inspection_id);
 
+            if ($inspection->completed_at) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cette inspection est marquée comme terminée et ne peut pas être supprimée.',
+                ], 403);
+            }
+
             // Supprimer d'abord les findings enfants, puis les findings, puis l'inspection
             foreach ($inspection->findings as $finding) {
                 $finding->childFindings()->delete();
@@ -1700,6 +1728,51 @@ class ProjectAjaxController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Process Inspection Checklist.",
+                    ], 422);
+                }
+            }
+
+            // Block Study Protocol Inspection if not all sections are completed
+            if ($inspection->type_inspection === 'Study Protocol Inspection') {
+                $spRecord    = \App\Models\Pro_Cl_StudyProtocolInspection::where('inspection_id', $inspection->id)->first();
+                $allSections = ['a','b','c','d','e','f'];
+                $sectionsDone = $spRecord ? (array)($spRecord->sections_done ?? []) : [];
+                $total        = count($allSections);
+                if (!empty(array_diff($allSections, $sectionsDone))) {
+                    $count = count($sectionsDone);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Study Protocol Inspection Checklist.",
+                    ], 422);
+                }
+            }
+
+            // Block Study Report Inspection if not all sections are completed
+            if ($inspection->type_inspection === 'Study Report Inspection') {
+                $srRecord    = \App\Models\Pro_Cl_StudyReportInspection::where('inspection_id', $inspection->id)->first();
+                $allSections = ['a','b','c','d','e'];
+                $sectionsDone = $srRecord ? (array)($srRecord->sections_done ?? []) : [];
+                $total        = count($allSections);
+                if (!empty(array_diff($allSections, $sectionsDone))) {
+                    $count = count($sectionsDone);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Study Report Inspection Checklist.",
+                    ], 422);
+                }
+            }
+
+            // Block Data Quality Inspection if not all sections are completed
+            if ($inspection->type_inspection === 'Data Quality Inspection') {
+                $dqRecord    = \App\Models\Pro_Cl_DataQualityInspection::where('inspection_id', $inspection->id)->first();
+                $allSections = ['a','b','c','d','e'];
+                $sectionsDone = $dqRecord ? (array)($dqRecord->sections_done ?? []) : [];
+                $total        = count($allSections);
+                if (!empty(array_diff($allSections, $sectionsDone))) {
+                    $count = count($sectionsDone);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Impossible de finaliser : {$count}/{$total} sections complétées. Veuillez remplir toutes les sections du Data Quality Inspection Checklist.",
                     ], 422);
                 }
             }

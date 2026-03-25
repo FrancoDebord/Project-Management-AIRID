@@ -93,6 +93,8 @@
                 @if(isset($progress))
                     @if($inspection->type_inspection === 'Study Protocol Inspection')
                         Study Protocol Inspection Checklists
+                    @elseif($inspection->type_inspection === 'Study Report Inspection')
+                        Study Report Inspection Checklists
                     @elseif($inspection->type_inspection === 'Process Inspection')
                         Process Inspection Checklists
                     @else
@@ -108,6 +110,8 @@
                 @if(isset($progress))
                     @if($inspection->type_inspection === 'Study Protocol Inspection')
                         QA-PR-1-002/06
+                    @elseif($inspection->type_inspection === 'Study Report Inspection')
+                        QA-PR-1-005/06
                     @elseif($inspection->type_inspection === 'Process Inspection')
                         QA-PR-1-008/05
                     @else
@@ -128,9 +132,13 @@
                     $printRoute = match($inspection->type_inspection) {
                         'Process Inspection'        => 'checklist.processPrint',
                         'Study Protocol Inspection' => 'checklist.studyProtocolPrint',
+                        'Study Report Inspection'   => 'checklist.studyReportPrint',
+                        'Data Quality Inspection'   => 'checklist.dataQualityPrint',
                         default                     => 'checklist.facilityPrint',
                     };
-                @elseif(in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
+                    @endphp
+                    
+                @elseif (in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
                 @php
                     $printRoute = 'checklist.amendmentPrint';
                 @endphp
@@ -155,7 +163,7 @@
                 <i class="bi bi-shield-check me-1"></i>Dashboard QA
             </a>
             @if ($inspection->project_id)
-                <a href="/project/{{ $inspection->project_id }}/edit?project_id={{ $inspection->project_id }}"
+                <a href="/project/create?project_id={{ $inspection->project_id }}#step6"
                    class="btn btn-back">
                     <i class="bi bi-arrow-left me-1"></i>Retour au projet
                 </a>
@@ -209,11 +217,25 @@
             </div>
             <div class="col-auto">
                 @isset($progress)
-                    {{-- Facility Inspection: show progress --}}
+                    {{-- Multi-section inspections (Facility, Process, Study Protocol) --}}
                     @if ($progress >= $total)
                         <span class="badge-filled" style="font-size:.8rem; padding:.35rem .9rem;">
                             <i class="bi bi-check-circle-fill me-1"></i>{{ $progress }}/{{ $total }} sections complétées
                         </span>
+                        @if(!$inspection->date_performed)
+                            <div class="mt-2">
+                                <button id="markDoneBtn" class="btn btn-sm btn-success fw-semibold"
+                                        onclick="markInspectionDone({{ $inspection->id }}, this)">
+                                    <i class="bi bi-check-circle me-1"></i>Marquer comme finalisée
+                                </button>
+                            </div>
+                        @else
+                            <div class="mt-2">
+                                <span class="badge bg-success" style="font-size:.8rem;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Finalisée le {{ \Carbon\Carbon::parse($inspection->date_performed)->format('d/m/Y') }}
+                                </span>
+                            </div>
+                        @endif
                     @else
                         <span class="badge-todo" style="font-size:.8rem; padding:.35rem .9rem;">
                             <i class="bi bi-hourglass-split me-1"></i>{{ $progress }}/{{ $total }} sections complétées
@@ -305,9 +327,10 @@
     <div class="row g-3">
         @foreach ($forms as $slug => $form)
             @php
-                $done      = $statuses[$slug];
-                $nFindings = $findingCounts[$slug] ?? 0;
-                $isLocked  = $isCritical && $activeSlug && $slug !== $activeSlug;
+                $done         = $statuses[$slug];
+                $nFindings    = $findingCounts[$slug] ?? 0;
+                $isLocked     = $isCritical && $activeSlug && $slug !== $activeSlug;
+                $isConforming = ($conformities ?? [])[$slug] ?? null;
             @endphp
             <div class="col-md-6 col-lg-4">
                 <div class="checklist-card p-3 d-flex flex-column gap-2
@@ -341,9 +364,20 @@
                                 <span class="badge rounded-pill bg-danger" style="font-size:.72rem;">
                                     <i class="bi bi-exclamation-triangle me-1"></i>{{ $nFindings }} finding{{ $nFindings > 1 ? 's' : '' }}
                                 </span>
-                            @elseif(!$isLocked && $done)
-                                <span style="font-size:.72rem; color:#198754;">
-                                    <i class="bi bi-check-circle me-1"></i>Conforme
+                            @endif
+                            @if (!$isLocked && $done && $isConforming !== null)
+                                @if ($isConforming)
+                                    <span style="font-size:.72rem; color:#198754;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Conforme
+                                    </span>
+                                @else
+                                    <span style="font-size:.72rem; color:#dc3545;">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Non conforme
+                                    </span>
+                                @endif
+                            @elseif (!$isLocked && $done)
+                                <span style="font-size:.72rem; color:#6c757d;">
+                                    <i class="bi bi-dash-circle me-1"></i>Non évalué
                                 </span>
                             @endif
                         </div>
