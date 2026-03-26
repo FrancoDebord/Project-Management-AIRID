@@ -8,7 +8,14 @@ class Pro_Cl_ProcessInspection extends Model
 {
     protected $table = 'pro_cl_process_inspection';
     protected $guarded = [];
-    protected $casts = ['sections_done' => 'array'];
+    protected $casts = [
+        'sections_done'   => 'array',
+        'a_is_conforming' => 'boolean',
+        'b_is_conforming' => 'boolean',
+        'c_is_conforming' => 'boolean',
+        'd_is_conforming' => 'boolean',
+        'e_is_conforming' => 'boolean',
+    ];
 
     public function inspection()
     {

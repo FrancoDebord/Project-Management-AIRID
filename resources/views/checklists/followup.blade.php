@@ -463,8 +463,19 @@
         </div>
     </div>
 
-    <div class="page-number">Page 1 of 1</div>
+    <div class="page-number doc-page-num"></div>
 </div>
+
+<script>
+(function () {
+    const pages = document.querySelectorAll('.page');
+    const total = pages.length;
+    pages.forEach(function (page, idx) {
+        const el = page.querySelector('.doc-page-num');
+        if (el) el.textContent = (idx + 1) + ' / ' + total;
+    });
+})();
+</script>
 
 </body>
 </html>

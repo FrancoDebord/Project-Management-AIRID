@@ -6,6 +6,7 @@ use App\Models\Pro_Project;
 use App\Models\Pro_Project_Phase;
 use App\Models\Pro_Project_StudyPhaseCompleted;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ProjectActivityScheduleController extends Controller
 {
@@ -13,13 +14,88 @@ class ProjectActivityScheduleController extends Controller
 
     public function masterSchedule(Request $request)
     {
+        $projects = Pro_Project::with([
+            'studyDirector',
+            'keyPersonnelProject',
+            'studyDirectorAppointmentForm',
+            'protocolDeveloppementActivitiesProject',
+            'allActivitiesProject',
+            'reportPhaseDocuments',
+            'archivingDocuments',
+        ])->orderBy('project_code')->get();
 
+        $manageUrl = fn(int $id, string $step) =>
+            route('project.create', ['project_id' => $id]) . '#' . $step;
 
-        $all_projects = Pro_Project::orderBy("date_debut_effective", "desc")->get();
+        $scheduleData = $projects->map(function ($project) use ($manageUrl) {
+            // Study Start phase
+            $sdForm      = $project->studyDirectorAppointmentForm;
+            $startDate   = $sdForm?->sd_appointment_date;
+            $level1      = $project->protocolDeveloppementActivitiesProject
+                                   ->firstWhere('level_activite', 1);
+            $studyStartEnd = $level1?->real_date_performed;
 
-        $all_phases = Pro_Project_Phase::orderBy("level", "asc")->get();
+            // Planning phase
+            $level3       = $project->protocolDeveloppementActivitiesProject
+                                    ->firstWhere('level_activite', 3);
+            $planningStart = $level3?->real_date_performed;
 
-        return view("master-schedule", compact("all_projects", "all_phases"));
+            $doneActivities = $project->allActivitiesProject
+                                      ->filter(fn($a) => !is_null($a->actual_activity_date))
+                                      ->sortBy('actual_activity_date');
+            $firstActivity = $doneActivities->first();
+            $lastActivity  = $doneActivities->last();
+
+            $expStart    = $firstActivity?->actual_activity_date;
+            $expEnd      = $lastActivity?->actual_activity_date;
+            $planningEnd = $expStart;
+
+            // Report phase
+            $reportStart = $expEnd;
+            $finalReport = $project->reportPhaseDocuments
+                                   ->where('document_type', 'final_report')
+                                   ->filter(fn($d) => !is_null($d->submission_date))
+                                   ->sortByDesc('submission_date')
+                                   ->first();
+            $reportEnd = $finalReport?->submission_date;
+
+            // Archiving phase
+            $archiveStart = $reportEnd;
+            $archiveDoc   = $project->archivingDocuments
+                                    ->filter(fn($d) => !is_null($d->archive_date))
+                                    ->sortBy('archive_date')
+                                    ->first();
+            $archiveEnd   = $archiveDoc?->archive_date
+                         ?? ($project->archived_at?->format('Y-m-d'));
+
+            $pid = $project->id;
+
+            return [
+                'project'      => $project,
+                'study_start'  => [
+                    'start' => ['date' => $startDate,    'tab' => 'step1', 'tooltip' => 'SD Appointment Date',                   'nr_url' => $manageUrl($pid, 'step1')],
+                    'end'   => ['date' => $studyStartEnd,'tab' => 'step3', 'tooltip' => 'SD uploads Draft Protocol',              'nr_url' => $manageUrl($pid, 'step3')],
+                ],
+                'planning'     => [
+                    'start' => ['date' => $planningStart,'tab' => 'step3', 'tooltip' => 'Final Approved Protocol (signed)',       'nr_url' => $manageUrl($pid, 'step3')],
+                    'end'   => ['date' => $planningEnd,  'tab' => 'step5', 'tooltip' => 'First experimental activity performed',  'nr_url' => $manageUrl($pid, 'step5')],
+                ],
+                'experimental' => [
+                    'start' => ['date' => $expStart,     'tab' => 'step5', 'tooltip' => 'First experimental activity performed',  'nr_url' => $manageUrl($pid, 'step5')],
+                    'end'   => ['date' => $expEnd,       'tab' => 'step5', 'tooltip' => 'Last experimental activity performed',   'nr_url' => $manageUrl($pid, 'step5')],
+                ],
+                'report'       => [
+                    'start' => ['date' => $reportStart,  'tab' => 'step5', 'tooltip' => 'Last experimental activity performed',   'nr_url' => $manageUrl($pid, 'step5')],
+                    'end'   => ['date' => $reportEnd,    'tab' => 'step7', 'tooltip' => 'Final Report submitted (signed by SD)',   'nr_url' => $manageUrl($pid, 'step7')],
+                ],
+                'archiving'    => [
+                    'start' => ['date' => $archiveStart, 'tab' => 'step7', 'tooltip' => 'Final Report signed by all parties',     'nr_url' => $manageUrl($pid, 'step7')],
+                    'end'   => ['date' => $archiveEnd,   'tab' => 'step8', 'tooltip' => 'Study documents submitted to archivist', 'nr_url' => $manageUrl($pid, 'step8')],
+                ],
+            ];
+        });
+
+        return view('master-schedule', compact('scheduleData'));
     }
 
 

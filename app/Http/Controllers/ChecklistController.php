@@ -681,14 +681,15 @@ class ChecklistController extends Controller
                 ->pluck('cnt', 'facility_section')
                 ->toArray();
 
-            $statuses = [];
+            $statuses     = [];
+            $conformities = [];
             foreach ($facilityForms as $slug => $form) {
-                $statuses[$slug] = in_array($form['section'], $sectionsDone);
+                $statuses[$slug]     = in_array($form['section'], $sectionsDone);
+                $conformities[$slug] = $facilityRecord ? $facilityRecord->{$form['section'] . '_is_conforming'} : null;
             }
 
-            return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
-                ->with('forms', $facilityForms)
-                ->with('conformities', []);
+            return view('checklists.index', compact('inspection', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'))
+                ->with('forms', $facilityForms);
         }
 
         if ($inspection->type_inspection === 'Process Inspection') {
@@ -707,14 +708,15 @@ class ChecklistController extends Controller
                 ->pluck('cnt', 'facility_section')
                 ->toArray();
 
-            $statuses = [];
+            $statuses     = [];
+            $conformities = [];
             foreach ($processForms as $slug => $form) {
-                $statuses[$slug] = in_array($form['section'], $sectionsDone);
+                $statuses[$slug]     = in_array($form['section'], $sectionsDone);
+                $conformities[$slug] = $processRecord ? $processRecord->{$form['section'] . '_is_conforming'} : null;
             }
 
-            return view('checklists.index', compact('inspection', 'statuses', 'progress', 'total', 'findingCounts'))
-                ->with('forms', $processForms)
-                ->with('conformities', []);
+            return view('checklists.index', compact('inspection', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'))
+                ->with('forms', $processForms);
         }
 
         if (self::isAmendmentType($inspection->type_inspection)) {
@@ -987,6 +989,7 @@ class ChecklistController extends Controller
      */
     public function save(Request $request, int $inspection_id, string $slug)
     {
+
         $inspection = Pro_QaInspection::findOrFail($inspection_id);
 
         if ($inspection->date_scheduled && now()->toDateString() < $inspection->date_scheduled) {
@@ -994,11 +997,12 @@ class ChecklistController extends Controller
                 ->with('error', 'Cette inspection ne peut pas être remplie avant sa date prévue (' . \Carbon\Carbon::parse($inspection->date_scheduled)->format('d/m/Y') . ').');
         }
 
+        
         if ($inspection->completed_at) {
             return redirect()->back()
-                ->with('error', 'This inspection has been marked as completed. The form can no longer be modified.');
-        }
-
+            ->with('error', 'This inspection has been marked as completed. The form can no longer be modified.');
+            }
+            
         // Amendment / Deviation Inspection
         if ($slug === 'amendment-deviation' && self::isAmendmentType($inspection->type_inspection)) {
             $form       = self::amendmentDeviationForm();
@@ -1015,7 +1019,8 @@ class ChecklistController extends Controller
             foreach (array_keys($form['questions']) as $n) {
                 $data["q{$n}"] = $request->input("q{$n}");
             }
-            $data['is_conforming'] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
+            $data['is_conforming'] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
+
 
             $modelClass::updateOrCreate(['inspection_id' => $inspection_id], $data);
 
@@ -1045,7 +1050,8 @@ class ChecklistController extends Controller
             foreach (array_keys($form['questions']) as $n) {
                 $data["{$prefix}q{$n}"] = $request->input("{$prefix}q{$n}");
             }
-            $data["{$prefix}comments"] = $request->input("{$prefix}comments");
+            $data["{$prefix}comments"]      = $request->input("{$prefix}comments");
+            $data["{$prefix}is_conforming"] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
             // Append section to sections_done if not already present
             $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
@@ -1077,7 +1083,8 @@ class ChecklistController extends Controller
             foreach (array_keys($form['questions']) as $n) {
                 $data["{$prefix}q{$n}"] = $request->input("{$prefix}q{$n}");
             }
-            $data["{$prefix}comments"] = $request->input("{$prefix}comments");
+            $data["{$prefix}comments"]      = $request->input("{$prefix}comments");
+            $data["{$prefix}is_conforming"] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
             // Append section to sections_done if not already present
             $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
@@ -1112,7 +1119,7 @@ class ChecklistController extends Controller
             $data["{$prefix}comments"] = $request->input("{$prefix}comments");
 
             // Conclusion : conformité pour toutes les sections du Study Protocol
-            $data["{$prefix}is_conforming"] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
+            $data["{$prefix}is_conforming"] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
             // Section F special: staff training records
             if (($form['type'] ?? '') === 'study_personnel') {
@@ -1164,7 +1171,7 @@ class ChecklistController extends Controller
             $data["{$prefix}comments"] = $request->input("{$prefix}comments");
 
             // Conformity per section
-            $data["{$prefix}is_conforming"] = $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false;
+            $data["{$prefix}is_conforming"] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
             // Append section to sections_done if not already present
             $existing     = $modelClass::where('inspection_id', $inspection_id)->first();
@@ -1206,7 +1213,7 @@ class ChecklistController extends Controller
                 $data["{$section}_date_performed"]   = $request->input("{$section}_date_performed") ?: null;
                 $data["{$section}_qa_personnel_id"]  = $request->input("{$section}_qa_personnel_id") ?: null;
                 $data["{$section}_comments"]         = $request->input("{$section}_comments");
-                $data["{$section}_is_conforming"]    = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+                $data["{$section}_is_conforming"]    = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
                 // Header info only for section A
                 if ($section === 'a') {
@@ -1232,7 +1239,7 @@ class ChecklistController extends Controller
                 $data["{$section}_v2_date_performed"]   = $request->input("{$section}_v2_date_performed") ?: null;
                 $data["{$section}_v2_qa_personnel_id"]  = $request->input("{$section}_v2_qa_personnel_id") ?: null;
                 $data["{$section}_comments"]            = $request->input("{$section}_comments");
-                $data["{$section}_is_conforming"]       = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+                $data["{$section}_is_conforming"]       = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
             } elseif ($formType === 'study_box') {
                 $answers = [];
                 foreach (array_keys($form['questions']) as $n) {
@@ -1245,7 +1252,7 @@ class ChecklistController extends Controller
                 $data["{$section}_date_performed"]  = $request->input("{$section}_date_performed") ?: null;
                 $data["{$section}_qa_personnel_id"] = $request->input("{$section}_qa_personnel_id") ?: null;
                 $data["{$section}_comments"]        = $request->input("{$section}_comments");
-                $data["{$section}_is_conforming"]   = $request->has('is_conforming') ? (bool)$request->input('is_conforming') : false;
+                $data["{$section}_is_conforming"]   = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
             }
 
             // Append section to sections_done
@@ -1289,7 +1296,7 @@ class ChecklistController extends Controller
             'project_code' => $inspection->project?->project_code,
             'inspection_id'=> $inspection_id,
             'comments'     => $request->input('comments'),
-            'is_conforming' => $request->has('is_conforming') ? (bool) $request->input('is_conforming') : false,
+            'is_conforming' => $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null),
             'filled_by'    => auth()->id() ?? null,
         ];
 
@@ -1485,6 +1492,11 @@ class ChecklistController extends Controller
         } elseif ($inspection->type_inspection === 'Study Report Inspection') {
             $srForms = self::studyReportForms();
             foreach ($srForms as $slug => $form) {
+                $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
+            }
+        } elseif ($inspection->type_inspection === 'Data Quality Inspection') {
+            $dqForms = self::dataQualityForms();
+            foreach ($dqForms as $slug => $form) {
                 $sectionsMeta[$slug] = $form['letter'] . '. ' . $form['title'];
             }
         }

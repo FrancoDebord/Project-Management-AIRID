@@ -190,6 +190,7 @@
                                     <th>Inspector</th>
                                     <th>Date</th>
                                     <th class="text-center">Status</th>
+                                    <th class="text-center">Conformité</th>
                                     <th class="text-center">Findings</th>
                                     <th></th>
                                 </tr>
@@ -236,6 +237,18 @@
                                             <span class="badge bg-success">Done</span>
                                         @else
                                             <span class="badge bg-primary">Scheduled</span>
+                                        @endif
+                                    </td>
+                                    @php
+                                        $conf = $conformityMap[$insp->id] ?? 'na';
+                                    @endphp
+                                    <td class="text-center">
+                                        @if ($conf === true || $conf === 1)
+                                            <span class="badge" style="background:#198754;font-size:.72rem;"><i class="bi bi-check-circle-fill me-1"></i>Conforme</span>
+                                        @elseif ($conf === false || $conf === 0)
+                                            <span class="badge bg-danger" style="font-size:.72rem;"><i class="bi bi-x-circle-fill me-1"></i>Non conforme</span>
+                                        @else
+                                            <span class="badge bg-light text-muted border" style="font-size:.72rem;">—</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -768,16 +781,17 @@
         .then(data => {
             if (!data.success) { body.innerHTML = `<p class="text-danger small">${data.message}</p>`; return; }
             const findings = data.findings;
+            const secConf  = data.section_conformities || {};
             if (data.is_facility) {
-                renderSectionedFindings(findings, FACILITY_SECTIONS_META[data.facility_location] || FACILITY_SECTIONS_META.cotonou, data.sections_done || []);
+                renderSectionedFindings(findings, FACILITY_SECTIONS_META[data.facility_location] || FACILITY_SECTIONS_META.cotonou, data.sections_done || [], secConf);
             } else if (data.is_process) {
-                renderSectionedFindings(findings, PROCESS_SECTIONS_META, data.sections_done || []);
+                renderSectionedFindings(findings, PROCESS_SECTIONS_META, data.sections_done || [], secConf);
             } else if (data.is_study_protocol) {
-                renderSectionedFindings(findings, SP_SECTIONS_META, data.sections_done || []);
+                renderSectionedFindings(findings, SP_SECTIONS_META, data.sections_done || [], secConf);
             } else if (data.is_study_report) {
-                renderSectionedFindings(findings, SR_SECTIONS_META, data.sections_done || []);
+                renderSectionedFindings(findings, SR_SECTIONS_META, data.sections_done || [], secConf);
             } else if (data.is_data_quality) {
-                renderSectionedFindings(findings, DQ_SECTIONS_META, data.sections_done || []);
+                renderSectionedFindings(findings, DQ_SECTIONS_META, data.sections_done || [], secConf);
             } else {
                 renderFindings(findings);
             }
@@ -810,7 +824,8 @@
         body.innerHTML = html;
     }
 
-    function renderSectionedFindings(findings, meta, sectionsDone) {
+    function renderSectionedFindings(findings, meta, sectionsDone, sectionConformities) {
+        sectionConformities = sectionConformities || {};
         const body = document.getElementById('findingsPanelBody');
 
         // Group findings by facility_section slug
@@ -830,14 +845,21 @@
             const secFinds  = bySection[sec.slug] || [];
             const pendingN  = secFinds.filter(f => !f.is_conformity && f.status !== 'complete').length;
             const collapseId = `fac-sec-${idx}`;
+            const isConforming = Object.prototype.hasOwnProperty.call(sectionConformities, sectionLetter)
+                ? sectionConformities[sectionLetter]
+                : null;
 
             let statusBadge = '';
             if (!isDone) {
                 statusBadge = '<span class="badge bg-secondary ms-2" style="font-size:.7rem;">Non inspectée</span>';
+            } else if (isConforming === true) {
+                statusBadge = '<span class="badge bg-success ms-2" style="font-size:.7rem;"><i class="bi bi-check-circle-fill me-1"></i>Conforme</span>';
+            } else if (isConforming === false) {
+                statusBadge = '<span class="badge bg-danger ms-2" style="font-size:.7rem;"><i class="bi bi-x-circle-fill me-1"></i>Non conforme</span>';
             } else if (pendingN > 0) {
-                statusBadge = `<span class="badge bg-danger ms-2" style="font-size:.7rem;">${pendingN} finding${pendingN>1?'s':''}</span>`;
+                statusBadge = `<span class="badge bg-warning text-dark ms-2" style="font-size:.7rem;">${pendingN} finding${pendingN>1?'s':''} en attente</span>`;
             } else {
-                statusBadge = '<span class="badge bg-success ms-2" style="font-size:.7rem;">Conforme</span>';
+                statusBadge = '<span class="badge bg-secondary ms-2" style="font-size:.7rem;">Non évalué</span>';
             }
 
             const sectionUrl = `/checklist/${selectedInspectionId}/${sec.slug}`;

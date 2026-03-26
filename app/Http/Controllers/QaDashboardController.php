@@ -147,6 +147,110 @@ class QaDashboardController extends Controller
             }
         }
 
+        // ── Conformity map: inspection_id => true|false|null ──
+        $conformityMap = [];
+        $allInspIds = $all_inspections->pluck('id');
+
+        // 1. Amendment/Deviation
+        $amendIds = $all_inspections
+            ->whereIn('type_inspection', ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection'])
+            ->pluck('id');
+        if ($amendIds->isNotEmpty()) {
+            \App\Models\Pro_Cl_AmendmentDeviationInspection::whereIn('inspection_id', $amendIds)
+                ->get(['inspection_id', 'is_conforming'])
+                ->each(fn($r) => $conformityMap[$r->inspection_id] = $r->is_conforming === null ? null : (bool)$r->is_conforming);
+        }
+
+        // 2. Study Protocol (sections a–f)
+        $spIds2 = $all_inspections->where('type_inspection', 'Study Protocol Inspection')->pluck('id');
+        if ($spIds2->isNotEmpty()) {
+            $spSections = ['a','b','c','d','e','f'];
+            \App\Models\Pro_Cl_StudyProtocolInspection::whereIn('inspection_id', $spIds2)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $spSections)))
+                ->each(function($r) use ($spSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $spSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+
+        // 3. Study Report (sections a–e)
+        $srIds2 = $all_inspections->where('type_inspection', 'Study Report Inspection')->pluck('id');
+        if ($srIds2->isNotEmpty()) {
+            $srSections = ['a','b','c','d','e'];
+            \App\Models\Pro_Cl_StudyReportInspection::whereIn('inspection_id', $srIds2)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $srSections)))
+                ->each(function($r) use ($srSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $srSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+
+        // 4. Data Quality (sections a–e)
+        $dqIds2 = $all_inspections->where('type_inspection', 'Data Quality Inspection')->pluck('id');
+        if ($dqIds2->isNotEmpty()) {
+            $dqSections = ['a','b','c','d','e'];
+            \App\Models\Pro_Cl_DataQualityInspection::whereIn('inspection_id', $dqIds2)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $dqSections)))
+                ->each(function($r) use ($dqSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $dqSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+
+        // 5. Facility Inspection — main (A–O) and Covè (A–I)
+        $facilityInspections = $all_inspections->where('type_inspection', 'Facility Inspection');
+        $facilityMainIds = $facilityInspections->where('facility_location', '!=', 'cove')->pluck('id');
+        $facilityCoveIds = $facilityInspections->where('facility_location', 'cove')->pluck('id');
+        if ($facilityMainIds->isNotEmpty()) {
+            $mainSections = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o'];
+            \App\Models\Pro_Cl_FacilityInspection::whereIn('inspection_id', $facilityMainIds)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $mainSections)))
+                ->each(function($r) use ($mainSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $mainSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+        if ($facilityCoveIds->isNotEmpty()) {
+            $coveSections = ['a','b','c','d','e','f','g','h','i'];
+            \App\Models\Pro_Cl_FacilityInspectionCove::whereIn('inspection_id', $facilityCoveIds)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $coveSections)))
+                ->each(function($r) use ($coveSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $coveSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+
+        // 6. Process Inspection (sections a–e)
+        $processIds = $all_inspections->where('type_inspection', 'Process Inspection')->pluck('id');
+        if ($processIds->isNotEmpty()) {
+            $processSections = ['a','b','c','d','e'];
+            \App\Models\Pro_Cl_ProcessInspection::whereIn('inspection_id', $processIds)
+                ->get(array_merge(['inspection_id'], array_map(fn($s) => "{$s}_is_conforming", $processSections)))
+                ->each(function($r) use ($processSections, &$conformityMap) {
+                    $vals = array_filter(array_map(fn($s) => $r->{"{$s}_is_conforming"}, $processSections), fn($v) => $v !== null);
+                    $conformityMap[$r->inspection_id] = empty($vals) ? null : (collect($vals)->contains(fn($v) => !$v) ? false : true);
+                });
+        }
+
+        // 6. Critical Phase — query each model for all critical inspection IDs
+        $criticalIds = $all_inspections->where('type_inspection', 'Critical Phase Inspection')->pluck('id');
+        if ($criticalIds->isNotEmpty()) {
+            $criticalModels = [
+                \App\Models\Pro_Cl_ConeLlin::class, \App\Models\Pro_Cl_ConeIrsBlTreat::class,
+                \App\Models\Pro_Cl_ConeIrsBlTest::class, \App\Models\Pro_Cl_TunnelTest::class,
+                \App\Models\Pro_Cl_LlinWashing::class, \App\Models\Pro_Cl_LlinExpHuts::class,
+                \App\Models\Pro_Cl_IrsTreatment::class, \App\Models\Pro_Cl_IrsTrial::class,
+                \App\Models\Pro_Cl_ConeIrsWalls::class, \App\Models\Pro_Cl_CylinderBioassay::class,
+                \App\Models\Pro_Cl_CdcBottleCoating::class, \App\Models\Pro_Cl_CdcBottleTest::class,
+                \App\Models\Pro_Cl_SpatialRepellents::class,
+            ];
+            foreach ($criticalModels as $model) {
+                $model::whereIn('inspection_id', $criticalIds)
+                    ->get(['inspection_id', 'is_conforming'])
+                    ->each(fn($r) => $conformityMap[$r->inspection_id] = $r->is_conforming === null ? null : (bool)$r->is_conforming);
+            }
+        }
+
         return view('qa-dashboard', compact(
             'all_projects',
             'all_inspections',
@@ -164,7 +268,8 @@ class QaDashboardController extends Controller
             'facilityStartedIds',
             'facilityReadyIds',
             'processStartedIds',
-            'processReadyIds'
+            'processReadyIds',
+            'conformityMap'
         ));
     }
 

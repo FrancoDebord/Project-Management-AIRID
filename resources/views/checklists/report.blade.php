@@ -407,24 +407,29 @@
 
     @if($findings->isEmpty())
         <p class="text-muted" style="padding:10px 0;">No findings recorded for this inspection.</p>
-    @elseif($isFacilityOrProcess && !empty($sectionsMeta))
+    @elseif(!empty($sectionsMeta))
+        {{-- Multi-section inspection: findings grouped by checklist --}}
         @php
             $findingsBySection = $findings->groupBy('facility_section');
             $rowNum = 1;
+            $hasSectionFindings = false;
         @endphp
         @foreach($sectionsMeta as $slug => $sectionTitle)
             @php $sectionFindings = $findingsBySection->get($slug, collect()); @endphp
             @if($sectionFindings->isNotEmpty())
-            <div style="font-weight:700; font-size:9.5pt; color:#1a3a6b; margin: 10px 0 4px; border-left:3px solid #c41230; padding-left:6px; text-transform:uppercase;">
-                {{ $sectionTitle }}
+            @php $hasSectionFindings = true; @endphp
+            {{-- Checklist section header --}}
+            <div style="margin: 14px 0 4px; padding: 5px 10px; background:#e8edf5; border-left:4px solid #1a3a6b; border-bottom:1px solid #b0b8c8;">
+                <span style="font-size:8.5pt; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.5px;">Checklist</span><br>
+                <span style="font-size:10.5pt; font-weight:700; color:#1a3a6b; text-transform:uppercase;">{{ $sectionTitle }}</span>
             </div>
             <table class="findings-table">
                 <thead>
                     <tr>
                         <th style="width:5%">#</th>
                         <th style="width:10%">Type</th>
-                        <th style="width:55%">Finding</th>
-                        <th style="width:18%">Deadline</th>
+                        <th style="width:57%">Finding</th>
+                        <th style="width:16%">Deadline</th>
                         <th style="width:12%">Assigned To</th>
                     </tr>
                 </thead>
@@ -445,17 +450,10 @@
                                 {{ \Carbon\Carbon::parse($finding->deadline_date)->format('d/m/Y') }}
                             @elseif($finding->deadline_text)
                                 {{ $finding->deadline_text }}
-                            @else
-                                —
+                            @else —
                             @endif
                         </td>
-                        <td>
-                            @if($finding->assignedTo)
-                                {{ $finding->assignedTo->prenom }} {{ $finding->assignedTo->nom }}
-                            @else
-                                —
-                            @endif
-                        </td>
+                        <td>{{ $finding->assignedTo ? $finding->assignedTo->prenom . ' ' . $finding->assignedTo->nom : '—' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -463,20 +461,20 @@
             @endif
         @endforeach
         @php
-            // Findings without a section
             $orphanFindings = $findings->filter(fn($f) => !$f->facility_section);
         @endphp
         @if($orphanFindings->isNotEmpty())
-        <div style="font-weight:700; font-size:9.5pt; color:#1a3a6b; margin: 10px 0 4px; border-left:3px solid #c41230; padding-left:6px; text-transform:uppercase;">
-            Autres / Non classifiés
+        <div style="margin: 14px 0 4px; padding: 5px 10px; background:#e8edf5; border-left:4px solid #1a3a6b; border-bottom:1px solid #b0b8c8;">
+            <span style="font-size:8.5pt; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.5px;">Checklist</span><br>
+            <span style="font-size:10.5pt; font-weight:700; color:#1a3a6b; text-transform:uppercase;">Autres / Non classifiés</span>
         </div>
         <table class="findings-table">
             <thead>
                 <tr>
                     <th style="width:5%">#</th>
                     <th style="width:10%">Type</th>
-                    <th style="width:55%">Finding</th>
-                    <th style="width:18%">Deadline</th>
+                    <th style="width:57%">Finding</th>
+                    <th style="width:16%">Deadline</th>
                     <th style="width:12%">Assigned To</th>
                 </tr>
             </thead>
@@ -498,6 +496,9 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
+        @if(!$hasSectionFindings && $orphanFindings->isEmpty())
+        <p style="padding:10px 0; font-style:italic; color:#888;">No findings recorded for this inspection.</p>
         @endif
         @if($allConform)
         <p style="margin-top:10px; font-size:10.5pt; font-style:italic;">
@@ -566,7 +567,7 @@
         <strong>Distribution Date :</strong>&nbsp; {{ $reportDate }}
     </div>
 
-    <div class="page-number">Page 1</div>
+    <div class="page-number doc-page-num"></div>
 </div>
 
 
@@ -725,8 +726,18 @@
         </div>
     </div>
 
-    <div class="page-number">Page 2</div>
+    <div class="page-number doc-page-num"></div>
 </div>
 
+<script>
+    (function () {
+        const pages = document.querySelectorAll('.page');
+        const total = pages.length;
+        pages.forEach(function (page, idx) {
+            const el = page.querySelector('.doc-page-num');
+            if (el) el.textContent = (idx + 1) + ' / ' + total;
+        });
+    })();
+</script>
 </body>
 </html>

@@ -400,6 +400,19 @@
                 </tr>
             </tfoot>
         </table>
+        @if($mode !== 'empty' && $record)
+        @php $confVal = $record->{$fp . 'is_conforming'}; @endphp
+        <div style="display:flex;align-items:center;gap:10px;margin:6px 0 4px;padding:5px 12px;border:1.5px solid #ccc;border-radius:3px;font-size:9.5pt;page-break-inside:avoid;">
+            <span style="font-weight:bold;color:#333;white-space:nowrap;">Conclusion :</span>
+            @if($confVal === true)
+                <span style="font-weight:bold;padding:2px 10px;border-radius:20px;background:#d4edda;color:#155724;border:1px solid #c3e6cb;">&#10003; Conforme</span>
+            @elseif($confVal === false)
+                <span style="font-weight:bold;padding:2px 10px;border-radius:20px;background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;">&#10007; Non conforme</span>
+            @else
+                <span style="font-weight:bold;padding:2px 10px;border-radius:20px;background:#e9ecef;color:#6c757d;border:1px solid #dee2e6;">&#8212; Non évalué</span>
+            @endif
+        </div>
+        @endif
     @endforeach
 
     {{-- ── Signatures block ── --}}

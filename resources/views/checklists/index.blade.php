@@ -388,15 +388,21 @@
                                 <i class="bi bi-lock me-1"></i>Désactivé
                             </span>
                         @elseif(isset($progress) && $done)
-                            {{-- Section already filled: propose Modifier + Ajouter un finding --}}
-                            <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}#addFindingForm"
-                               class="btn btn-sm"
-                               style="background:#198754; color:#fff; border:none; border-radius:8px; font-size:.82rem; font-weight:600; padding:.35rem .9rem;">
-                                <i class="bi bi-plus-circle me-1"></i>Ajouter un finding
-                            </a>
+                            {{-- Section already filled --}}
+                            @if (!$inspection->completed_at)
+                                <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}#addFindingForm"
+                                   class="btn btn-sm"
+                                   style="background:#198754; color:#fff; border:none; border-radius:8px; font-size:.82rem; font-weight:600; padding:.35rem .9rem;">
+                                    <i class="bi bi-plus-circle me-1"></i>Ajouter un finding
+                                </a>
+                            @endif
                             <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}"
                                class="btn btn-open btn-sm">
-                                <i class="bi bi-pencil-square me-1"></i>Modifier
+                                @if ($inspection->completed_at)
+                                    <i class="bi bi-eye me-1"></i>Consulter
+                                @else
+                                    <i class="bi bi-pencil-square me-1"></i>Modifier
+                                @endif
                             </a>
                         @else
                             <a href="{{ route('checklist.show', [$inspection->id, $slug]) }}"

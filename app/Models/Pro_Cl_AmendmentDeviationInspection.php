@@ -16,9 +16,11 @@ class Pro_Cl_AmendmentDeviationInspection extends Model
         'amendment_number',
         'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8',
         'comments',
+        'is_conforming',
     ];
 
     protected $casts = [
-        'filled_by' => 'integer',
+        'filled_by'    => 'integer',
+        'is_conforming' => 'boolean',
     ];
 }

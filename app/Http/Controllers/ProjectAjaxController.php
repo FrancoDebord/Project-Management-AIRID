@@ -1417,16 +1417,28 @@ class ProjectAjaxController extends Controller
 
         $response = ['success' => true, 'findings' => $findings];
 
+        // Helper: build section_conformities map from a record
+        $sectionConformities = function ($record, array $sections): array {
+            if (!$record) return [];
+            $map = [];
+            foreach ($sections as $s) {
+                $val = $record->{"{$s}_is_conforming"};
+                $map[$s] = $val === null ? null : (bool) $val;
+            }
+            return $map;
+        };
+
         // For Facility Inspections, also return location and sections_done
         if ($inspection && $inspection->type_inspection === 'Facility Inspection') {
             $response['is_facility']       = true;
             $response['facility_location'] = $inspection->facility_location;
 
-            $clRecord = null;
             if ($inspection->facility_location === 'cove') {
                 $clRecord = \App\Models\Pro_Cl_FacilityInspectionCove::where('inspection_id', $inspection->id)->first();
+                $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e','f','g','h','i']);
             } else {
                 $clRecord = \App\Models\Pro_Cl_FacilityInspection::where('inspection_id', $inspection->id)->first();
+                $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o']);
             }
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
         }
@@ -1436,6 +1448,7 @@ class ProjectAjaxController extends Controller
             $response['is_process'] = true;
             $clRecord = \App\Models\Pro_Cl_ProcessInspection::where('inspection_id', $inspection->id)->first();
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+            $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e']);
         }
 
         // Study Protocol Inspection
@@ -1443,6 +1456,7 @@ class ProjectAjaxController extends Controller
             $response['is_study_protocol'] = true;
             $clRecord = \App\Models\Pro_Cl_StudyProtocolInspection::where('inspection_id', $inspection->id)->first();
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+            $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e','f']);
         }
 
         // Study Report Inspection
@@ -1450,6 +1464,7 @@ class ProjectAjaxController extends Controller
             $response['is_study_report'] = true;
             $clRecord = \App\Models\Pro_Cl_StudyReportInspection::where('inspection_id', $inspection->id)->first();
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+            $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e']);
         }
 
         // Data Quality Inspection
@@ -1457,6 +1472,7 @@ class ProjectAjaxController extends Controller
             $response['is_data_quality'] = true;
             $clRecord = \App\Models\Pro_Cl_DataQualityInspection::where('inspection_id', $inspection->id)->first();
             $response['sections_done'] = $clRecord ? ($clRecord->sections_done ?? []) : [];
+            $response['section_conformities'] = $sectionConformities($clRecord, ['a','b','c','d','e']);
         }
 
         return response()->json($response, 200);

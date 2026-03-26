@@ -338,6 +338,30 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 no-print" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- Bannière statut inspection --}}
+        @if ($inspection->completed_at)
+            <div class="alert mb-4 no-print d-flex align-items-center gap-3"
+                 style="background:#fff3cd;border:2px solid #ffc107;border-radius:12px;padding:14px 18px;">
+                <i class="bi bi-lock-fill fs-4" style="color:#856404;flex-shrink:0;"></i>
+                <div>
+                    <div class="fw-bold" style="color:#856404;font-size:.95rem;">
+                        Inspection clôturée — lecture seule
+                    </div>
+                    <div class="text-muted" style="font-size:.82rem;">
+                        Cette inspection a été marquée comme terminée le
+                        <strong>{{ \Carbon\Carbon::parse($inspection->completed_at)->format('d/m/Y à H:i') }}</strong>.
+                        Aucune modification n'est possible.
+                    </div>
+                </div>
+            </div>
+        @endif
 
         {{-- Project info banner (shown when inspection is linked to a project) --}}
         @if ($inspection->project)
@@ -420,6 +444,9 @@
             {{-- The form --}}
             <form method="POST" action="{{ route('checklist.save', [$inspection->id, $slug]) }}" class="p-4">
                 @csrf
+                @if ($inspection->completed_at)
+                <fieldset disabled style="opacity:.75;">
+                @endif
 
                 {{-- Hidden fields --}}
                 <input type="hidden" name="project_id" value="{{ $inspection->project_id }}">
@@ -1064,6 +1091,8 @@
                             'Study Protocol Inspection',
                             'Study Report Inspection',
                             'Data Quality Inspection',
+                            'Process Inspection',
+                            'Facility Inspection',
                         ]);
                     $showConclusion = !isset($fieldPrefix) || $isSpSection;
                 @endphp
@@ -1088,6 +1117,10 @@
                                     rapport d'étude
                                 @elseif($inspection->type_inspection === 'Data Quality Inspection')
                                     contrôle qualité des données
+                                @elseif($inspection->type_inspection === 'Process Inspection')
+                                    processus
+                                @elseif($inspection->type_inspection === 'Facility Inspection')
+                                    facility
                                 @else
                                     protocole
                                 @endif.
@@ -1104,50 +1137,59 @@
                             $preConf    = ($conformingValue == 1);
                             $preNonConf = ($conformingValue !== null && !$conformingValue);
                         @endphp
+                        {{-- Hidden input qui sera soumis avec le formulaire --}}
+                        <input type="hidden" name="is_conforming" id="conforming_value"
+                            value="{{ $preConf ? '1' : ($preNonConf ? '0' : '') }}">
                         <div class="d-flex gap-2 align-items-center flex-wrap">
-                            <label id="lblConf" for="conf_oui"
-                                style="cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;{{ $preConf ? 'background:#198754;color:#fff;border:2px solid #198754;' : 'background:#fff;color:#6c757d;border:2px solid #dee2e6;' }}">
-                                <input type="radio" name="is_conforming" value="1" id="conf_oui" style="display:none;" {{ $preConf ? 'checked' : '' }}>
+                            <button type="button" id="btnConf"
+                                onclick="setConforming(1)"
+                                style="cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;border:none;{{ $preConf ? 'background:#198754;color:#fff;outline:2px solid #198754;' : 'background:#fff;color:#6c757d;outline:2px solid #dee2e6;' }}">
                                 <i class="bi bi-check-circle-fill"></i>CONFORME
-                            </label>
-                            <label id="lblNonConf" for="conf_non"
-                                style="cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;{{ $preNonConf ? 'background:#dc3545;color:#fff;border:2px solid #dc3545;' : 'background:#fff;color:#6c757d;border:2px solid #dee2e6;' }}">
-                                <input type="radio" name="is_conforming" value="0" id="conf_non" style="display:none;" {{ $preNonConf ? 'checked' : '' }}>
+                            </button>
+                            <button type="button" id="btnNonConf"
+                                onclick="setConforming(0)"
+                                style="cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;border:none;{{ $preNonConf ? 'background:#dc3545;color:#fff;outline:2px solid #dc3545;' : 'background:#fff;color:#6c757d;outline:2px solid #dee2e6;' }}">
                                 <i class="bi bi-x-circle-fill"></i>NON CONFORME
-                            </label>
+                            </button>
                         </div>
                     </div>
                     <script>
-                        (function () {
-                            const rConf    = document.getElementById('conf_oui');
-                            const rNon     = document.getElementById('conf_non');
-                            const lblConf  = document.getElementById('lblConf');
-                            const lblNon   = document.getElementById('lblNonConf');
-
-                            function refresh() {
-                                if (rConf.checked) {
-                                    lblConf.style.cssText = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;background:#198754;color:#fff;border:2px solid #198754;';
-                                    lblNon.style.cssText  = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;background:#fff;color:#6c757d;border:2px solid #dee2e6;';
-                                } else if (rNon.checked) {
-                                    lblConf.style.cssText = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;background:#fff;color:#6c757d;border:2px solid #dee2e6;';
-                                    lblNon.style.cssText  = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;background:#dc3545;color:#fff;border:2px solid #dc3545;';
-                                }
+                        function setConforming(val) {
+                            document.getElementById('conforming_value').value = val;
+                            const btnConf    = document.getElementById('btnConf');
+                            const btnNonConf = document.getElementById('btnNonConf');
+                            const styleActive   = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;border:none;';
+                            const styleInactive = 'cursor:pointer;border-radius:50px;padding:.45rem 1.1rem;font-size:.88rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;border:none;background:#fff;color:#6c757d;outline:2px solid #dee2e6;';
+                            if (val === 1) {
+                                btnConf.style.cssText    = styleActive + 'background:#198754;color:#fff;outline:2px solid #198754;';
+                                btnNonConf.style.cssText = styleInactive;
+                            } else {
+                                btnConf.style.cssText    = styleInactive;
+                                btnNonConf.style.cssText = styleActive + 'background:#dc3545;color:#fff;outline:2px solid #dc3545;';
                             }
-                            rConf.addEventListener('change', refresh);
-                            rNon.addEventListener('change', refresh);
-                        })();
+                        }
                     </script>
+                @endif
+
+                @if ($inspection->completed_at)
+                </fieldset>
                 @endif
 
                 {{-- Submit --}}
                 <div class="d-flex justify-content-between align-items-center no-print">
                     <a href="{{ route('checklist.index', $inspection->id) }}"
                         class="btn btn-outline-secondary rounded-3">
-                        <i class="bi bi-arrow-left me-1"></i>Annuler
+                        <i class="bi bi-arrow-left me-1"></i>Retour
                     </a>
-                    <button type="submit" class="btn btn-save">
-                        <i class="bi bi-floppy me-1"></i>Enregistrer le formulaire
-                    </button>
+                    @if (!$inspection->completed_at)
+                        <button type="submit" class="btn btn-save">
+                            <i class="bi bi-floppy me-1"></i>Enregistrer le formulaire
+                        </button>
+                    @else
+                        <span class="text-muted small">
+                            <i class="bi bi-lock me-1"></i>Modification impossible — inspection clôturée
+                        </span>
+                    @endif
                 </div>
             </form>
         </div>
