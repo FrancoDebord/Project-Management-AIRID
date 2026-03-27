@@ -225,6 +225,7 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
+                                        @if(!$isDone)
                                         {{-- Edit button for ALL multiplicite types --}}
                                         <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1 pd-update-btn"
                                                 title="Mettre à jour"
@@ -244,6 +245,7 @@
                                                 data-activity-name="{{ $actDef?->nom_activite }}">
                                             <i class="bi bi-trash3"></i>
                                         </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

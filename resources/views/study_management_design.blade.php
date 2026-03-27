@@ -470,7 +470,7 @@
                                     </div>
                                     <a href="{{ route('printQaStatement', ['project_id' => $project->id]) }}"
                                        target="_blank"
-                                       class="btn btn-sm fw-semibold {{ ($allInspDone || $qaStatement) ? '' : 'disabled' }}"
+                                       class="btn btn-sm fw-semibold {{ ($allInspDone || $qaStatement || $project->archived_at) ? '' : 'disabled' }}"
                                        style="background:#6f42c1;color:#fff;">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>
                                         {{ $qaStatement ? 'Voir / Imprimer le QA Statement' : 'Générer le QA Statement' }}
