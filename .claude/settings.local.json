@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -n \"table\\\\|string\\\\|email\\\\|prenom\\\\|nom\\\\|titre\\\\|fonction\\\\|phone\" \"e:/Projets_CREC/project-management-lshtm/database/migrations/olds/\"*.php)"
+      "Bash(grep -n \"table\\\\|string\\\\|email\\\\|prenom\\\\|nom\\\\|titre\\\\|fonction\\\\|phone\" \"e:/Projets_CREC/project-management-lshtm/database/migrations/olds/\"*.php)",
+      "Bash(php -l app/Http/Controllers/ProjectAjaxController.php)",
+      "Bash(php -l resources/views/protocol-development.blade.php)",
+      "Bash(php -l resources/views/partials/report-phase-step.blade.php)",
+      "Bash(composer show:*)",
+      "Bash(php -l resources/views/partials/qa-statement-print.blade.php)",
+      "Bash(find e:/Projets_CREC/project-management-lshtm/public -type f \\\\\\(-iname *.png -o -iname *.jpg -o -iname *.jpeg -o -iname *.svg \\\\\\))"
     ]
   }
 }

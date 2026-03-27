@@ -1,104 +1,111 @@
- <div class="modal fade" id="replacementModal" tabindex="-1" aria-labelledby="replacementModalLabel" aria-hidden="true"
+@php
+    $project_id  = request()->get('project_id');
+    $project     = $project_id ? \App\Models\Pro_Project::find($project_id) : null;
+    $all_personnels_repl = \App\Models\Pro_Personnel::orderBy('nom')->get();
+@endphp
+
+<div class="modal fade" id="replacementModal" tabindex="-1" aria-hidden="true"
      data-bs-backdrop="static" data-bs-keyboard="false">
-     <div class="modal-dialog modal-dialog-centered modal-lg">
-         <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 overflow-hidden">
 
-             @php
-                 $project_id = request()->get('project_id');
-                 $project = null;
-                 if ($project_id) {
-                     $project = \App\Models\Pro_Project::find($project_id);
-                 }
+            <div class="modal-header" style="background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-fill-gear me-2"></i>Study Director Replacement
+                    @if($project) — <span class="fw-normal opacity-75">{{ $project->project_code }}</span>@endif
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
 
-             @endphp
-             <!-- Header -->
-             <div class="modal-header" style="background-color: #c20102; color: white;">
-                 <h5 class="modal-title" id="replacementModalLabel">
-                     <i class="bi bi-info-circle-fill"></i> Study Director Replacement Form :
-                     {{ $project ? $project->project_code : '' }}
-                 </h5>
-                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-             </div>
+            <div class="modal-body px-4 py-4">
+                <div id="error-messages-study-director-replacement" class="mb-3"></div>
 
-             <!-- Body -->
-             <div class="modal-body">
+                <form action="{{ route('saveStudyDirectorReplacementForm') }}" method="POST"
+                      enctype="multipart/form-data" id="form_study_director_replacement">
+                    @csrf
+                    <input type="hidden" name="project_id" value="{{ $project_id }}">
 
-                 {{-- Formulaire --}}
+                    <div class="row g-3">
 
-                 <div id="error-messages-study-director-replacement" class="mt-2"></div>
+                        {{-- New Study Director --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">New Study Director Appointed <span class="text-danger">*</span></label>
+                            <select id="repl_study_director" name="study_director" class="form-select">
+                                <option value="">— Select Study Director —</option>
+                                @foreach($all_personnels_repl as $p)
+                                    <option value="{{ $p->id }}">{{ trim(($p->titre ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                 <form action="{{ route('saveStudyDirectorReplacementForm') }}" method="POST"
-                     enctype="multipart/form-data" id="form_study_director_replacement">
-                     {{-- CSRF Token --}}
-                     {{ csrf_field() }}
+                        {{-- Project Manager --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Project Manager</label>
+                            <select id="repl_project_manager" name="project_manager" class="form-select">
+                                <option value="">— Select Project Manager —</option>
+                                @foreach($all_personnels_repl as $p)
+                                    <option value="{{ $p->id }}"
+                                        {{ $project && $project->project_manager == $p->id ? 'selected' : '' }}>
+                                        {{ trim(($p->titre ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                     <input type="hidden" name="project_id" id="project_id" value="{{ $project_id }}">
-                     <div class="row">
-                         <div class="col-12 col-sm-6 form-group-sm mt-2">
-                             <label for="study_director" class="form-label">New Study Director Appointed</label>
-                             <select id="study_director" name="study_director"
-                                 class=" form-control selectpicker show-tick" data-allow-live-search="true">
+                        {{-- Date of Replacement --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Date of Replacement <span class="text-danger">*</span></label>
+                            <input type="date" id="replacement_date" name="replacement_date" class="form-control">
+                        </div>
 
-                                 <option value="">Select Study Director</option>
-                                 @foreach ($all_personnels as $personnel)
-                                     <option value="{{ $personnel->id }}">
-                                         {{ $personnel->titre }} {{ $personnel->prenom }} {{ $personnel->nom }}
-                                     </option>
-                                 @endforeach
-                             </select>
-                         </div>
+                        {{-- File Upload --}}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Signed Replacement Form (PDF)</label>
+                            <input type="file" id="sd_appointment_file" name="sd_appointment_file"
+                                   class="form-control" accept="application/pdf">
+                            <div class="form-text">PDF only</div>
+                        </div>
 
-                         <div class="col-12 col-sm-6 form-group-sm mt-2">
-                             <label for="project_manager" class="form-label">Project Manager</label>
-                             <select id="project_manager" name="project_manager"
-                                 class=" form-control selectpicker show-tick" data-allow-live-search="true">
+                        {{-- Reason --}}
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Replacement Reason</label>
+                            <textarea id="replacement_reason" name="replacement_reason"
+                                      class="form-control" rows="3"
+                                      placeholder="Describe the reason for this replacement…"></textarea>
+                        </div>
 
-                                 <option value="">Select Project Manager</option>
-                                 @foreach ($all_personnels as $personnel)
-                                     <option value="{{ $personnel->id }}"
-                                         {{ isset($project) && $project->project_manager == $personnel->id ? 'selected' : '' }}>
-                                         {{ $personnel->titre }} {{ $personnel->prenom }} {{ $personnel->nom }}
-                                     </option>
-                                 @endforeach
-                             </select>
-                         </div>
+                        <div class="col-12 text-end mt-2">
+                            <button type="submit" class="btn fw-semibold px-4"
+                                    style="background:linear-gradient(135deg,#7b1fa2,#9c27b0);color:#fff;">
+                                <i class="bi bi-save me-1"></i>Submit Replacement
+                            </button>
+                        </div>
 
-                         <div class="col-12 col-sm-6 form-group-sm mt-2">
-                             <label for="replacement_date" class="form-label">Date of Replacement</label>
-                             <input type="text" id="replacement_date" name="replacement_date"
-                                 class="form-control date " value="">
-                         </div>
+                    </div>
+                </form>
+            </div>
 
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                         <div class="col-12 col-sm-6 form-group-sm mt-2">
-                             <label for="sd_appointment_file" class="form-label">Upload the signed Study Director
-                                 Replacement Form (PDF only)</label>
-                             <input type="file" id="sd_appointment_file" name="sd_appointment_file"
-                                 class="form-control fileclass" accept="application/pdf">
-
-                         </div>
-
-
-                         <div class="col-12 form-group-sm mt-2">
-                             <label for="replacement_reason" class="form-label">Replacement Reason (if any)</label>
-                             <textarea id="replacement_reason" name="replacement_reason" class="form-control" rows="3"></textarea>
-                         </div>
-
-                         <div class="col-12 form-group-sm mt-4 text-end">
-                             <button type="submit" class="btn btn-outline-danger "
-                                 style="float: right;">Submit</button>
-                         </div>
-
-                     </div>
-                 </form>
-             </div>
-
-             <!-- Footer -->
-             <div class="modal-footer">
-                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-
-             </div>
-
-         </div>
-     </div>
- </div>
+<script>
+(function() {
+    function initReplTomSelects() {
+        ['repl_study_director', 'repl_project_manager'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (el.tomselect) el.tomselect.destroy();
+            new TomSelect(el, {
+                placeholder: el.options[0]?.text || '— Select —',
+                allowEmptyOption: true,
+                sortField: { field: 'text', direction: 'asc' }
+            });
+        });
+    }
+    document.getElementById('replacementModal').addEventListener('show.bs.modal', initReplTomSelects);
+})();
+</script>

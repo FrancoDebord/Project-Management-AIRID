@@ -182,6 +182,42 @@
                 @endforeach
             </div>
 
+            {{-- Archive submission date + deposition form --}}
+            <hr>
+            <p class="fw-semibold small mb-2">Archive Deposition</p>
+            <div class="row g-3 mb-3" id="archiveDepositionSection">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Date — all study documents submitted to archivist</label>
+                    <input type="date" class="form-control form-control-sm" id="archSubmissionDate"
+                           value="{{ $project->archive_submission_date ?? '' }}"
+                           {{ $isArchived ? 'disabled' : '' }}>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Archive Deposition Form &amp; Study Checklist</label>
+                    @if($project->archive_deposition_form_path)
+                        <div class="mb-1">
+                            <a href="{{ asset('storage/' . $project->archive_deposition_form_path) }}" target="_blank"
+                               class="btn btn-outline-secondary btn-sm py-0 px-2">
+                                <i class="bi bi-download me-1"></i>Download current file
+                            </a>
+                        </div>
+                    @endif
+                    @if(!$isArchived)
+                        <input type="file" class="form-control form-control-sm" id="archDepositionFile"
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
+                        <div class="form-text">PDF, Word, Excel, Image, ZIP — max 30 MB</div>
+                    @endif
+                </div>
+                @if(!$isArchived)
+                <div class="col-12">
+                    <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="saveArchiveDeposition()" id="archDepositionSaveBtn">
+                        <i class="bi bi-save me-1"></i>Save Deposition Info
+                    </button>
+                    <span id="archDepositionMsg" class="ms-2 small"></span>
+                </div>
+                @endif
+            </div>
+
             {{-- Archive / Unarchive button --}}
             @if(!$isArchived)
             <div class="d-flex align-items-center gap-3 mt-3">
@@ -352,6 +388,46 @@
         }).then(r => r.json()).then(data => {
             if (data.success) location.reload();
             else alert('Error: ' + data.message);
+        });
+    };
+
+    // ── Archive deposition (date + form upload) ───────────────
+    window.saveArchiveDeposition = function() {
+        const btn    = document.getElementById('archDepositionSaveBtn');
+        const msgEl  = document.getElementById('archDepositionMsg');
+        const date   = document.getElementById('archSubmissionDate')?.value ?? '';
+        const file   = document.getElementById('archDepositionFile')?.files[0];
+
+        btn.disabled = true;
+        msgEl.textContent = '';
+
+        const fd = new FormData();
+        fd.append('project_id',              PROJECT_ID);
+        fd.append('archive_submission_date', date);
+        if (file) fd.append('file', file);
+
+        fetch('{{ route('saveArchiveSubmission') }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: fd
+        }).then(r => r.json()).then(data => {
+            btn.disabled = false;
+            if (data.success) {
+                msgEl.className = 'ms-2 small text-success';
+                msgEl.textContent = '✔ Saved.';
+                if (data.archive_deposition_form_path) {
+                    // Refresh the download link area
+                    const fileInput = document.getElementById('archDepositionFile');
+                    if (fileInput) fileInput.value = '';
+                }
+            } else {
+                msgEl.className = 'ms-2 small text-danger';
+                msgEl.textContent = data.message || 'Error saving.';
+            }
+        }).catch(() => {
+            btn.disabled = false;
+            msgEl.className = 'ms-2 small text-danger';
+            msgEl.textContent = 'Network error.';
         });
     };
 

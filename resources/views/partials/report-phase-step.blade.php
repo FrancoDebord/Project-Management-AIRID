@@ -3,15 +3,17 @@
     $project     = App\Models\Pro_Project::find($project_id);
     $rp_documents = $project
         ? App\Models\Pro_ReportPhaseDocument::where('project_id', $project_id)
-            ->orderBy('created_at', 'desc')->get()
+            ->with('qaInspection')
+            ->orderByRaw('COALESCE(submission_date, signature_date, created_at) ASC')->get()
         : collect();
 
     $typeLabels = [
-        'final_report'       => ['label' => 'Rapport Final',         'icon' => 'bi-file-earmark-text',  'color' => '#1a3a6b'],
-        'scientific_article' => ['label' => 'Article Scientifique',  'icon' => 'bi-journal-bookmark',   'color' => '#198754'],
-        'publication_link'   => ['label' => 'Lien de Publication',   'icon' => 'bi-link-45deg',         'color' => '#0d6efd'],
-        'shared_data'        => ['label' => 'Données Partagées',     'icon' => 'bi-database-fill-share','color' => '#6f42c1'],
-        'other'              => ['label' => 'Autre Document',        'icon' => 'bi-paperclip',          'color' => '#6c757d'],
+        'final_report'       => ['label' => 'Rapport Final',          'icon' => 'bi-file-earmark-text',  'color' => '#1a3a6b'],
+        'report_amendment'   => ['label' => 'Amendement de rapport',  'icon' => 'bi-file-earmark-diff',  'color' => '#c41230'],
+        'scientific_article' => ['label' => 'Article Scientifique',   'icon' => 'bi-journal-bookmark',   'color' => '#198754'],
+        'publication_link'   => ['label' => 'Lien de Publication',    'icon' => 'bi-link-45deg',         'color' => '#0d6efd'],
+        'shared_data'        => ['label' => 'Données Partagées',      'icon' => 'bi-database-fill-share','color' => '#6f42c1'],
+        'other'              => ['label' => 'Autre Document',         'icon' => 'bi-paperclip',          'color' => '#6c757d'],
     ];
 
     $statusLabels = [
@@ -125,7 +127,8 @@
                                     <th style="width:14%">Type</th>
                                     <th>Titre</th>
                                     <th style="width:10%">Statut</th>
-                                    <th style="width:11%">Date</th>
+                                    <th style="width:11%">Date signature</th>
+                                    <th style="width:5%" class="text-center">QA</th>
                                     <th style="width:14%">Lien / Fichier</th>
                                     <th style="width:8%" class="text-center">Actions</th>
                                 </tr>
@@ -154,7 +157,23 @@
                                         <span class="badge {{ $si['class'] }}">{{ $si['label'] }}</span>
                                     </td>
                                     <td class="small text-muted">
-                                        {{ $doc->submission_date ? \Carbon\Carbon::parse($doc->submission_date)->format('d/m/Y') : '—' }}
+                                        {{ $doc->signature_date ? \Carbon\Carbon::parse($doc->signature_date)->format('d/m/Y') : '—' }}
+                                    </td>
+                                    <td class="text-center">
+                                        @if($doc->qaInspection)
+                                            @php $insp = $doc->qaInspection; @endphp
+                                            <span class="badge bg-primary"
+                                                  style="font-size:.68rem;cursor:default;white-space:normal;max-width:130px;line-height:1.3;"
+                                                  title="{{ $insp->inspection_name ?? $insp->type_inspection }}">
+                                                <i class="bi bi-clipboard2-check me-1"></i>
+                                                {{ $insp->date_scheduled ? \Carbon\Carbon::parse($insp->date_scheduled)->format('d/m/Y') : 'Planifiée' }}
+                                            </span>
+                                            <div class="text-muted" style="font-size:.65rem;line-height:1.2;margin-top:2px;">
+                                                {{ \Str::limit($insp->type_inspection, 30) }}
+                                            </div>
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($doc->url)
@@ -174,7 +193,7 @@
                                     </td>
                                     <td class="text-center">
                                         <button class="btn btn-outline-primary btn-sm py-0 px-2 me-1"
-                                                onclick="editRpDoc({id:{{ $doc->id }},document_type:'{{ $doc->document_type }}',title:{{ json_encode($doc->title) }},description:{{ json_encode($doc->description ?? '') }},url:{{ json_encode($doc->url ?? '') }},doi:{{ json_encode($doc->doi ?? '') }},submission_date:'{{ $doc->submission_date ?? '' }}',status:'{{ $doc->status }}'})"
+                                                onclick="editRpDoc({id:{{ $doc->id }},document_type:'{{ $doc->document_type }}',title:{{ json_encode($doc->title) }},description:{{ json_encode($doc->description ?? '') }},url:{{ json_encode($doc->url ?? '') }},doi:{{ json_encode($doc->doi ?? '') }},submission_date:'{{ $doc->submission_date ?? '' }}',signature_date:'{{ $doc->signature_date ?? '' }}',status:'{{ $doc->status }}'})"
                                                 title="Modifier">
                                             <i class="bi bi-pencil"></i>
                                         </button>
@@ -219,6 +238,7 @@
                         <select class="form-select" id="rpDocType" onchange="rpToggleFields()">
                             <option value="">— Sélectionner —</option>
                             <option value="final_report">📄 Rapport Final</option>
+                            <option value="report_amendment">📝 Amendement de rapport</option>
                             <option value="scientific_article">📖 Article Scientifique</option>
                             <option value="publication_link">🔗 Lien de Publication</option>
                             <option value="shared_data">🗄️ Données Partagées</option>
@@ -272,10 +292,13 @@
                                placeholder="10.xxxx/xxxxxxx">
                     </div>
 
-                    {{-- Date --}}
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Date de soumission / publication</label>
-                        <input type="date" class="form-control" id="rpDocDate">
+                    {{-- Date soumission : auto-renseignée à la date du jour, non visible --}}
+
+                    {{-- Date signature (visible pour final_report et report_amendment) --}}
+                    <div class="col-md-6 d-none" id="rpSignatureDateWrapper">
+                        <label class="form-label fw-semibold" id="rpSignatureDateLabel">Date de signature</label>
+                        <input type="date" class="form-control" id="rpDocSignatureDate">
+                        <div class="form-text" id="rpSignatureDateHelp"></div>
                     </div>
                 </div>
             </div>
@@ -291,15 +314,15 @@
 
 <script>
 function openRpModal() {
-    document.getElementById('rpDocId').value          = '';
-    document.getElementById('rpDocType').value        = '';
-    document.getElementById('rpDocStatus').value      = 'draft';
-    document.getElementById('rpDocTitle').value       = '';
-    document.getElementById('rpDocDescription').value = '';
-    document.getElementById('rpDocFile').value        = '';
-    document.getElementById('rpDocUrl').value         = '';
-    document.getElementById('rpDocDoi').value         = '';
-    document.getElementById('rpDocDate').value        = '';
+    document.getElementById('rpDocId').value              = '';
+    document.getElementById('rpDocType').value            = '';
+    document.getElementById('rpDocStatus').value          = 'draft';
+    document.getElementById('rpDocTitle').value           = '';
+    document.getElementById('rpDocDescription').value     = '';
+    document.getElementById('rpDocFile').value            = '';
+    document.getElementById('rpDocUrl').value             = '';
+    document.getElementById('rpDocDoi').value             = '';
+    document.getElementById('rpDocSignatureDate').value   = '';
     document.getElementById('rpDocError').classList.add('d-none');
     document.getElementById('rpDocModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Ajouter un document — Report Phase';
     document.getElementById('btnSaveRpDoc').innerHTML = '<i class="bi bi-save me-1"></i>Enregistrer';
@@ -308,15 +331,15 @@ function openRpModal() {
 }
 
 function editRpDoc(doc) {
-    document.getElementById('rpDocId').value          = doc.id;
-    document.getElementById('rpDocType').value        = doc.document_type;
-    document.getElementById('rpDocStatus').value      = doc.status;
-    document.getElementById('rpDocTitle').value       = doc.title;
-    document.getElementById('rpDocDescription').value = doc.description;
-    document.getElementById('rpDocFile').value        = '';
-    document.getElementById('rpDocUrl').value         = doc.url;
-    document.getElementById('rpDocDoi').value         = doc.doi;
-    document.getElementById('rpDocDate').value        = doc.submission_date;
+    document.getElementById('rpDocId').value              = doc.id;
+    document.getElementById('rpDocType').value            = doc.document_type;
+    document.getElementById('rpDocStatus').value          = doc.status;
+    document.getElementById('rpDocTitle').value           = doc.title;
+    document.getElementById('rpDocDescription').value     = doc.description;
+    document.getElementById('rpDocFile').value            = '';
+    document.getElementById('rpDocUrl').value             = doc.url;
+    document.getElementById('rpDocDoi').value             = doc.doi;
+    document.getElementById('rpDocSignatureDate').value   = doc.signature_date || '';
     document.getElementById('rpDocError').classList.add('d-none');
     document.getElementById('rpDocModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Modifier le document — Report Phase';
     document.getElementById('btnSaveRpDoc').innerHTML = '<i class="bi bi-save me-1"></i>Mettre à jour';
@@ -325,27 +348,45 @@ function editRpDoc(doc) {
 }
 
 function rpToggleFields() {
-    const type = document.getElementById('rpDocType').value;
-    const isLink = type === 'publication_link';
-    const isArticle = type === 'scientific_article';
+    const type       = document.getElementById('rpDocType').value;
+    const isLink     = type === 'publication_link';
+    const isArticle  = type === 'scientific_article';
+    const needsSig   = type === 'final_report' || type === 'report_amendment';
 
     // Fichier : masqué si c'est uniquement un lien
     document.getElementById('rpFileWrapper').classList.toggle('d-none', isLink);
     // DOI : visible pour articles
     document.getElementById('rpDoiWrapper').classList.toggle('d-none', !isArticle);
+    // Signature date : visible pour final report et amendments
+    document.getElementById('rpSignatureDateWrapper').classList.toggle('d-none', !needsSig);
+    if (needsSig) {
+        if (type === 'final_report') {
+            const status = document.getElementById('rpDocStatus').value;
+            document.getElementById('rpSignatureDateLabel').textContent =
+                status === 'draft' ? 'Date de signature du Study Director' : 'Date de signature (toutes parties)';
+            document.getElementById('rpSignatureDateHelp').textContent =
+                status === 'draft' ? 'Date à laquelle le SD a signé le brouillon' : 'Date à laquelle toutes les parties ont signé le rapport final';
+        } else {
+            document.getElementById('rpSignatureDateLabel').textContent = 'Date de signature de l\'amendement';
+            document.getElementById('rpSignatureDateHelp').textContent  = '';
+        }
+    }
 }
+
+// Update signature label when status changes
+document.getElementById('rpDocStatus').addEventListener('change', rpToggleFields);
 
 function saveRpDoc() {
     const docId       = document.getElementById('rpDocId').value;
     const isEdit      = docId !== '';
-    const type        = document.getElementById('rpDocType').value;
-    const title       = document.getElementById('rpDocTitle').value.trim();
-    const status      = document.getElementById('rpDocStatus').value;
-    const description = document.getElementById('rpDocDescription').value.trim();
-    const url         = document.getElementById('rpDocUrl').value.trim();
-    const doi         = document.getElementById('rpDocDoi').value.trim();
-    const date        = document.getElementById('rpDocDate').value;
-    const fileInput   = document.getElementById('rpDocFile');
+    const type          = document.getElementById('rpDocType').value;
+    const title         = document.getElementById('rpDocTitle').value.trim();
+    const status        = document.getElementById('rpDocStatus').value;
+    const description   = document.getElementById('rpDocDescription').value.trim();
+    const url           = document.getElementById('rpDocUrl').value.trim();
+    const doi           = document.getElementById('rpDocDoi').value.trim();
+    const signatureDate = document.getElementById('rpDocSignatureDate').value;
+    const fileInput     = document.getElementById('rpDocFile');
     const errDiv      = document.getElementById('rpDocError');
     const btn         = document.getElementById('btnSaveRpDoc');
     const project_id  = "{{ request('project_id') }}";
@@ -366,7 +407,7 @@ function saveRpDoc() {
     fd.append('description',   description);
     fd.append('url',           url);
     fd.append('doi',           doi);
-    fd.append('submission_date', date);
+    fd.append('signature_date', signatureDate);
     fd.append('_token',        document.querySelector('meta[name="csrf-token"]').content);
     if (fileInput.files.length > 0) {
         fd.append('file', fileInput.files[0]);
@@ -410,11 +451,12 @@ function saveRpDoc() {
 }
 
 const rpTypeLabels = {
-    final_report:       { label: 'Rapport Final',        icon: 'bi-file-earmark-text',   color: '#1a3a6b' },
-    scientific_article: { label: 'Article Scientifique', icon: 'bi-journal-bookmark',    color: '#198754' },
-    publication_link:   { label: 'Lien de Publication',  icon: 'bi-link-45deg',          color: '#0d6efd' },
-    shared_data:        { label: 'Données Partagées',    icon: 'bi-database-fill-share', color: '#6f42c1' },
-    other:              { label: 'Autre Document',       icon: 'bi-paperclip',           color: '#6c757d' },
+    final_report:       { label: 'Rapport Final',         icon: 'bi-file-earmark-text',   color: '#1a3a6b' },
+    report_amendment:   { label: 'Amendement de rapport', icon: 'bi-file-earmark-diff',   color: '#c41230' },
+    scientific_article: { label: 'Article Scientifique',  icon: 'bi-journal-bookmark',    color: '#198754' },
+    publication_link:   { label: 'Lien de Publication',   icon: 'bi-link-45deg',          color: '#0d6efd' },
+    shared_data:        { label: 'Données Partagées',     icon: 'bi-database-fill-share', color: '#6f42c1' },
+    other:              { label: 'Autre Document',        icon: 'bi-paperclip',           color: '#6c757d' },
 };
 const rpStatusLabels = {
     draft:     { label: 'Brouillon', cls: 'bg-secondary' },

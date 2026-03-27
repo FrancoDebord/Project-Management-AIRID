@@ -203,12 +203,12 @@
 
 @section('css_vendor')
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 @endsection
 
 @section('js_vendor')
-    
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 @endsection
     @section('content')
         <div class="row justify-content-center">
@@ -401,16 +401,20 @@
                 @endif
 
                 @php $phasesCompleted = $project->phases_completed ?? []; @endphp
+                @php $isGlp = $project && $project->is_glp; @endphp
                 <ul class="wizard" id="myTab" role="tablist">
-                    <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study
-                            Creation @if(in_array('study_creation',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study Creation @if(in_array('study_creation',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details @if(in_array('protocol_details',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev. @if(in_array('protocol_development',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    @if($isGlp)
                     <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase @if(in_array('planning',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">5. Exper. Phase @if(in_array('experimental',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    @endif
+                    <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">{{ $isGlp ? '5.' : '4.' }} Exper. Phase @if(in_array('experimental',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    @if($isGlp)
                     <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Qual. Assurance @if(in_array('quality_assurance',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">7. Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">8. Archiving Phase @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    @endif
+                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">{{ $isGlp ? '7.' : '5.' }} Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">{{ $isGlp ? '8.' : '6.' }} Archiving @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                 </ul>
 
                    <div class="tab-content" id="myTabContent">
@@ -439,6 +443,41 @@
                     <div class="tab-pane fade" id="step6" role="tabpanel">
                         <h4>Quality Assurance</h4>
                         @include('partials.qa-assurance-step')
+                        @if($project && $project->is_glp)
+                            @php
+                                $qaInspCount      = \App\Models\Pro_QaInspection::where('project_id', $project->id)->count();
+                                $qaInspDoneCount  = \App\Models\Pro_QaInspection::where('project_id', $project->id)->whereNotNull('date_performed')->count();
+                                $qaStatement      = \App\Models\Pro_QaStatement::where('project_id', $project->id)->first();
+                                $allInspDone      = $qaInspCount > 0 && $qaInspCount === $qaInspDoneCount;
+                            @endphp
+                            <div class="mt-3 p-3 rounded-3 border" style="background:#f8f9ff;">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <strong style="color:#6f42c1;"><i class="bi bi-file-earmark-check me-1"></i>Quality Assurance Statement</strong>
+                                        <div class="text-muted small">
+                                            @if($qaStatement)
+                                                Statut :
+                                                <span class="badge {{ $qaStatement->status === 'final' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                                    {{ $qaStatement->status === 'final' ? 'Finalisé' : 'Brouillon' }}
+                                                </span>
+                                                — {{ $qaInspDoneCount }}/{{ $qaInspCount }} inspections terminées
+                                            @elseif($allInspDone)
+                                                Toutes les inspections sont terminées — vous pouvez générer le QA Statement.
+                                            @else
+                                                {{ $qaInspDoneCount }}/{{ $qaInspCount }} inspections terminées. Complétez toutes les inspections avant de générer le QA Statement.
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('printQaStatement', ['project_id' => $project->id]) }}"
+                                       target="_blank"
+                                       class="btn btn-sm fw-semibold {{ ($allInspDone || $qaStatement) ? '' : 'disabled' }}"
+                                       style="background:#6f42c1;color:#fff;">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                                        {{ $qaStatement ? 'Voir / Imprimer le QA Statement' : 'Générer le QA Statement' }}
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                         @include('partials.phase-complete-bar', ['phase' => 'quality_assurance', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step7" role="tabpanel">
@@ -518,6 +557,7 @@
             </div>
 
             @include('partials.dialog-create-project')
+            @include('partials.modal-key-personnel')
         @endsection
 
         @section('js')

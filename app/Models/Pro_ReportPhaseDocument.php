@@ -18,8 +18,10 @@ class Pro_ReportPhaseDocument extends Model
         'url',
         'doi',
         'submission_date',
+        'signature_date',
         'status',
         'submitted_by',
+        'qa_inspection_id',
     ];
 
     public function project(): BelongsTo
@@ -30,5 +32,10 @@ class Pro_ReportPhaseDocument extends Model
     public function submittedBy(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'submitted_by');
+    }
+
+    public function qaInspection(): BelongsTo
+    {
+        return $this->belongsTo(Pro_QaInspection::class, 'qa_inspection_id');
     }
 }

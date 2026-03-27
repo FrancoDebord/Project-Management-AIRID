@@ -49,8 +49,18 @@
                             <label class="form-label fw-semibold small">
                                 Project Code <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control bg-light" id="project_code" name="project_code"
-                                   readonly value="{{ $project->project_code ?? '' }}">
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-light" id="project_code" name="project_code"
+                                       readonly value="{{ $project->project_code ?? '' }}">
+                                <button type="button" class="btn btn-outline-secondary" id="btn-unlock-code"
+                                        title="Unlock to edit project code"
+                                        onclick="toggleProjectCodeEdit()">
+                                    <i class="bi bi-lock-fill" id="icon-lock-code"></i>
+                                </button>
+                            </div>
+                            <div class="form-text text-warning d-none" id="code-edit-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Changing the code will update all references.
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small">
@@ -109,37 +119,6 @@
                                 <option value="completed"    {{ isset($project) && $project->project_stage == 'completed'    ? 'selected' : '' }}>Completed</option>
                                 <option value="archived"     {{ isset($project) && $project->project_stage == 'archived'     ? 'selected' : '' }}>Archived</option>
                                 <option value="NA"           {{ isset($project) && $project->project_stage == 'NA'           ? 'selected' : '' }}>N/A</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {{-- ── Personnel ───────────────────────────────────────── --}}
-                    <p class="fw-bold text-uppercase small text-muted mb-2" style="letter-spacing:.06em;">
-                        <i class="bi bi-people me-1"></i>Key Personnel
-                    </p>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Study Director</label>
-                            <select name="study_director" id="study_director_basic" class="form-select">
-                                <option value="">— Select —</option>
-                                @foreach ($all_personnels as $p)
-                                    <option value="{{ $p->id }}"
-                                        {{ isset($project) && $project->study_director == $p->id ? 'selected' : '' }}>
-                                        {{ $p->titre }} {{ $p->prenom }} {{ $p->nom }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Project Manager</label>
-                            <select name="project_manager" id="project_manager_basic" class="form-select">
-                                <option value="">— Select —</option>
-                                @foreach ($all_personnels as $p)
-                                    <option value="{{ $p->id }}"
-                                        {{ isset($project) && $project->project_manager == $p->id ? 'selected' : '' }}>
-                                        {{ $p->titre }} {{ $p->prenom }} {{ $p->nom }}
-                                    </option>
-                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -251,5 +230,30 @@
 document.getElementById('detailedInformationProjectModal').addEventListener('show.bs.modal', function () {
     var err = document.getElementById('error-messages-detailed-information-project');
     if (err) { err.innerHTML = ''; err.className = 'mb-3'; }
+    // Re-lock project code on modal open
+    var input   = document.getElementById('project_code');
+    var icon    = document.getElementById('icon-lock-code');
+    var warning = document.getElementById('code-edit-warning');
+    var btn     = document.getElementById('btn-unlock-code');
+    if (input)   { input.readOnly = true; input.classList.add('bg-light'); }
+    if (icon)    { icon.className = 'bi bi-lock-fill'; }
+    if (warning) { warning.classList.add('d-none'); }
+    if (btn)     { btn.classList.remove('btn-warning'); btn.classList.add('btn-outline-secondary'); }
 });
+
+function toggleProjectCodeEdit() {
+    var input   = document.getElementById('project_code');
+    var icon    = document.getElementById('icon-lock-code');
+    var warning = document.getElementById('code-edit-warning');
+    var btn     = document.getElementById('btn-unlock-code');
+    var locked  = input.readOnly;
+
+    input.readOnly = !locked;
+    input.classList.toggle('bg-light', locked);
+    icon.className = locked ? 'bi bi-unlock-fill' : 'bi bi-lock-fill';
+    warning.classList.toggle('d-none', locked);
+    btn.classList.toggle('btn-warning', locked);
+    btn.classList.toggle('btn-outline-secondary', !locked);
+    if (!locked) { input.focus(); input.select(); }
+}
 </script>

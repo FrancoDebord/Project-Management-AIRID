@@ -21,6 +21,7 @@
                 </div>
 
                 <input type="hidden" id="pdRecordId" value="">
+                <input type="hidden" id="pdDocId" value="">
 
                 <div class="row g-3">
                     {{-- Activity name --}}

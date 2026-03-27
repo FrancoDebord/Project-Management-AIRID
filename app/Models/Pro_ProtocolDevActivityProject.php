@@ -39,4 +39,10 @@ class Pro_ProtocolDevActivityProject extends Model
     {
         return $this->belongsTo(Pro_Personnel::class, 'staff_id_performed', 'id');
     }
+
+    public function protocolDevDocuments()
+    {
+        return $this->hasMany(Pro_ProtocolDevDocument::class, 'activity_project_id', 'id')
+                    ->orderBy('created_at', 'asc');
+    }
 }

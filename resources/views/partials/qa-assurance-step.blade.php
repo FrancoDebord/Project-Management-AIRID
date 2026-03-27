@@ -6,7 +6,7 @@
     $qa_inspections       = App\Models\Pro_QaInspection::where('project_id', $project_id)
                                 ->with(['inspector', 'activity'])
                                 ->withCount('findings')
-                                ->latest()
+                                ->orderByRaw('COALESCE(date_start, date_scheduled) ASC')
                                 ->get();
     $all_project_findings = App\Models\Pro_QaInspectionFinding::whereIn(
                                 'inspection_id', $qa_inspections->pluck('id')
@@ -360,7 +360,10 @@
                                                                 onclick="openEditInspectionModal(
                                                                     {{ $linkedInspection->id }},
                                                                     '{{ addslashes($linkedInspection->inspection_name ?? '') }}',
-                                                                    '{{ $linkedInspection->date_scheduled ?? '' }}',
+                                                                    '{{ $linkedInspection->date_start ?? $linkedInspection->date_scheduled ?? '' }}',
+                                                                    '{{ $linkedInspection->date_end ?? '' }}',
+                                                                    '{{ $linkedInspection->date_report_fm ?? '' }}',
+                                                                    '{{ $linkedInspection->date_report_sd ?? '' }}',
                                                                     {{ $linkedInspection->qa_inspector_id ?? 'null' }},
                                                                     '{{ $linkedInspection->checklist_slug ?? '' }}',
                                                                     '{{ $linkedInspection->type_inspection }}'
@@ -582,7 +585,10 @@
                                                         onclick="openEditInspectionModal(
                                                             {{ $inspection->id }},
                                                             '{{ addslashes($inspection->inspection_name ?? '') }}',
-                                                            '{{ $inspection->date_scheduled ?? '' }}',
+                                                            '{{ $inspection->date_start ?? $inspection->date_scheduled ?? '' }}',
+                                                            '{{ $inspection->date_end ?? '' }}',
+                                                            '{{ $inspection->date_report_fm ?? '' }}',
+                                                            '{{ $inspection->date_report_sd ?? '' }}',
                                                             {{ $inspection->qa_inspector_id ?? 'null' }},
                                                             '{{ $inspection->checklist_slug ?? '' }}',
                                                             '{{ $inspection->type_inspection }}'
@@ -1159,11 +1165,28 @@
                         <input type="text" class="form-control" id="editInspectionName"
                                placeholder="Ex : Critical Phase — Lot B">
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">
-                            Date prévue <span class="text-danger">*</span>
+                            Date début d'inspection <span class="text-danger">*</span>
                         </label>
-                        <input type="date" class="form-control" id="editInspectionDate">
+                        <input type="date" class="form-control" id="editInspectionDate"
+                               title="Date de début (aussi utilisée comme date planifiée)">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Date fin d'inspection</label>
+                        <input type="date" class="form-control" id="editInspectionDateEnd">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-building me-1 text-primary"></i>Date rapport → FM
+                        </label>
+                        <input type="date" class="form-control" id="editInspectionDateFm">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-person me-1 text-success"></i>Date rapport → SD
+                        </label>
+                        <input type="date" class="form-control" id="editInspectionDateSd">
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Inspecteur QA</label>
@@ -2277,13 +2300,16 @@ function printFindings(withCorrective) {
 // ─────────────────────────────────────────────
 //  MODAL — Modifier une inspection
 // ─────────────────────────────────────────────
-function openEditInspectionModal(inspectionId, name, dateScheduled, inspectorId, checklistSlug, typeInspection) {
-    document.getElementById('editInspectionId').value       = inspectionId;
-    document.getElementById('editInspectionType').value     = typeInspection || '';
-    document.getElementById('editInspectionName').value     = name || '';
-    document.getElementById('editInspectionDate').value     = dateScheduled || '';
+function openEditInspectionModal(inspectionId, name, dateStart, dateEnd, dateFm, dateSd, inspectorId, checklistSlug, typeInspection) {
+    document.getElementById('editInspectionId').value        = inspectionId;
+    document.getElementById('editInspectionType').value      = typeInspection || '';
+    document.getElementById('editInspectionName').value      = name || '';
+    document.getElementById('editInspectionDate').value      = dateStart || '';
+    document.getElementById('editInspectionDateEnd').value   = dateEnd   || '';
+    document.getElementById('editInspectionDateFm').value    = dateFm    || '';
+    document.getElementById('editInspectionDateSd').value    = dateSd    || '';
     document.getElementById('editInspectionInspector').value = inspectorId ? String(inspectorId) : '';
-    document.getElementById('editChecklistSlug').value      = checklistSlug || '';
+    document.getElementById('editChecklistSlug').value       = checklistSlug || '';
 
     const isCritical = (typeInspection || '') === 'Critical Phase Inspection';
     document.getElementById('editChecklistSlugWrapper').style.display = isCritical ? '' : 'none';
@@ -2299,7 +2325,10 @@ function saveEditInspection() {
     const inspectionId   = document.getElementById('editInspectionId').value;
     const typeInspection = document.getElementById('editInspectionType').value;
     const name           = document.getElementById('editInspectionName').value.trim();
-    const dateScheduled  = document.getElementById('editInspectionDate').value;
+    const dateStart      = document.getElementById('editInspectionDate').value;
+    const dateEnd        = document.getElementById('editInspectionDateEnd').value;
+    const dateFm         = document.getElementById('editInspectionDateFm').value;
+    const dateSd         = document.getElementById('editInspectionDateSd').value;
     const inspectorId    = document.getElementById('editInspectionInspector').value;
     const checklistSlug  = document.getElementById('editChecklistSlug').value;
     const errDiv         = document.getElementById('editInspectionErrorMsg');
@@ -2308,18 +2337,22 @@ function saveEditInspection() {
     errDiv.classList.add('d-none');
     errDiv.textContent = '';
 
-    if (!dateScheduled) {
-        errDiv.textContent = 'La date prévue est obligatoire.';
+    if (!dateStart) {
+        errDiv.textContent = 'La date de début d\'inspection est obligatoire.';
         errDiv.classList.remove('d-none');
         return;
     }
 
     const fd = new FormData();
     fd.append('inspection_id',   inspectionId);
-    fd.append('date_scheduled',  dateScheduled);
-    if (inspectorId)   fd.append('qa_inspector_id', inspectorId);
-    if (name)          fd.append('inspection_name', name);
-    if (checklistSlug) fd.append('checklist_slug',  checklistSlug);
+    fd.append('date_scheduled',  dateStart);
+    fd.append('date_start',      dateStart);
+    if (dateEnd)      fd.append('date_end',       dateEnd);
+    if (dateFm)       fd.append('date_report_fm', dateFm);
+    if (dateSd)       fd.append('date_report_sd', dateSd);
+    if (inspectorId)  fd.append('qa_inspector_id', inspectorId);
+    if (name)         fd.append('inspection_name', name);
+    if (checklistSlug) fd.append('checklist_slug', checklistSlug);
     fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
     btn.disabled = true;

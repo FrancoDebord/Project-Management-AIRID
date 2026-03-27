@@ -1001,7 +1001,45 @@
 
                 {{-- Section F (Study Personnel): staff training records table --}}
                 @if (($form['type'] ?? '') === 'study_personnel')
-                    @php $staffCount = $form['staff_count'] ?? 15; @endphp
+                    @php
+                        $staffCount = $form['staff_count'] ?? 15;
+                        $pid = $inspection->project_id ?? null;
+
+                        // Build ordered staff list: SD first, then PM, then Key Personnel
+                        $prefilledStaff = [];
+                        if ($pid) {
+                            // Study Director from appointment form
+                            $sdAppt = \App\Models\Pro_StudyDirectorAppointmentForm
+                                ::where('project_id', $pid)->where('active', true)
+                                ->with('studyDirector')->first();
+                            if ($sdAppt?->studyDirector) {
+                                $sd = $sdAppt->studyDirector;
+                                $prefilledStaff[] = [
+                                    'name' => trim(($sd->titre ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom),
+                                    'role' => 'Study Director',
+                                ];
+                            }
+                            // Project Manager
+                            $proj = \App\Models\Pro_Project::find($pid);
+                            if ($proj?->project_manager) {
+                                $pm = \App\Models\Pro_Personnel::find($proj->project_manager);
+                                if ($pm) {
+                                    $prefilledStaff[] = [
+                                        'name' => trim(($pm->titre ?? '') . ' ' . $pm->prenom . ' ' . $pm->nom),
+                                        'role' => 'Project Manager',
+                                    ];
+                                }
+                            }
+                            // Key Personnel
+                            $keyP = \App\Models\Pro_Project::find($pid)?->keyPersonnelProject()->orderBy('nom')->get() ?? collect();
+                            foreach ($keyP as $kp) {
+                                $prefilledStaff[] = [
+                                    'name' => trim(($kp->titre ?? '') . ' ' . $kp->prenom . ' ' . $kp->nom),
+                                    'role' => $kp->role ?? '',
+                                ];
+                            }
+                        }
+                    @endphp
                     <h6 class="fw-bold mb-3 mt-2" style="color:var(--qa-brand);">
                         <i class="bi bi-people me-2"></i>Study Personnel Training Records
                     </h6>
@@ -1010,7 +1048,7 @@
                             <thead>
                                 <tr style="background:#f8f8f8;">
                                     <th style="width:40px;">#</th>
-                                    <th style="width:160px;">Name / Code</th>
+                                    <th style="width:180px;">Name / Code</th>
                                     <th class="text-center" style="width:180px;">Training done?</th>
                                     <th>Level of Training</th>
                                     <th>Remarks</th>
@@ -1019,14 +1057,23 @@
                             <tbody>
                                 @for ($i = 1; $i <= $staffCount; $i++)
                                     @php
-                                        $staffResult = $record ? $record->{"f_staff_{$i}_result"} : null;
-                                        $staffLevel = $record ? $record->{"f_staff_{$i}_level"} : null;
+                                        $staffResult  = $record ? $record->{"f_staff_{$i}_result"}  : null;
+                                        $staffLevel   = $record ? $record->{"f_staff_{$i}_level"}   : null;
                                         $staffRemarks = $record ? $record->{"f_staff_{$i}_remarks"} : null;
+                                        $prefill      = $prefilledStaff[$i - 1] ?? null;
                                     @endphp
                                     <tr>
                                         <td class="text-center fw-bold text-muted">{{ $i }}</td>
-                                        <td class="text-muted fst-italic" style="font-size:.78rem;">Staff
-                                            {{ $i }}</td>
+                                        <td style="font-size:.78rem;">
+                                            @if($prefill)
+                                                <div class="fw-semibold">{{ $prefill['name'] }}</div>
+                                                @if($prefill['role'])
+                                                    <div class="text-muted" style="font-size:.72rem;">{{ $prefill['role'] }}</div>
+                                                @endif
+                                            @else
+                                                <span class="text-muted fst-italic">Staff {{ $i }}</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <div class="radio-group">
                                                 <div class="radio-opt">

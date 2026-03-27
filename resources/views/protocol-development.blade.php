@@ -1,5 +1,5 @@
 @php
-    $protocol_dev_activities_project = $project ? $project->protocolDeveloppementActivitiesProject : collect();
+    $protocol_dev_activities_project = $project ? $project->protocolDeveloppementActivitiesProject()->with(['protocolDevActivity','protocolDevDocuments.qaInspection','protocolDevDocuments.staffPerformed','assignedTo'])->get() : collect();
     $totalPd    = $protocol_dev_activities_project->where('applicable', true)->count();
     $completePd = $protocol_dev_activities_project->where('applicable', true)->where('complete', true)->count();
 @endphp
@@ -13,11 +13,15 @@
         font-weight: 600;
         font-size: .9rem;
     }
-    .pd-row-done   { background: #f0fff4; }
-    .pd-row-active { background: #fffbf0; }
-    .pd-row-locked { background: #f8f9fa; opacity: .75; }
+    .pd-row-activity { background: #f0f4ff; }
+    .pd-row-activity.pd-done   { background: #eafaf1; }
+    .pd-row-activity.pd-active { background: #fffbf0; }
+    .pd-row-activity.pd-locked { background: #f8f9fa; opacity: .8; }
+    .pd-row-doc  { background: #fff; }
+    .pd-row-doc td:first-child { border-left: 3px solid #2a5aaa; }
     .pd-progress-wrap { height: 6px; border-radius: 3px; background: #e9ecef; overflow: hidden; }
     .pd-progress-bar  { height: 100%; border-radius: 3px; background: #1a3a6b; transition: width .4s; }
+    .pd-insp-badge { font-size: .68rem; padding: .15rem .4rem; white-space: nowrap; }
 </style>
 
 <div class="row mt-2">
@@ -38,7 +42,6 @@
             </small>
         </div>
         <div class="d-flex align-items-center gap-3">
-            {{-- Progress summary --}}
             @if($totalPd > 0)
             <div style="min-width:140px;">
                 <div class="d-flex justify-content-between mb-1" style="font-size:.75rem;">
@@ -52,7 +55,6 @@
                 </div>
             </div>
             @endif
-            {{-- Generate button --}}
             <button class="btn btn-sm fw-semibold"
                     style="background:#1a3a6b;color:#fff;"
                     id="generate-protocol-dev-activities"
@@ -67,7 +69,7 @@
         <div class="col-12">
             <div class="alert alert-info d-flex align-items-center gap-2">
                 <i class="bi bi-info-circle-fill fs-5"></i>
-                <span>Aucune activité Protocol Dev générée pour ce projet. Cliquez sur <strong>Générer les activités</strong> pour commencer.</span>
+                <span>Aucune activité Protocol Dev générée. Cliquez sur <strong>Générer les activités</strong> pour commencer.</span>
             </div>
         </div>
     @else
@@ -79,131 +81,178 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0" style="font-size:.85rem;">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:4%">#</th>
-                                <th>Activité</th>
-                                <th style="width:14%">Assigné à</th>
-                                <th style="width:12%">Réalisé par</th>
-                                <th style="width:10%">Date réalisée</th>
-                                <th style="width:10%">Échéance</th>
+                                <th style="width:3%"></th>
+                                <th>Activité / Document</th>
+                                <th style="width:12%">Assigné à</th>
+                                <th style="width:11%">Réalisé par</th>
+                                <th style="width:9%">Date réalisée</th>
+                                <th style="width:9%">Date upload</th>
                                 <th style="width:10%" class="text-center">Document</th>
-                                <th style="width:12%" class="text-center">Actions</th>
+                                <th style="width:11%" class="text-center">Inspection QA</th>
+                                <th style="width:9%" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($protocol_dev_activities_project as $index => $activity)
-                                @php
-                                    $assignedTo     = $activity->assignedTo;
-                                    $staffPerformed = $activity->staffPerformed;
-                                    $level          = $activity->level_activite;
-                                    $isDone         = (bool) $activity->complete;
+                        @forelse ($protocol_dev_activities_project as $index => $activity)
+                            @php
+                                $actDef      = $activity->protocolDevActivity;
+                                $level       = $activity->level_activite;
+                                $isDone      = (bool) $activity->complete;
+                                $multiplicite = $actDef?->multipicite ?? 'une_fois';
+                                $docs        = $activity->protocolDevDocuments;
 
-                                    // Can this activity be acted on?
-                                    $prevDone = $level <= 1 || \App\Models\Pro_ProtocolDevActivityProject
-                                        ::where('project_id', $project_id)
-                                        ->where('level_activite', $level - 1)
-                                        ->where('complete', true)->exists();
+                                // Locking logic (level 5 always unlocked)
+                                $prevDone = $level === 5 || $level <= 1 || \App\Models\Pro_ProtocolDevActivityProject
+                                    ::where('project_id', $project_id)
+                                    ->where('level_activite', $level - 1)
+                                    ->where('complete', true)->exists();
 
-                                    $prevDate = \App\Models\Pro_ProtocolDevActivityProject
-                                        ::where('project_id', $project_id)
-                                        ->where('level_activite', $level - 1)
-                                        ->where('complete', true)
-                                        ->value('date_performed');
+                                $prevDate = \App\Models\Pro_ProtocolDevActivityProject
+                                    ::where('project_id', $project_id)
+                                    ->where('level_activite', $level - 1)
+                                    ->where('complete', true)
+                                    ->value('date_performed');
 
-                                    $nextDate = \App\Models\Pro_ProtocolDevActivityProject
-                                        ::where('project_id', $project_id)
-                                        ->where('level_activite', $level + 1)
-                                        ->where('complete', true)
-                                        ->value('date_performed');
+                                $nextDate = \App\Models\Pro_ProtocolDevActivityProject
+                                    ::where('project_id', $project_id)
+                                    ->where('level_activite', $level + 1)
+                                    ->where('complete', true)
+                                    ->value('date_performed');
 
-                                    $rowClass = $isDone ? 'pd-row-done' : ($prevDone ? 'pd-row-active' : 'pd-row-locked');
-                                @endphp
-                                <tr class="{{ $rowClass }}" id="pd-row-{{ $activity->id }}">
-                                    <td class="text-muted small ps-3">
-                                        @if($isDone)
-                                            <i class="bi bi-check-circle-fill text-success"></i>
-                                        @elseif($prevDone)
-                                            <i class="bi bi-circle text-warning"></i>
-                                        @else
-                                            <i class="bi bi-lock text-secondary"></i>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="fw-semibold small">{{ $activity->protocolDevActivity->nom_activite }}</div>
+                                $rowStateClass = $isDone ? 'pd-done' : ($prevDone ? 'pd-active' : 'pd-locked');
+
+                                // une_fois: can add a new doc if no docs yet; plusieurs_fois: always can add if unlocked
+                                $canAddDoc = $prevDone && ($multiplicite === 'plusieurs_fois' || $docs->isEmpty());
+                            @endphp
+
+                            {{-- ── Activity header row ── --}}
+                            <tr class="pd-row-activity {{ $rowStateClass }}" id="pd-row-{{ $activity->id }}">
+                                <td class="ps-3">
+                                    @if($isDone)
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    @elseif($prevDone)
+                                        <i class="bi bi-circle text-warning"></i>
+                                    @else
+                                        <i class="bi bi-lock text-secondary"></i>
+                                    @endif
+                                </td>
+                                <td colspan="7">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="fw-semibold">{{ $actDef?->nom_activite ?? '—' }}</span>
                                         @if(!$activity->applicable)
                                             <span class="badge bg-secondary" style="font-size:.65rem;">Non applicable</span>
                                         @endif
+                                        @if($multiplicite === 'plusieurs_fois')
+                                            <span class="badge bg-info text-dark" style="font-size:.65rem;">
+                                                <i class="bi bi-layers me-1"></i>Multiple soumissions
+                                            </span>
+                                        @endif
+                                        <span class="text-muted small">
+                                            — {{ $docs->count() }} document{{ $docs->count() > 1 ? 's' : '' }} soumis
+                                        </span>
+                                        @if($activity->assignedTo)
+                                            <span class="text-muted small ms-auto">
+                                                <i class="bi bi-person me-1"></i>{{ $activity->assignedTo->prenom }} {{ $activity->assignedTo->nom }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if($canAddDoc)
+                                        <button class="btn btn-sm btn-outline-warning py-0 px-2 pd-upload-btn"
+                                                title="Soumettre un document"
+                                                data-record-id="{{ $activity->id }}"
+                                                data-activity-name="{{ $actDef?->nom_activite }}"
+                                                data-multiplicite="{{ $multiplicite }}"
+                                                data-prev-date="{{ $prevDate ?? '' }}"
+                                                data-next-date="{{ $nextDate ?? '' }}">
+                                            <i class="bi bi-upload me-1"></i>Soumettre
+                                        </button>
+                                    @elseif(!$prevDone)
+                                        <span class="text-muted small"><i class="bi bi-lock me-1"></i>Verrouillé</span>
+                                    @endif
+                                </td>
+                            </tr>
+
+                            {{-- ── Document sub-rows ── --}}
+                            @foreach($docs as $docIndex => $doc)
+                                @php
+                                    $insp      = $doc->qaInspection;
+                                    $performer = $doc->staffPerformed;
+                                @endphp
+                                <tr class="pd-row-doc" id="pd-doc-row-{{ $doc->id }}">
+                                    <td></td>
+                                    <td class="ps-4 text-muted small">
+                                        <i class="bi bi-file-earmark-text me-1 text-primary"></i>
+                                        Document #{{ $docIndex + 1 }}
+                                        @if($multiplicite === 'une_fois')
+                                            <span class="badge bg-light text-secondary border ms-1" style="font-size:.62rem;">unique</span>
+                                        @endif
+                                    </td>
+                                    <td class="small text-muted">—</td>
+                                    <td class="small text-muted">
+                                        {{ $performer ? $performer->prenom . ' ' . $performer->nom : '—' }}
                                     </td>
                                     <td class="small text-muted">
-                                        {{ $assignedTo ? $assignedTo->prenom . ' ' . $assignedTo->nom : '—' }}
+                                        {{ $doc->date_performed ? \Carbon\Carbon::parse($doc->date_performed)->format('d/m/Y') : '—' }}
                                     </td>
                                     <td class="small text-muted">
-                                        {{ $staffPerformed ? $staffPerformed->prenom . ' ' . $staffPerformed->nom : '—' }}
-                                    </td>
-                                    <td class="small text-muted">
-                                        {{ $activity->date_performed ? \Carbon\Carbon::parse($activity->date_performed)->format('d/m/Y') : '—' }}
-                                    </td>
-                                    <td class="small text-muted">
-                                        {{ $activity->due_date_performed ? \Carbon\Carbon::parse($activity->due_date_performed)->format('d/m/Y') : '—' }}
+                                        {{ $doc->date_upload ? \Carbon\Carbon::parse($doc->date_upload)->format('d/m/Y') : '—' }}
                                     </td>
                                     <td class="text-center">
-                                        @if($isDone && $activity->document_file_path)
-                                            <a href="{{ asset('storage/' . $activity->document_file_path) }}"
+                                        @if($doc->document_file_path)
+                                            <a href="{{ asset('storage/' . $doc->document_file_path) }}"
                                                target="_blank"
                                                class="btn btn-sm btn-outline-success py-0 px-2"
                                                title="Voir le document">
                                                 <i class="bi bi-file-earmark-pdf me-1"></i>PDF
                                             </a>
                                         @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if($insp)
+                                            <span class="badge bg-primary pd-insp-badge" title="{{ $insp->inspection_name }}">
+                                                <i class="bi bi-clipboard2-check me-1"></i>
+                                                {{ $insp->date_scheduled ? \Carbon\Carbon::parse($insp->date_scheduled)->format('d/m/Y') : 'Planifiée' }}
+                                            </span>
+                                        @else
                                             <span class="text-muted small">—</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @if($isDone)
-                                            {{-- Update --}}
-                                            <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1 pd-upload-btn"
-                                                    title="Mettre à jour le document"
-                                                    data-record-id="{{ $activity->id }}"
-                                                    data-activity-name="{{ $activity->protocolDevActivity->nom_activite }}"
-                                                    data-date-performed="{{ $activity->date_performed ?? '' }}"
-                                                    data-prev-date="{{ $prevDate ?? '' }}"
-                                                    data-next-date="{{ $nextDate ?? '' }}"
-                                                    data-file-path="{{ $activity->document_file_path ? asset('storage/'.$activity->document_file_path) : '' }}"
-                                                    data-is-update="1">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            {{-- Delete --}}
-                                            <button class="btn btn-sm btn-outline-danger py-0 px-2 pd-delete-btn"
-                                                    title="Supprimer le document"
-                                                    data-record-id="{{ $activity->id }}"
-                                                    data-activity-name="{{ $activity->protocolDevActivity->nom_activite }}">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        @elseif($prevDone)
-                                            {{-- First upload --}}
-                                            <button class="btn btn-sm btn-outline-warning py-0 px-2 pd-upload-btn"
-                                                    title="Soumettre le document"
-                                                    data-record-id="{{ $activity->id }}"
-                                                    data-activity-name="{{ $activity->protocolDevActivity->nom_activite }}"
-                                                    data-date-performed=""
-                                                    data-prev-date="{{ $prevDate ?? '' }}"
-                                                    data-next-date="{{ $nextDate ?? '' }}"
-                                                    data-file-path=""
-                                                    data-is-update="0">
-                                                <i class="bi bi-upload me-1"></i>Soumettre
-                                            </button>
-                                        @else
-                                            <span class="text-muted small"><i class="bi bi-lock me-1"></i>Verrouillé</span>
-                                        @endif
+                                        {{-- Edit button for ALL multiplicite types --}}
+                                        <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1 pd-update-btn"
+                                                title="Mettre à jour"
+                                                data-record-id="{{ $activity->id }}"
+                                                data-doc-id="{{ $doc->id }}"
+                                                data-activity-name="{{ $actDef?->nom_activite }}"
+                                                data-multiplicite="{{ $multiplicite }}"
+                                                data-date-performed="{{ $doc->date_performed ?? '' }}"
+                                                data-prev-date="{{ $prevDate ?? '' }}"
+                                                data-next-date="{{ $nextDate ?? '' }}"
+                                                data-file-path="{{ $doc->document_file_path ? asset('storage/'.$doc->document_file_path) : '' }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger py-0 px-2 pd-delete-doc-btn"
+                                                title="Supprimer ce document"
+                                                data-doc-id="{{ $doc->id }}"
+                                                data-activity-name="{{ $actDef?->nom_activite }}">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">Aucune activité trouvée.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
+
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">Aucune activité trouvée.</td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -246,41 +295,43 @@
         });
     }
 
-    // ── Open modal for upload / update ───────────────────────────
+    // ── Open modal for first submission ──────────────────────────
     document.querySelectorAll('.pd-upload-btn').forEach(btn => {
-        btn.addEventListener('click', () => openPdModal(btn));
+        btn.addEventListener('click', () => openPdModal(btn, false));
     });
 
-    function openPdModal(btn) {
-        const isUpdate    = btn.dataset.isUpdate === '1';
-        const recordId    = btn.dataset.recordId;
-        const actName     = btn.dataset.activityName;
-        const datePerf    = btn.dataset.datePerformed;
-        const prevDate    = btn.dataset.prevDate;
-        const nextDate    = btn.dataset.nextDate;
-        const filePath    = btn.dataset.filePath;
+    // ── Open modal for update (all multiplicite types) ───────────
+    document.querySelectorAll('.pd-update-btn').forEach(btn => {
+        btn.addEventListener('click', () => openPdModal(btn, true));
+    });
+
+    function openPdModal(btn, isUpdate) {
+        const recordId   = btn.dataset.recordId;
+        const docId      = btn.dataset.docId ?? '';
+        const actName    = btn.dataset.activityName;
+        const prevDate   = btn.dataset.prevDate;
+        const nextDate   = btn.dataset.nextDate;
+        const datePerf   = btn.dataset.datePerformed ?? '';
+        const filePath   = btn.dataset.filePath ?? '';
 
         document.getElementById('pdRecordId').value      = recordId;
+        document.getElementById('pdDocId').value         = docId;
         document.getElementById('pdActivityName').value  = actName;
-        document.getElementById('pdDatePerformed').value = datePerf || '';
+        document.getElementById('pdDatePerformed').value = datePerf;
         document.getElementById('pdDocumentFile').value  = '';
         document.getElementById('pdModalError').classList.add('d-none');
 
-        // Title
         document.getElementById('pdModalTitleText').textContent = isUpdate
             ? 'Mettre à jour le document'
-            : 'Soumettre le document';
+            : 'Soumettre un document';
 
-        // File required indicator
         document.getElementById('pdFileRequired').textContent = isUpdate ? '' : '*';
 
-        // Date constraints
         let hint = '';
         if (prevDate) hint += `Après le ${prevDate}`;
         if (nextDate) hint += (hint ? ' — ' : '') + `Avant le ${nextDate}`;
         document.getElementById('pdDateHint').textContent = hint;
 
-        // Current doc banner
         const banner = document.getElementById('pdCurrentDocBanner');
         if (isUpdate && filePath) {
             document.getElementById('pdCurrentDocLink').href = filePath;
@@ -294,10 +345,10 @@
 
     // ── Submit modal ──────────────────────────────────────────────
     window.submitProtocolDevDoc = function () {
-        const errDiv     = document.getElementById('pdModalError');
-        const recordId   = document.getElementById('pdRecordId').value;
-        const datePerf   = document.getElementById('pdDatePerformed').value;
-        const fileInput  = document.getElementById('pdDocumentFile');
+        const errDiv    = document.getElementById('pdModalError');
+        const recordId  = document.getElementById('pdRecordId').value;
+        const datePerf  = document.getElementById('pdDatePerformed').value;
+        const fileInput = document.getElementById('pdDocumentFile');
         const hasExisting = !document.getElementById('pdCurrentDocBanner').classList.contains('d-none');
 
         errDiv.classList.add('d-none');
@@ -308,7 +359,7 @@
             return;
         }
         if (!hasExisting && fileInput.files.length === 0) {
-            errDiv.textContent = 'Un fichier PDF est obligatoire pour la première soumission.';
+            errDiv.textContent = 'Un fichier PDF est obligatoire pour la soumission.';
             errDiv.classList.remove('d-none');
             return;
         }
@@ -317,10 +368,13 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Enregistrement…';
 
+        const docId = document.getElementById('pdDocId').value;
+
         const fd = new FormData();
         fd.append('_token', CSRF);
         fd.append('protocol_dev_activity_project_id', recordId);
         fd.append('date_performed', datePerf);
+        if (docId) fd.append('doc_id', docId);
         if (fileInput.files.length > 0) fd.append('document_file', fileInput.files[0]);
 
         fetch('{{ route("saveProtocolDevelopmentActivityCompleted") }}', { method: 'POST', body: fd })
@@ -344,18 +398,19 @@
             });
     };
 
-    // ── Delete document ───────────────────────────────────────────
-    document.querySelectorAll('.pd-delete-btn').forEach(btn => {
+    // ── Delete a single document entry ────────────────────────────
+    document.querySelectorAll('.pd-delete-doc-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const name = btn.dataset.activityName;
-            if (!confirm(`Supprimer le document soumis pour « ${name} » ?\n\nL'activité sera marquée comme non complétée.`)) return;
+            const name  = btn.dataset.activityName;
+            const docId = btn.dataset.docId;
+            if (!confirm(`Supprimer ce document soumis pour « ${name} » ?`)) return;
             btn.disabled = true;
 
             const fd = new FormData();
             fd.append('_token', CSRF);
-            fd.append('record_id', btn.dataset.recordId);
+            fd.append('doc_id', docId);
 
-            fetch('{{ route("deleteProtocolDevDocument") }}', { method: 'POST', body: fd })
+            fetch('{{ route("deleteProtocolDevDocumentEntry") }}', { method: 'POST', body: fd })
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {

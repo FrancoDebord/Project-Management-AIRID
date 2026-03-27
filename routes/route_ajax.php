@@ -13,11 +13,15 @@ Route::prefix('ajax')->group(function () {
     Route::post('/store-study-director-appointment-form', [ProjectAjaxController::class,"saveStudyDirectorAppointmentForm"])->name("saveStudyDirectorAppointmentForm");
     Route::post('/store-study-director-replacement-form', [ProjectAjaxController::class,"saveStudyDirectorReplacementForm"])->name("saveStudyDirectorReplacementForm");
     Route::post('/store-other-basic-documents', [ProjectAjaxController::class,"saveOtherBasicDocuments"])->name("saveOtherBasicDocuments");
+    Route::post('/save-key-personnel',   [ProjectAjaxController::class, 'saveKeyPersonnel'])->name('saveKeyPersonnel');
+    Route::post('/add-key-personnel',    [ProjectAjaxController::class, 'addKeyPersonnelMember'])->name('addKeyPersonnelMember');
+    Route::post('/remove-key-personnel', [ProjectAjaxController::class, 'removeKeyPersonnelMember'])->name('removeKeyPersonnelMember');
     Route::post('/store-activity-project', [ProjectAjaxController::class,"saveActivityProject"])->name("saveActivityProject");
     Route::post('/delete-activity-project', [ProjectAjaxController::class,"supprimerActivite"])->name("supprimerActivite");
     Route::post('/generate-protocol-dev-activity-project', [ProjectAjaxController::class,"generateProtocolDevActivitiesForProject"])->name("generateProtocolDevActivitiesForProject");
     Route::post('/update-protocol-dev-activity-project', [ProjectAjaxController::class,"saveProtocolDevelopmentActivityCompleted"])->name("saveProtocolDevelopmentActivityCompleted");
     Route::post('/delete-protocol-dev-document',         [ProjectAjaxController::class,"deleteProtocolDevDocument"])->name("deleteProtocolDevDocument");
+    Route::post('/delete-protocol-dev-document-entry',  [ProjectAjaxController::class,"deleteProtocolDevDocumentEntry"])->name("deleteProtocolDevDocumentEntry");
     Route::post('/execute-activity', [ProjectAjaxController::class,"executeActivity"])->name("executeActivity");
     Route::post('/reset-activity', [ProjectAjaxController::class,"resetActivityExecution"])->name("resetActivityExecution");
     
@@ -54,5 +58,10 @@ Route::prefix('ajax')->group(function () {
     Route::post('/unarchive-project',         [ProjectAjaxController::class, 'unarchiveProject'])->name('unarchiveProject');
     Route::post('/save-archive-checklist',    [ProjectAjaxController::class, 'saveArchiveChecklist'])->name('saveArchiveChecklist');
     Route::post('/save-archiving-document',   [ProjectAjaxController::class, 'saveArchivingDocument'])->name('saveArchivingDocument');
-    Route::post('/delete-archiving-document', [ProjectAjaxController::class, 'deleteArchivingDocument'])->name('deleteArchivingDocument');
+    Route::post('/delete-archiving-document',  [ProjectAjaxController::class, 'deleteArchivingDocument'])->name('deleteArchivingDocument');
+    Route::post('/save-archive-submission',    [ProjectAjaxController::class, 'saveArchiveSubmission'])->name('saveArchiveSubmission');
+
+    // QA Statement
+    Route::post('/save-qa-statement',   [ProjectAjaxController::class, 'saveQaStatement'])->name('saveQaStatement');
+    Route::get('/qa-statement/print',   [ProjectAjaxController::class, 'printQaStatement'])->name('printQaStatement');
 });

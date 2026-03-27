@@ -15,20 +15,21 @@ class ProjectActivityScheduleController extends Controller
     public function masterSchedule(Request $request)
     {
         $projects = Pro_Project::with([
-            'studyDirector',
             'keyPersonnelProject',
-            'studyDirectorAppointmentForm',
+            'studyDirectorAppointmentForm.studyDirector',
             'protocolDeveloppementActivitiesProject',
             'allActivitiesProject',
             'reportPhaseDocuments',
             'archivingDocuments',
-        ])->orderBy('project_code')->get();
+        ])->orderByDesc('project_code')->get();
 
         $manageUrl = fn(int $id, string $step) =>
             route('project.create', ['project_id' => $id]) . '#' . $step;
 
         $scheduleData = $projects->map(function ($project) use ($manageUrl) {
-            // Study Start phase
+            
+        $project->project_status = $project->is_glp ? "GLP":"NON-GLP";
+        // Study Start phase
             $sdForm      = $project->studyDirectorAppointmentForm;
             $startDate   = $sdForm?->sd_appointment_date;
             $level1      = $project->protocolDeveloppementActivitiesProject

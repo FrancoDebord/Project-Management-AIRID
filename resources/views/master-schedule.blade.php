@@ -41,12 +41,12 @@ $phases = [
                     <thead>
                         {{-- Row 1: fixed headers + phase group headers --}}
                         <tr>
-                            <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:90px;">Study Code</th>
-                            <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:130px;">Test Systems</th>
-                            <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:120px;">Nature of Study</th>
-                            <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:130px;">Study Director</th>
+                            <th rowspan="2" class="ms-fixed-col align-middle text-center ms-sortable" data-col="0" style="width:90px;cursor:pointer;" title="Cliquer pour trier">Study Code <span class="ms-sort-icon">↕</span></th>
+                            <th rowspan="2" class="ms-fixed-col align-middle text-center ms-sortable" data-col="1" style="width:130px;cursor:pointer;" title="Cliquer pour trier">Test Systems <span class="ms-sort-icon">↕</span></th>
+                            <th rowspan="2" class="ms-fixed-col align-middle text-center ms-sortable" data-col="2" style="width:120px;cursor:pointer;" title="Cliquer pour trier">Nature of Study <span class="ms-sort-icon">↕</span></th>
+                            <th rowspan="2" class="ms-fixed-col align-middle text-center ms-sortable" data-col="3" style="width:130px;cursor:pointer;" title="Cliquer pour trier">Study Director <span class="ms-sort-icon">↕</span></th>
                             <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:150px;">Key Personnel</th>
-                            <th rowspan="2" class="ms-fixed-col align-middle text-center" style="width:80px;">Study Status</th>
+                            <th rowspan="2" class="ms-fixed-col align-middle text-center ms-sortable" data-col="5" style="width:80px;cursor:pointer;" title="Cliquer pour trier">Study Status <span class="ms-sort-icon">↕</span></th>
                             @foreach($phases as $ph)
                                 <th colspan="2" class="text-center text-white fw-bold" style="background:{{ $ph['color'] }};">
                                     {{ $ph['label'] }}
@@ -66,7 +66,7 @@ $phases = [
                         @forelse($scheduleData as $row)
                             @php
                                 $project      = $row['project'];
-                                $sd           = $project->studyDirector;
+                                $sd           = $project->studyDirectorAppointmentForm?->studyDirector;
                                 $sdName       = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : null;
                                 $kpNames      = $project->keyPersonnelProject->map(fn($p) =>
                                     trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom)
@@ -205,6 +205,13 @@ $phases = [
 
 /* Tooltip override for small cells */
 .ms-date[data-bs-toggle="tooltip"] { cursor: help; }
+/* Sort icons */
+.ms-sortable:hover { background: rgba(0,0,0,.06); }
+.ms-sort-icon { font-size:.7rem; opacity:.5; margin-left:3px; }
+.ms-sortable.sort-asc .ms-sort-icon::after  { content:'↑'; opacity:1; }
+.ms-sortable.sort-desc .ms-sort-icon::after { content:'↓'; opacity:1; }
+.ms-sortable.sort-asc  .ms-sort-icon,
+.ms-sortable.sort-desc .ms-sort-icon { opacity:0; }
 
 @media print {
     .screen-only, button { display: none !important; }
@@ -221,6 +228,41 @@ document.addEventListener('DOMContentLoaded', function () {
     // Init Bootstrap tooltips
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         new bootstrap.Tooltip(el, { trigger: 'hover' });
+    });
+
+    // ── Tri des colonnes ──
+    var table     = document.getElementById('master_schedule');
+    var tbody     = table.querySelector('tbody');
+    var sortState = { col: 0, dir: 'desc' }; // tri initial : Study Code décroissant
+
+    function sortTable(col, dir) {
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort(function (a, b) {
+            var ta = (a.cells[col] ? a.cells[col].textContent.trim() : '');
+            var tb = (b.cells[col] ? b.cells[col].textContent.trim() : '');
+            return dir === 'asc' ? ta.localeCompare(tb) : tb.localeCompare(ta);
+        });
+        rows.forEach(function (r) { tbody.appendChild(r); });
+
+        // Mettre à jour les icônes
+        table.querySelectorAll('.ms-sortable').forEach(function (th) {
+            th.classList.remove('sort-asc', 'sort-desc');
+        });
+        var activeTh = table.querySelector('.ms-sortable[data-col="' + col + '"]');
+        if (activeTh) activeTh.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+
+    // Appliquer le tri initial
+    sortTable(sortState.col, sortState.dir);
+
+    // Clic sur en-têtes
+    table.querySelectorAll('.ms-sortable').forEach(function (th) {
+        th.addEventListener('click', function () {
+            var col = parseInt(this.dataset.col);
+            var dir = (sortState.col === col && sortState.dir === 'asc') ? 'desc' : 'asc';
+            sortState = { col: col, dir: dir };
+            sortTable(col, dir);
+        });
     });
 });
 </script>
