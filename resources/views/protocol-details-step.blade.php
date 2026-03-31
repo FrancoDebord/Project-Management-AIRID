@@ -572,3 +572,18 @@
         });
     });
 </script>
+
+{{-- ── Activities PDF Download ──────────────────────────────── --}}
+@if($project && $project->id)
+<div class="mt-4 pt-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <span class="fw-semibold" style="color:#1a3a6b;"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Activity Schedule</span>
+        <div class="small text-muted">Download all scheduled activities as a printable PDF document.</div>
+    </div>
+    <a href="{{ route('project.activities.pdf', $project->id) }}" target="_blank"
+       class="btn btn-sm fw-semibold"
+       style="background:linear-gradient(90deg,#1a3a6b,#2a5aaa);color:#fff;border:none;border-radius:8px;padding:8px 18px;">
+        <i class="bi bi-file-earmark-pdf me-1"></i>Download Activities PDF
+    </a>
+</div>
+@endif

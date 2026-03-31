@@ -2379,3 +2379,30 @@ function saveEditInspection() {
         });
 }
 </script>
+
+{{-- ══════════════════════════════════════════════════════════════
+     QA Activities Checklist button (GLP only)
+══════════════════════════════════════════════════════════════ --}}
+@if($project && $project->is_glp)
+<div class="card mt-4 border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+    <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-3 px-4"
+         style="background:linear-gradient(90deg,#6f42c1 0%,#4e2d8e 100%);">
+        <div class="d-flex align-items-center gap-3">
+            <div style="background:rgba(255,255,255,.15);border-radius:10px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-card-checklist text-white" style="font-size:1.4rem;"></i>
+            </div>
+            <div>
+                <div class="fw-semibold text-white" style="font-size:1rem;">QA Activities Checklist</div>
+                <div style="font-size:.78rem;color:rgba(255,255,255,.75);">
+                    QA-PR-1-011/05 &mdash; 20 items &mdash; GLP studies
+                </div>
+            </div>
+        </div>
+        <a href="{{ route('project.qa-checklist', $project->id) }}"
+           class="btn fw-semibold"
+           style="background:#fff;color:#4e2d8e;border:none;font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;pointer-events:auto !important;">
+            <i class="bi bi-box-arrow-up-right me-1"></i>Open Checklist
+        </a>
+    </div>
+</div>
+@endif

@@ -255,13 +255,18 @@
 
                 @if ($project->project_code)
                     <div class="card">
-                    <div class="card-body">
-                        <h2 class="h5" style="color :  #c20102">Project Management Design for :
-                            <span class=" ">
-                                {{ $project ? $project->project_code . '(' . $project->project_title . ' )' : 'No project selected' }}
-                            </span>
-                        </h2>
-                        <p>Use the tabs below to navigate through the different sections of the study management.</p>
+                    <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h2 class="h5 mb-1" style="color:#c20102">Project Management Design for :
+                                <span>{{ $project->project_code }} ({{ $project->project_title }})</span>
+                            </h2>
+                            <p class="mb-0 text-muted small">Use the tabs below to navigate through the different sections of the study management.</p>
+                        </div>
+                        <a href="{{ route('projectOverview', ['id' => $project->id]) }}"
+                           class="btn btn-sm fw-semibold"
+                           style="background:linear-gradient(90deg,#1a3a6b,#2a5aaa);color:#fff;border:none;border-radius:8px;white-space:nowrap;">
+                            <i class="bi bi-binoculars me-1"></i>Project Overview
+                        </a>
                     </div>
                 </div>
 
@@ -402,17 +407,42 @@
 
                 @php $phasesCompleted = $project->phases_completed ?? []; @endphp
                 @php $isGlp = $project && $project->is_glp; @endphp
+
+                <style>
+                .wizard li a.tab-disabled {
+                    pointer-events: none;
+                    cursor: not-allowed;
+                    opacity: .45;
+                    background: #ddd !important;
+                    color: #666 !important;
+                    font-style: italic;
+                }
+                .wizard li a.tab-disabled::after { border-left-color: #ddd !important; }
+                </style>
+
                 <ul class="wizard" id="myTab" role="tablist">
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study Creation @if(in_array('study_creation',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details @if(in_array('protocol_details',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev. @if(in_array('protocol_development',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    @if($isGlp)
-                    <li><a id="step4-tab" data-bs-toggle="tab" href="#step4" role="tab">4. Planning Phase @if(in_array('planning',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    @endif
+                    <li>
+                        <a id="step4-tab" {{ $isGlp ? 'data-bs-toggle=tab' : '' }} href="{{ $isGlp ? '#step4' : '#' }}" role="tab"
+                           class="{{ !$isGlp ? 'tab-disabled' : '' }}"
+                           title="{{ !$isGlp ? 'Not applicable for Non-GLP studies' : '' }}">
+                            4. Planning Phase
+                            @if($isGlp && in_array('planning',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif
+                            @if(!$isGlp)<i class="bi bi-slash-circle ms-1" style="font-size:.75rem;"></i>@endif
+                        </a>
+                    </li>
                     <li><a id="step5-tab" data-bs-toggle="tab" href="#step5" role="tab">{{ $isGlp ? '5.' : '4.' }} Exper. Phase @if(in_array('experimental',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    @if($isGlp)
-                    <li><a id="step6-tab" data-bs-toggle="tab" href="#step6" role="tab">6. Qual. Assurance @if(in_array('quality_assurance',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    @endif
+                    <li>
+                        <a id="step6-tab" {{ $isGlp ? 'data-bs-toggle=tab' : '' }} href="{{ $isGlp ? '#step6' : '#' }}" role="tab"
+                           class="{{ !$isGlp ? 'tab-disabled' : '' }}"
+                           title="{{ !$isGlp ? 'Not applicable for Non-GLP studies' : '' }}">
+                            {{ $isGlp ? '6.' : '5.' }} Qual. Assurance
+                            @if($isGlp && in_array('quality_assurance',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif
+                            @if(!$isGlp)<i class="bi bi-slash-circle ms-1" style="font-size:.75rem;"></i>@endif
+                        </a>
+                    </li>
                     <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">{{ $isGlp ? '7.' : '5.' }} Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">{{ $isGlp ? '8.' : '6.' }} Archiving @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                 </ul>
@@ -470,6 +500,7 @@
                                     </div>
                                     <a href="{{ route('printQaStatement', ['project_id' => $project->id]) }}"
                                        target="_blank"
+                                       data-no-lock="1"
                                        class="btn btn-sm fw-semibold {{ ($allInspDone || $qaStatement || $project->archived_at) ? '' : 'disabled' }}"
                                        style="background:#6f42c1;color:#fff;">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>
@@ -512,8 +543,8 @@
                                 el.style.cursor  = 'not-allowed';
                             });
 
-                            // Disable all anchor-buttons (Bootstrap btn links)
-                            pane.querySelectorAll('a.btn').forEach(function(el) {
+                            // Disable all anchor-buttons (Bootstrap btn links), except no-lock ones
+                            pane.querySelectorAll('a.btn:not([data-no-lock])').forEach(function(el) {
                                 el.classList.add('disabled');
                                 el.setAttribute('tabindex', '-1');
                                 el.setAttribute('aria-disabled', 'true');
@@ -533,6 +564,60 @@
                     });
                     // Run now in case DOM is already ready
                     if (document.readyState !== 'loading') lockSteps();
+                })();
+                </script>
+                @endif
+
+                {{-- ── Role-based UI locking ─────────────────────────────────── --}}
+                @php
+                    $authUser       = auth()->user();
+                    $lockedByRole   = [];
+
+                    if ($authUser->hasRole('read_only')) {
+                        // Read-only: lock everything
+                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7','step8'];
+                    } elseif ($authUser->hasRole('archivist')) {
+                        // Archivist: can only act on step8 (Archiving)
+                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7'];
+                    } elseif ($authUser->hasRole('qa_manager')) {
+                        // QA Manager: QA tab (step6) + Planning (step4) writable
+                        $lockedByRole = ['step1','step2','step3','step5','step7','step8'];
+                    } elseif ($authUser->hasRole(['study_director','project_manager'])) {
+                        // SD / PM: cannot touch QA (step6) or Archiving (step8)
+                        $lockedByRole = ['step6','step8'];
+                    }
+                    // facility_manager and super_admin: no extra lock
+                @endphp
+                @if(!empty($lockedByRole))
+                <script>
+                (function () {
+                    const ROLE_LOCKED = @json($lockedByRole);
+
+                    function lockByRole() {
+                        ROLE_LOCKED.forEach(function(stepId) {
+                            const pane = document.getElementById(stepId);
+                            if (!pane) return;
+                            pane.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                            pane.querySelectorAll('button').forEach(el => {
+                                el.disabled = true;
+                                el.style.opacity = '0.45';
+                                el.style.cursor  = 'not-allowed';
+                            });
+                            pane.querySelectorAll('a.btn:not([data-no-lock])').forEach(el => {
+                                el.classList.add('disabled');
+                                el.setAttribute('tabindex', '-1');
+                                el.setAttribute('aria-disabled', 'true');
+                                el.style.pointerEvents = 'none';
+                                el.style.opacity = '0.45';
+                            });
+                        });
+                    }
+
+                    document.addEventListener('DOMContentLoaded', lockByRole);
+                    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                        tab.addEventListener('shown.bs.tab', lockByRole);
+                    });
+                    if (document.readyState !== 'loading') lockByRole();
                 })();
                 </script>
                 @endif

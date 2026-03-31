@@ -29,9 +29,28 @@ class FrontendController extends Controller
             default       => null,
         };
 
+        // ── Restrict visible projects based on role ────────────────────
+        $user        = auth()->user();
+        $personnelId = $user->personnel?->id;
+
+        $baseQuery = Pro_Project::query();
+
+        if ($user->hasRole('study_director') && $personnelId) {
+            // Only projects where this person is the active study director
+            $baseQuery->whereHas('studyDirectorAppointmentForm', function ($q) use ($personnelId) {
+                $q->where('study_director', $personnelId);
+            });
+        } elseif ($user->hasRole('project_manager') && $personnelId) {
+            // Only projects where this person is in the project team
+            $baseQuery->whereHas('keyPersonnelProject', function ($q) use ($personnelId) {
+                $q->where('personnels.id', $personnelId);
+            });
+        }
+        // All other roles see all projects
+
         // ── KPIs — always across ALL projects ──────────────────────────
-        $totalProjects = Pro_Project::count();
-        $kpiInProgress = Pro_Project::where('project_stage', 'in progress')->count();
+        $totalProjects = (clone $baseQuery)->count();
+        $kpiInProgress = (clone $baseQuery)->where('project_stage', 'in progress')->count();
 
         $kpiOpenNc = DB::table('pro_qa_inspections_findings')
             ->where('is_conformity', 0)
@@ -44,14 +63,14 @@ class FrontendController extends Controller
 
         $kpiByStage = [
             'in_progress' => $kpiInProgress,
-            'not_started' => Pro_Project::where('project_stage', 'not_started')->count(),
-            'suspended'   => Pro_Project::where('project_stage', 'suspended')->count(),
-            'completed'   => Pro_Project::where('project_stage', 'completed')->count(),
-            'archived'    => Pro_Project::where('project_stage', 'archived')->count(),
+            'not_started' => (clone $baseQuery)->where('project_stage', 'not_started')->count(),
+            'suspended'   => (clone $baseQuery)->where('project_stage', 'suspended')->count(),
+            'completed'   => (clone $baseQuery)->where('project_stage', 'completed')->count(),
+            'archived'    => (clone $baseQuery)->where('project_stage', 'archived')->count(),
         ];
 
-        // Avg completion needs scores for ALL projects
-        $allProjects   = Pro_Project::orderBy("date_debut_effective", "desc")->get();
+        // Avg completion needs scores for visible projects
+        $allProjects   = (clone $baseQuery)->orderBy("date_debut_effective", "desc")->get();
         $allScores     = $this->computeProjectScores($allProjects);
         $projectsNeedingInspection = $allScores['needingInspection'];
         $allScores     = $allScores['scores'];
@@ -61,7 +80,7 @@ class FrontendController extends Controller
             : 0;
 
         // ── Paginated projects for display (6 per page) ────────────────
-        $query = Pro_Project::orderBy("date_debut_effective", "desc");
+        $query = (clone $baseQuery)->orderBy("date_debut_effective", "desc");
         if ($dbStage) {
             $query->where('project_stage', $dbStage);
         }
@@ -83,6 +102,14 @@ class FrontendController extends Controller
         $project = Pro_Project::with([
             'studyDirector',
             'projectManager',
+            'studyDirectorAppointmentForm.studyDirector',
+            'keyPersonnelProject',
+            'studyTypesApplied',
+            'productTypesEvaluated',
+            'labTestsConcerned',
+            'protocolDeveloppementActivitiesProject.protocolDevDocuments',
+            'protocolDeveloppementActivitiesProject.protocolDevActivity',
+            'otherBasicDocuments',
             'allActivitiesProject.category',
             'allActivitiesProject.personneResponsable',
             'allActivitiesProject.executedBy',
@@ -95,6 +122,19 @@ class FrontendController extends Controller
             ->where('project_id', $id)
             ->orderBy('date_scheduled')
             ->get();
+
+        // QA Statement
+        $qaStatement = \App\Models\Pro_QaStatement::where('project_id', $id)->first();
+
+        // ── Document download permissions ──────────────────────────────
+        $user        = auth()->user();
+        $personnelId = $user->personnel?->id;
+        $sdForm      = $project->studyDirectorAppointmentForm;
+        $isProjectSd = $personnelId && $sdForm && (int)$sdForm->study_director === (int)$personnelId;
+
+        $canDownloadAll     = $user->hasRole(['super_admin', 'facility_manager']);
+        $canDownloadQA      = $user->hasRole(['super_admin', 'facility_manager', 'qa_manager']);
+        $canDownloadProject = $canDownloadAll || ($user->hasRole('study_director') && $isProjectSd);
 
         // IDs of critical activities that have a done inspection
         $inspectedCriticalIds = Pro_QaInspection::whereNotNull('activity_id')
@@ -119,8 +159,114 @@ class FrontendController extends Controller
 
         return view('project-overview', compact(
             'project', 'inspections', 'inspectedCriticalIds',
-            'activitiesByCategory', 'score', 'allFindings'
+            'activitiesByCategory', 'score', 'allFindings',
+            'qaStatement', 'canDownloadAll', 'canDownloadQA', 'canDownloadProject'
         ));
+    }
+
+    public function qaActivitiesChecklist(int $id)
+    {
+        $project = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'protocolDeveloppementActivitiesProject.protocolDevDocuments',
+            'reportPhaseDocuments',
+            'archivingDocuments',
+        ])->findOrFail($id);
+
+        abort_unless($project->is_glp, 403, 'Not a GLP project.');
+
+        $sdForm  = $project->studyDirectorAppointmentForm;
+        $sd      = $sdForm?->studyDirector;
+        $sdName  = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : '';
+
+        $saved      = \App\Models\Pro_QaActivitiesChecklist::where('project_id', $id)->get()->keyBy('item_number');
+        $activities = \App\Models\Pro_QaActivitiesChecklist::activities();
+        $prefill    = $this->qaChecklistPrefill($project);
+        $isQaMgr    = auth()->user()->hasRole(['super_admin', 'facility_manager', 'qa_manager']);
+        $headerImagePath = public_path('storage/assets/logo/airid.jpg');
+        $globalSettings  = \App\Models\AppSetting::allAsMap();
+
+        return view('qa-activities-checklist', compact(
+            'project', 'sdName', 'saved', 'activities', 'prefill', 'isQaMgr',
+            'headerImagePath', 'globalSettings'
+        ));
+    }
+
+    private function qaChecklistPrefill(Pro_Project $project): array
+    {
+        $pf = [];
+
+        $firstProtoDoc = $project->protocolDeveloppementActivitiesProject
+            ->flatMap(fn($a) => $a->protocolDevDocuments ?? collect())
+            ->sortBy('date_upload')->first();
+        if ($firstProtoDoc?->date_upload) {
+            $pf[1] = ['date' => $firstProtoDoc->date_upload, 'mov' => 'Protocol development document'];
+        }
+
+        $level3 = $project->protocolDeveloppementActivitiesProject->firstWhere('level_activite', 3);
+        if ($level3?->real_date_performed) {
+            $pf[5] = ['date' => $level3->real_date_performed, 'mov' => 'Signed protocol (level 3)'];
+        }
+
+        $protoInsp = Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Study Inspection')
+            ->orderBy('date_performed')->first();
+        if ($protoInsp?->date_performed) {
+            $pf[2] = ['date' => $protoInsp->date_performed, 'mov' => $protoInsp->inspection_name ?? 'Study Inspection'];
+        }
+
+        $firstInsp = Pro_QaInspection::where('project_id', $project->id)
+            ->orderBy('date_scheduled')->first();
+        if ($firstInsp?->date_scheduled) {
+            $pf[7] = ['date' => $firstInsp->date_scheduled, 'mov' => 'First QA inspection scheduled'];
+        }
+
+        $critInsp = Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Critical Phase Inspection')
+            ->whereNotNull('date_performed')
+            ->orderByDesc('date_performed')->first();
+        if ($critInsp?->date_performed) {
+            $pf[8] = ['date' => $critInsp->date_performed, 'mov' => 'Critical Phase Inspection completed'];
+        }
+
+        $dqInsp = Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Data Quality Inspection')
+            ->whereNotNull('date_performed')
+            ->orderByDesc('date_performed')->first();
+        if ($dqInsp?->date_performed) {
+            $pf[9] = ['date' => $dqInsp->date_performed, 'mov' => 'Data Quality Inspection completed'];
+        }
+
+        $draftReport = $project->reportPhaseDocuments
+            ->where('document_type', 'draft_report')
+            ->whereNotNull('submission_date')
+            ->sortByDesc('submission_date')->first();
+        if ($draftReport?->submission_date) {
+            $pf[13] = ['date' => $draftReport->submission_date, 'mov' => 'Draft study report – ' . ($draftReport->title ?? '')];
+        }
+
+        $finalReport = $project->reportPhaseDocuments
+            ->where('document_type', 'final_report')
+            ->whereNotNull('submission_date')
+            ->sortByDesc('submission_date')->first();
+        if ($finalReport?->submission_date) {
+            $pf[16] = ['date' => $finalReport->submission_date, 'mov' => 'Final study report – ' . ($finalReport->title ?? '')];
+        }
+
+        $qaStatement = \App\Models\Pro_QaStatement::where('project_id', $project->id)
+            ->whereNotNull('date_signed')->first();
+        if ($qaStatement?->date_signed) {
+            $pf[19] = ['date' => $qaStatement->date_signed, 'mov' => 'QA Statement – ' . ($qaStatement->report_number ?? '')];
+        }
+
+        $archDoc = $project->archivingDocuments
+            ->whereNotNull('date_submitted')
+            ->sortBy('date_submitted')->first();
+        if ($archDoc?->date_submitted) {
+            $pf[20] = ['date' => $archDoc->date_submitted, 'mov' => 'Archiving document submitted'];
+        }
+
+        return $pf;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -204,11 +350,12 @@ class FrontendController extends Controller
             $totalAct  = $acts  ? (int) $acts->total     : 0;
             $doneAct   = $acts  ? (int) $acts->completed : 0;
 
-            $insps     = $inspStats[$pid] ?? null;
+            // Inspections and NC findings only count for GLP projects
+            $insps     = $p->is_glp ? ($inspStats[$pid] ?? null) : null;
             $totalInsp = $insps ? (int) $insps->total     : 0;
             $doneInsp  = $insps ? (int) $insps->completed : 0;
 
-            $finds     = $findStats[$pid] ?? null;
+            $finds     = $p->is_glp ? ($findStats[$pid] ?? null) : null;
             $totalNc   = $finds ? (int) $finds->total    : 0;
             $doneNc    = $finds ? (int) $finds->resolved : 0;
 

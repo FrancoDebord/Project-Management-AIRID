@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+
+        if (config('app.env') === 'production') {
+        URL::forceScheme('https');
+    }
 
         $projectsCount = Pro_Project::count();
         $activeUsers = User::where('active', true)->count();

@@ -7,7 +7,23 @@
       "Bash(php -l resources/views/partials/report-phase-step.blade.php)",
       "Bash(composer show:*)",
       "Bash(php -l resources/views/partials/qa-statement-print.blade.php)",
-      "Bash(find e:/Projets_CREC/project-management-lshtm/public -type f \\\\\\(-iname *.png -o -iname *.jpg -o -iname *.jpeg -o -iname *.svg \\\\\\))"
+      "Bash(find e:/Projets_CREC/project-management-lshtm/public -type f \\\\\\(-iname *.png -o -iname *.jpg -o -iname *.jpeg -o -iname *.svg \\\\\\))",
+      "Bash(grep -r \"CREATE TABLE.*personnels\\\\|Schema::.*personnels\" /e/Projets_CREC/project-management-lshtm/database/ --include=*.php)",
+      "Bash(grep -r \"user_id\\\\|role\\\\|poste\" app/Models/*.php)",
+      "Bash(sqlite3 database.sqlite \".schema personnels\")",
+      "Bash(grep -r \"Pro_Personnel\\\\|prenom\\\\|nom\\\\|poste\\\\|position\" /e/Projets_CREC/project-management-lshtm/database/migrations/olds/*.php)",
+      "Bash(grep -r \"$table->string\\\\|->integer\\\\|->text\" /e/Projets_CREC/project-management-lshtm/database/migrations/olds/*team*)",
+      "Bash(grep -r \"^\\\\s*$table->\" /e/Projets_CREC/project-management-lshtm/database/migrations/olds/ --include=\"*.php\")",
+      "Bash(grep -r \"prenom\\\\|nom\\\\|fonction\" /e/Projets_CREC/project-management-lshtm/app/Http/Controllers/*.php)",
+      "Bash(grep -r \"Route::\\\\|class.*Controller\" /e/Projets_CREC/project-management-lshtm/routes/*.php /e/Projets_CREC/project-management-lshtm/app/Http/Controllers/*.php --include=\"*.php\")",
+      "Bash(grep -v \"^Auth$\")",
+      "Bash(ls -la \"e:\\\\Projets_CREC\\\\project-management-lshtm\\\\resources\\\\views\\\\admin\"\" 2>/dev/null || echo \"Directory does not exist \")",
+      "Bash(find e:Projets_CRECproject-management-lshtmresourcesviews -name *qa* -o -name *QA*)",
+      "Bash(find e:Projets_CRECproject-management-lshtmresourcesviews -name *statement* -o -name *report*)",
+      "Bash(php artisan:*)",
+      "Bash(composer require:*)",
+      "Bash(php -r \":*)",
+      "Bash(php -r \"require ''vendor/autoload.php''; echo ''OK'';\")"
     ]
   }
 }

@@ -60,13 +60,21 @@ class ProjectController extends Controller
             $totalActivities     = DB::table('pro_studies_activities')->where('project_id', $pid)->count();
             $completedActivities = DB::table('pro_studies_activities')->where('project_id', $pid)->where('status', 'completed')->count();
 
-            // 2. QA Inspections (completed = date_performed set)
-            $totalInspections     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
-            $completedInspections = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('date_performed')->count();
+            // 2. QA Inspections (completed = date_performed set) — GLP only
+            $totalInspections     = 0;
+            $completedInspections = 0;
+            if ($project->is_glp) {
+                $totalInspections     = DB::table('pro_qa_inspections')->where('project_id', $pid)->count();
+                $completedInspections = DB::table('pro_qa_inspections')->where('project_id', $pid)->whereNotNull('date_performed')->count();
+            }
 
-            // 3. NC Findings (is_conformity = 0 → non-conformity, resolved = status 'complete')
-            $totalNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
-            $resolvedNc = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'complete')->count();
+            // 3. NC Findings (is_conformity = 0 → non-conformity, resolved = status 'complete') — GLP only
+            $totalNc    = 0;
+            $resolvedNc = 0;
+            if ($project->is_glp) {
+                $totalNc    = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->count();
+                $resolvedNc = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'complete')->count();
+            }
 
             // 4. Protocol Dev documents (applicable activities, complete = true)
             $totalProtocolDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->count();
@@ -101,10 +109,9 @@ class ProjectController extends Controller
             // Current phase: first phase that is neither manually completed
             // nor fully done by data criteria
             $phasesCompleted = $project->phases_completed ?? [];
-            $phaseOrder = [
-                'study_creation', 'protocol_details', 'protocol_development',
-                'planning', 'experimental', 'quality_assurance', 'reporting', 'archiving',
-            ];
+            $phaseOrder = $project->is_glp
+                ? ['study_creation', 'protocol_details', 'protocol_development', 'planning', 'experimental', 'quality_assurance', 'reporting', 'archiving']
+                : ['study_creation', 'protocol_details', 'protocol_development', 'experimental', 'reporting', 'archiving'];
             $project_phase = 'study_creation';
             foreach ($phaseOrder as $p) {
                 $doneManually = in_array($p, $phasesCompleted);

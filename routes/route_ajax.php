@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProjectAjaxController;
 use App\Http\Controllers\RequeteAjaxController;
+use App\Http\Controllers\SignatureController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -64,4 +65,12 @@ Route::prefix('ajax')->group(function () {
     // QA Statement
     Route::post('/save-qa-statement',   [ProjectAjaxController::class, 'saveQaStatement'])->name('saveQaStatement');
     Route::get('/qa-statement/print',   [ProjectAjaxController::class, 'printQaStatement'])->name('printQaStatement');
+
+    // QA Activities Checklist
+    Route::post('/save-qa-activities-checklist',  [ProjectAjaxController::class, 'saveQaActivitiesChecklist'])->name('saveQaActivitiesChecklist');
+    Route::get('/qa-activities-checklist/print',  [ProjectAjaxController::class, 'printQaActivitiesChecklist'])->name('printQaActivitiesChecklist');
+
+    // Electronic signatures
+    Route::get('/signatures',           [SignatureController::class, 'getSignatures'])->name('ajax.signatures.get');
+    Route::post('/save-signature',      [SignatureController::class, 'save'])->name('ajax.signatures.save');
 });

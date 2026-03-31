@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\FindingsResolvedMail;
 use App\Mail\MeetingMail;
+use App\Mail\StudyDirectorAssignedMail;
+use App\Models\AppNotification;
+use App\Models\AppSetting;
 use App\Models\Pro_ArchivingDocument;
 use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_ReportPhaseDocument;
@@ -17,6 +21,8 @@ use App\Models\Pro_ProtocolDevActivity;
 use App\Models\Pro_ProtocolDevActivityProject;
 use App\Models\Pro_ProtocolDevDocument;
 use App\Models\Pro_QaStatement;
+use App\Models\Pro_QaActivitiesChecklist;
+use App\Models\User;
 use App\Models\Pro_StudyDirectorAppointmentForm;
 use App\Models\Pro_StudyActivities;
 use App\Models\Pro_QaInspection;
@@ -45,12 +51,10 @@ class ProjectAjaxController extends Controller
 
 
         $rules = [
-            "code" => "required|string|max:50",
-            "title" => "required|string|max:255",
-            "is_glp" => "required|boolean",
-            "study_type_id" => "required|array",
-            "product_type_id" => "required|array",
-            "lab_test_id" => "required|array",
+            "code"          => "required|string|max:50",
+            "title"         => "required|string|max:255",
+            "is_glp"        => "required|boolean",
+            "study_type_id" => "nullable|array",
         ];
 
         $checkUnique = Pro_Project::where("project_code", $request->code)->first();
@@ -63,61 +67,57 @@ class ProjectAjaxController extends Controller
             return response()->json(['message' => 'The project title has already been taken.', "code_erreur" => 1], 201);
         }
 
-        if (!$request->input('study_type_id')) {
-            return response()->json(['message' => 'The Study Type is required.', "code_erreur" => 1], 200);
-        }
-        if (!$request->input('product_type_id')) {
-            return response()->json(['message' => 'The Evaluation Product Type is required.', "code_erreur" => 1], 200);
-        }
-
-        if (!$request->input('lab_test_id')) {
-            return response()->json(['message' => 'The Lab Test appliable is required.', "code_erreur" => 1], 200);
-        }
-
-        $project =  Pro_Project::create([
-            'project_code' => $request->code,
-            'project_title' => $request->title,
-            'is_glp' => (bool) $request->is_glp
+        $project = Pro_Project::create([
+            'project_code'   => $request->code,
+            'project_title'  => $request->title,
+            'is_glp'         => (bool) $request->is_glp,
+            'study_director' => $request->study_director_id ?: null,
         ]);
 
         if ($project) {
-
-            $all_study_types = $request->input('study_type_id');
-            $all_products_types = $request->input('product_type_id');
-            $all_lab_tests = $request->input('lab_test_id');
-
-            foreach ($all_study_types as $key => $study_type_id) {
-
-                $project_related =  Pro_ProjectRelatedStudyType::create([
-                    'project_id' => $project->id,
-                    'study_type_id' => $study_type_id,
-                ]);
+            foreach ($request->input('study_type_id', []) as $study_type_id) {
+                Pro_ProjectRelatedStudyType::create(['project_id' => $project->id, 'study_type_id' => $study_type_id]);
             }
 
-            foreach ($all_products_types as $key => $product_type_id) {
+            // ── Notify Study Director if assigned ─────────────────────
+            if ($request->study_director_id) {
+                $personnel = Pro_Personnel::find($request->study_director_id);
+                $sdUser    = $personnel?->user_id ? User::find($personnel->user_id) : null;
+                $projectUrl = route('projectOverview', ['id' => $project->id]);
+                $directorName = $personnel ? trim(($personnel->prenom ?? '') . ' ' . ($personnel->nom ?? '')) : 'Study Director';
 
-                $project_related =  Pro_ProjectRelatedProductType::create([
-                    'project_id' => $project->id,
-                    'product_type_id' => $product_type_id,
-                ]);
-            }
+                if ($sdUser) {
+                    AppNotification::send(
+                        $sdUser->id,
+                        'project_assigned',
+                        "You have been appointed Study Director — {$project->project_code}",
+                        "You have been assigned as Study Director for study \"{$project->project_title}\". Please fill in the SD Appointment Form and review the study details.",
+                        $projectUrl,
+                        'bi-person-badge-fill'
+                    );
 
-            foreach ($all_lab_tests as $key => $lab_test_id) {
-
-                $project_related =  Pro_ProjectRelatedLabTest::create([
-                    'project_id' => $project->id,
-                    'lab_test_id' => $lab_test_id,
-                ]);
+                    $email = $personnel->email_professionnel ?? $personnel->email_personnel ?? $sdUser->email;
+                    if ($email) {
+                        try {
+                            Mail::to($email)->send(new StudyDirectorAssignedMail(
+                                directorName: $directorName,
+                                projectCode:  $project->project_code,
+                                projectTitle: $project->project_title,
+                                projectUrl:   $projectUrl,
+                            ));
+                        } catch (\Throwable) { /* fail silently */ }
+                    }
+                }
             }
         }
 
         $data = [
-            'project_id' => $project->id,
+            'project_id'   => $project->id,
             'project_code' => $project->project_code,
-            'project_title' => $project->project_title,
-            'is_glp' => $project->is_glp
+            'project_title'=> $project->project_title,
+            'is_glp'       => $project->is_glp,
         ];
-        return response()->json(['message' => 'Project successfully created.', 'data' => $data, "code_erreur" => 0], 201);
+        return response()->json(['message' => 'Project successfully created.', 'data' => $data, 'code_erreur' => 0], 201);
     }
 
     function saveOtherBasicInformationOnProject(Request $request)
@@ -1798,6 +1798,19 @@ class ProjectAjaxController extends Controller
             $finding->status                = 'complete';
             $finding->save();
 
+            // ── Check if all non-conformity findings are now resolved ──
+            $inspection = Pro_QaInspection::find($finding->inspection_id);
+            if ($inspection) {
+                $pending = Pro_QaInspectionFinding::where('inspection_id', $inspection->id)
+                    ->where('is_conformity', 0)
+                    ->where('status', '!=', 'complete')
+                    ->count();
+
+                if ($pending === 0) {
+                    $this->notifyAllFindingsResolved($inspection);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Finding résolu avec succès',
@@ -2722,9 +2735,242 @@ class ProjectAjaxController extends Controller
             'facility'       => $facilityInspections,
         ];
 
+        // Global document settings (fallback if not set on the statement itself)
+        $globalSettings = AppSetting::allAsMap();
+
         return view('partials.qa-statement-print', compact(
             'project', 'statement', 'studyDirectors', 'qaManager',
-            'inspections', 'groupedInspections', 'statementYear'
+            'inspections', 'groupedInspections', 'statementYear',
+            'globalSettings'
         ));
+    }
+
+    // ── Private helpers ─────────────────────────────────────────────
+
+    private function notifyAllFindingsResolved(Pro_QaInspection $inspection): void
+    {
+        $project  = $inspection->project;
+        $reportUrl = route('checklist.report', $inspection->id);
+        $msg       = "All non-conformity findings for inspection \"{$inspection->inspection_name}\" (project {$project?->project_code}) have been resolved. Please review and sign the QA Unit Report.";
+
+        // Collect user IDs to notify: SD, QA Manager, QA Inspector, Facility Manager
+        $userIds = collect();
+
+        // Study Director
+        $sdPersonnel = $project?->studyDirectorAppointmentForm?->studyDirector;
+        if ($sdPersonnel?->user_id) {
+            $userIds->push($sdPersonnel->user_id);
+        }
+
+        // QA Inspector
+        $inspectorPersonnel = $inspection->inspector;
+        if ($inspectorPersonnel?->user_id) {
+            $userIds->push($inspectorPersonnel->user_id);
+        }
+
+        // All QA Managers and Facility Managers
+        User::whereIn('role', ['qa_manager', 'facility_manager'])->each(function ($u) use ($userIds) {
+            $userIds->push($u->id);
+        });
+
+        $userIds = $userIds->unique()->filter();
+
+        foreach ($userIds as $uid) {
+            AppNotification::send(
+                $uid,
+                'findings_resolved',
+                "All findings resolved — {$inspection->inspection_name}",
+                $msg,
+                $reportUrl,
+                'bi-check2-circle'
+            );
+        }
+
+        // Send emails
+        $recipients = collect();
+        if ($sdPersonnel) {
+            $email = $sdPersonnel->email_professionnel ?? $sdPersonnel->email_personnel;
+            $name  = trim(($sdPersonnel->prenom ?? '') . ' ' . ($sdPersonnel->nom ?? ''));
+            if ($email) $recipients->push(['email' => $email, 'name' => $name]);
+        }
+        if ($inspectorPersonnel && $inspectorPersonnel->id !== $sdPersonnel?->id) {
+            $email = $inspectorPersonnel->email_professionnel ?? $inspectorPersonnel->email_personnel;
+            $name  = trim(($inspectorPersonnel->prenom ?? '') . ' ' . ($inspectorPersonnel->nom ?? ''));
+            if ($email) $recipients->push(['email' => $email, 'name' => $name]);
+        }
+        User::whereIn('role', ['qa_manager', 'facility_manager'])->with('personnel')->get()->each(function ($u) use ($recipients) {
+            $email = $u->personnel?->email_professionnel ?? $u->personnel?->email_personnel ?? $u->email;
+            $name  = $u->personnel ? trim(($u->personnel->prenom ?? '') . ' ' . ($u->personnel->nom ?? '')) : $u->name;
+            if ($email) $recipients->push(['email' => $email, 'name' => $name]);
+        });
+
+        foreach ($recipients->unique('email') as $r) {
+            try {
+                Mail::to($r['email'])->send(new FindingsResolvedMail(
+                    recipientName:  $r['name'],
+                    projectCode:    $project?->project_code ?? '',
+                    inspectionName: $inspection->inspection_name ?? '',
+                    reportUrl:      $reportUrl,
+                ));
+            } catch (\Throwable) { /* fail silently */ }
+        }
+    }
+
+    // ── QA Activities Checklist ───────────────────────────────────────
+
+    /**
+     * Save one or all rows of the QA Activities Checklist for a project.
+     * Accepts JSON: { project_id, items: [ { item_number, date_performed, means_of_verification, is_checked } ] }
+     */
+    public function saveQaActivitiesChecklist(Request $request)
+    {
+        $request->validate([
+            'project_id'            => 'required|exists:pro_projects,id',
+            'items'                 => 'required|array|min:1',
+            'items.*.item_number'   => 'required|integer|between:1,20',
+            'items.*.date_performed'=> 'nullable|date',
+            'items.*.means_of_verification' => 'nullable|string|max:500',
+            'items.*.is_checked'    => 'nullable|boolean',
+        ]);
+
+        $pid    = $request->project_id;
+        $userId = FacadesAuth::id();
+
+        foreach ($request->items as $item) {
+            Pro_QaActivitiesChecklist::updateOrCreate(
+                ['project_id' => $pid, 'item_number' => $item['item_number']],
+                [
+                    'date_performed'        => $item['date_performed']        ?? null,
+                    'means_of_verification' => $item['means_of_verification'] ?? null,
+                    'is_checked'            => (bool) ($item['is_checked']    ?? false),
+                    'updated_by'            => $userId,
+                ]
+            );
+        }
+
+        return response()->json(['success' => true, 'message' => 'Checklist saved.']);
+    }
+
+    /**
+     * Print the QA Activities Checklist as an HTML page (printable).
+     */
+    public function printQaActivitiesChecklist(Request $request)
+    {
+        $projectId = $request->integer('project_id');
+
+        $project = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'protocolDeveloppementActivitiesProject',
+            'reportPhaseDocuments',
+            'archivingDocuments',
+        ])->findOrFail($projectId);
+
+        $sdForm  = $project->studyDirectorAppointmentForm;
+        $sd      = $sdForm?->studyDirector;
+        $sdName  = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : '';
+
+        // Saved checklist rows keyed by item_number
+        $saved = Pro_QaActivitiesChecklist::where('project_id', $projectId)
+            ->get()->keyBy('item_number');
+
+        // Pre-fill logic: derive dates from existing project data where possible
+        $prefill = $this->qaChecklistPrefill($project);
+
+        $activities = Pro_QaActivitiesChecklist::activities();
+        $globalSettings = AppSetting::allAsMap();
+        $headerImagePath = public_path('storage/assets/logo/airid.jpg');
+
+        return view('partials.qa-activities-checklist-print', compact(
+            'project', 'sdName', 'saved', 'prefill',
+            'activities', 'globalSettings', 'headerImagePath'
+        ));
+    }
+
+    /** Derive pre-fill dates for checklist items from project data. */
+    private function qaChecklistPrefill(Pro_Project $project): array
+    {
+        $pf = [];
+
+        // #1 – Protocol received from SD: first protocol dev doc upload date
+        $firstProtoDoc = $project->protocolDeveloppementActivitiesProject
+            ->flatMap(fn($a) => $a->protocolDevDocuments ?? collect())
+            ->sortBy('date_upload')->first();
+        if ($firstProtoDoc?->date_upload) {
+            $pf[1] = ['date' => $firstProtoDoc->date_upload, 'mov' => 'Protocol development document'];
+        }
+
+        // #5 – Copy of approved protocol: last proto dev activity completed (level 3)
+        $level3 = $project->protocolDeveloppementActivitiesProject->firstWhere('level_activite', 3);
+        if ($level3?->real_date_performed) {
+            $pf[5] = ['date' => $level3->real_date_performed, 'mov' => 'Signed protocol (level 3)'];
+        }
+
+        // #2,3,4 – Protocol inspections: QA inspection of type Study Inspection
+        $protoInsp = \App\Models\Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Study Inspection')
+            ->orderBy('date_performed')->first();
+        if ($protoInsp?->date_performed) {
+            $pf[2] = ['date' => $protoInsp->date_performed, 'mov' => $protoInsp->inspection_name ?? 'Study Inspection'];
+        }
+
+        // #7 – Inspection programme established: first inspection scheduled date
+        $firstInsp = \App\Models\Pro_QaInspection::where('project_id', $project->id)
+            ->orderBy('date_scheduled')->first();
+        if ($firstInsp?->date_scheduled) {
+            $pf[7] = ['date' => $firstInsp->date_scheduled, 'mov' => 'First QA inspection scheduled'];
+        }
+
+        // #8 – Critical phase inspections: last critical phase inspection done
+        $critInsp = \App\Models\Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Critical Phase Inspection')
+            ->whereNotNull('date_performed')
+            ->orderByDesc('date_performed')->first();
+        if ($critInsp?->date_performed) {
+            $pf[8] = ['date' => $critInsp->date_performed, 'mov' => 'Critical Phase Inspection completed'];
+        }
+
+        // #9 – Data Quality: data quality inspection done
+        $dqInsp = \App\Models\Pro_QaInspection::where('project_id', $project->id)
+            ->where('type_inspection', 'Data Quality Inspection')
+            ->whereNotNull('date_performed')
+            ->orderByDesc('date_performed')->first();
+        if ($dqInsp?->date_performed) {
+            $pf[9] = ['date' => $dqInsp->date_performed, 'mov' => 'Data Quality Inspection completed'];
+        }
+
+        // #13 – Draft report received: draft report document submission date
+        $draftReport = $project->reportPhaseDocuments
+            ->where('document_type', 'draft_report')
+            ->whereNotNull('submission_date')
+            ->sortByDesc('submission_date')->first();
+        if ($draftReport?->submission_date) {
+            $pf[13] = ['date' => $draftReport->submission_date, 'mov' => 'Draft study report – ' . ($draftReport->title ?? '')];
+        }
+
+        // #16 – Final report received: final report document submission date
+        $finalReport = $project->reportPhaseDocuments
+            ->where('document_type', 'final_report')
+            ->whereNotNull('submission_date')
+            ->sortByDesc('submission_date')->first();
+        if ($finalReport?->submission_date) {
+            $pf[16] = ['date' => $finalReport->submission_date, 'mov' => 'Final study report – ' . ($finalReport->title ?? '')];
+        }
+
+        // #19 – QA Statement signed
+        $qaStatement = \App\Models\Pro_QaStatement::where('project_id', $project->id)
+            ->whereNotNull('date_signed')->first();
+        if ($qaStatement?->date_signed) {
+            $pf[19] = ['date' => $qaStatement->date_signed, 'mov' => 'QA Statement – ' . ($qaStatement->report_number ?? '')];
+        }
+
+        // #20 – Archiving: first archiving document date
+        $archDoc = $project->archivingDocuments
+            ->whereNotNull('archive_date')
+            ->sortBy('archive_date')->first();
+        if ($archDoc?->archive_date) {
+            $pf[20] = ['date' => $archDoc->archive_date, 'mov' => 'QA file archived'];
+        }
+
+        return $pf;
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\Pro_Project;
 use App\Models\Pro_Project_Phase;
 use App\Models\Pro_Project_StudyPhaseCompleted;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -99,6 +101,82 @@ class ProjectActivityScheduleController extends Controller
         return view('master-schedule', compact('scheduleData'));
     }
 
+    /** Generate Master Schedule as PDF (A3 landscape) */
+    public function masterSchedulePdf()
+    {
+        $projects = Pro_Project::with([
+            'keyPersonnelProject',
+            'studyDirectorAppointmentForm.studyDirector',
+            'protocolDeveloppementActivitiesProject',
+            'allActivitiesProject',
+            'reportPhaseDocuments',
+            'archivingDocuments',
+        ])->orderBy('project_code')->get();
+
+        $manageUrl = fn(int $id, string $step) =>
+            route('project.create', ['project_id' => $id]) . '#' . $step;
+
+        $scheduleData = $projects->map(function ($project) use ($manageUrl) {
+            $project->project_status = $project->is_glp ? 'GLP' : 'NON-GLP';
+            $sdForm        = $project->studyDirectorAppointmentForm;
+            $startDate     = $sdForm?->sd_appointment_date;
+            $level1        = $project->protocolDeveloppementActivitiesProject->firstWhere('level_activite', 1);
+            $studyStartEnd = $level1?->real_date_performed;
+            $level3        = $project->protocolDeveloppementActivitiesProject->firstWhere('level_activite', 3);
+            $planningStart = $level3?->real_date_performed;
+            $doneActivities = $project->allActivitiesProject->filter(fn($a) => !is_null($a->actual_activity_date))->sortBy('actual_activity_date');
+            $expStart    = $doneActivities->first()?->actual_activity_date;
+            $expEnd      = $doneActivities->last()?->actual_activity_date;
+            $planningEnd = $expStart;
+            $reportStart = $expEnd;
+            $reportEnd   = $project->reportPhaseDocuments->where('document_type', 'final_report')->filter(fn($d) => !is_null($d->submission_date))->sortByDesc('submission_date')->first()?->submission_date;
+            $archiveStart = $reportEnd;
+            $archiveEnd   = $project->archivingDocuments->filter(fn($d) => !is_null($d->archive_date))->sortBy('archive_date')->first()?->archive_date ?? $project->archived_at?->format('Y-m-d');
+            $pid = $project->id;
+
+            return [
+                'project'      => $project,
+                'study_start'  => ['start' => ['date' => $startDate,    'nr_url' => $manageUrl($pid, 'step1')], 'end' => ['date' => $studyStartEnd, 'nr_url' => $manageUrl($pid, 'step3')]],
+                'planning'     => ['start' => ['date' => $planningStart, 'nr_url' => $manageUrl($pid, 'step3')], 'end' => ['date' => $planningEnd,  'nr_url' => $manageUrl($pid, 'step5')]],
+                'experimental' => ['start' => ['date' => $expStart,      'nr_url' => $manageUrl($pid, 'step5')], 'end' => ['date' => $expEnd,       'nr_url' => $manageUrl($pid, 'step5')]],
+                'report'       => ['start' => ['date' => $reportStart,   'nr_url' => $manageUrl($pid, 'step5')], 'end' => ['date' => $reportEnd,    'nr_url' => $manageUrl($pid, 'step7')]],
+                'archiving'    => ['start' => ['date' => $archiveStart,  'nr_url' => $manageUrl($pid, 'step7')], 'end' => ['date' => $archiveEnd,   'nr_url' => $manageUrl($pid, 'step8')]],
+            ];
+        });
+
+        $globalSettings   = AppSetting::allAsMap();
+        $headerImagePath  = public_path('storage/assets/header/entete_airid.png');
+
+        $pdf = Pdf::loadView('master-schedule-pdf', compact('scheduleData', 'globalSettings', 'headerImagePath'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('master-schedule-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+
+    /** Generate per-project activities as PDF (A4 landscape) */
+    public function projectActivitiesPdf(int $projectId)
+    {
+        $project = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'allActivitiesProject.category',
+            'allActivitiesProject.personneResponsable',
+        ])->findOrFail($projectId);
+
+        $activitiesByCategory = $project->allActivitiesProject
+            ->groupBy(fn($a) => $a->category->name ?? 'Uncategorized');
+
+        $sdForm  = $project->studyDirectorAppointmentForm;
+        $sd      = $sdForm?->studyDirector;
+        $sdName  = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : null;
+
+        $headerImagePath = public_path('storage/assets/header/entete_airid.png');
+
+        $pdf = Pdf::loadView('project-activities-pdf', compact('project', 'activitiesByCategory', 'sdName', 'headerImagePath'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('activities-' . $project->project_code . '-' . now()->format('Y-m-d') . '.pdf');
+    }
 
     public function projectTrackingSheet(Request $request)
     {

@@ -221,6 +221,13 @@
     <button class="btn-print" style="background:#6c757d;" onclick="window.close()">✕ Fermer</button>
 </div>
 
+{{-- Doc reference vars (always computed, used by both edit panel and print header) --}}
+@php
+    $effectiveDocRef        = $statement?->doc_ref        ?? '';
+    $effectiveDocIssueDate  = $statement?->doc_issue_date ?? $globalSettings['doc_issue_date']  ?? '';
+    $effectiveDocNextReview = $statement?->doc_next_review ?? $globalSettings['doc_next_review'] ?? '';
+@endphp
+
 {{-- ── Edit panel (draft only, screen) ── --}}
 @if(!$statement || $statement->status === 'draft')
 <div id="editPanel" class="d-none screen-only" style="background:#f0f4ff;border:1px solid #bbb;border-radius:8px;padding:16px;margin-bottom:16px;font-family:Arial,sans-serif;">
@@ -248,24 +255,24 @@
         </div>
     </div>
 
-    {{-- Doc reference fields --}}
+    {{-- Doc reference fields (statement value → global setting → blank) --}}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px;">
         <div>
             <label style="font-size:11px;font-weight:bold;">Référence document</label>
-            <input type="text" id="qasDocRef" value="{{ $statement?->doc_ref ?? 'QA-PR-L-001/09' }}"
+            <input type="text" id="qasDocRef" value="{{ $effectiveDocRef }}"
                    style="width:100%;border:1px solid #ccc;border-radius:4px;padding:4px 8px;"
                    placeholder="Ex : QA-PR-L-001/09">
         </div>
         <div>
             <label style="font-size:11px;font-weight:bold;">Issue date</label>
             <input type="date" id="qasDocIssueDate"
-                   value="{{ $statement?->doc_issue_date ?? '' }}"
+                   value="{{ $effectiveDocIssueDate }}"
                    style="width:100%;border:1px solid #ccc;border-radius:4px;padding:4px 8px;">
         </div>
         <div>
             <label style="font-size:11px;font-weight:bold;">Next review date</label>
             <input type="date" id="qasDocNextReview"
-                   value="{{ $statement?->doc_next_review ?? '' }}"
+                   value="{{ $effectiveDocNextReview }}"
                    style="width:100%;border:1px solid #ccc;border-radius:4px;padding:4px 8px;">
         </div>
     </div>
@@ -299,9 +306,9 @@
         <h1>Quality Assurance Statement</h1>
     </div>
     <div class="qr-area">
-        {{ $statement?->doc_ref ?? 'QA-PR-L-001/09' }}<br>
-        Issue date: {{ $statement?->doc_issue_date ? \Carbon\Carbon::parse($statement->doc_issue_date)->format('d/m/Y') : '___/___/______' }}<br>
-        Next review: {{ $statement?->doc_next_review ? \Carbon\Carbon::parse($statement->doc_next_review)->format('d/m/Y') : '___/___/______' }}
+        {{ $effectiveDocRef ?: 'QA-PR-L-001/09' }}<br>
+        Issue date: {{ $effectiveDocIssueDate ? \Carbon\Carbon::parse($effectiveDocIssueDate)->format('d/m/Y') : '___/___/______' }}<br>
+        Next review: {{ $effectiveDocNextReview ? \Carbon\Carbon::parse($effectiveDocNextReview)->format('d/m/Y') : '___/___/______' }}
     </div>
 </div>
 

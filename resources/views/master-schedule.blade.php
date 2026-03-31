@@ -27,10 +27,25 @@ $phases = [
         <div class="col">
             <h3 class="title-section mb-0">Master Schedule</h3>
         </div>
-        <div class="col-auto">
-            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                <i class="mdi mdi-printer"></i> Print / PDF
+        <div class="col-auto d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary screen-only" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i>Print
             </button>
+            <a href="{{ route('masterSchedule.pdf') }}" class="btn btn-sm btn-danger screen-only" target="_blank">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
+            </a>
+        </div>
+    </div>
+
+    {{-- Filter bar --}}
+    <div class="mb-3 screen-only">
+        <div class="input-group" style="max-width:360px;">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" id="msFilter" class="form-control border-start-0 ps-0"
+                   placeholder="Filter by code, director, status…"
+                   style="font-size:.88rem;">
         </div>
     </div>
 
@@ -119,30 +134,36 @@ $phases = [
                                 {{-- Phase date cells --}}
                                 @foreach($phases as $ph)
                                     @php
-                                        $phData = $row[$ph['key']];
-                                        $sInfo  = $phData['start'];
-                                        $eInfo  = $phData['end'];
-                                        $sFmt   = $fmtDate($sInfo['date']);
-                                        $eFmt   = $fmtDate($eInfo['date']);
+                                        $phData  = $row[$ph['key']];
+                                        $sInfo   = $phData['start'];
+                                        $eInfo   = $phData['end'];
+                                        $sFmt    = $fmtDate($sInfo['date']);
+                                        $eFmt    = $fmtDate($eInfo['date']);
+                                        $cellBg  = $ph['color'];
+                                        $cellFg  = $ph['text'];
+                                        // Lighter shade for end column
+                                        $endBg   = $cellBg . '22'; // 13% opacity via hex alpha
                                     @endphp
-                                    <td class="text-center align-middle ms-date-cell" style="border-left:2px solid {{ $ph['color'] }};">
+                                    {{-- Start cell: full phase colour --}}
+                                    <td class="text-center align-middle ms-date-cell"
+                                        style="background:{{ $cellBg }};border-left:2px solid {{ $cellBg }};">
                                         @if($sFmt)
-                                            <span class="ms-date"
-                                                  data-bs-toggle="tooltip"
-                                                  data-bs-placement="top"
+                                            <span class="ms-date" style="color:{{ $cellFg }};"
+                                                  data-bs-toggle="tooltip" data-bs-placement="top"
                                                   title="{{ $sInfo['tooltip'] }} : {{ \Carbon\Carbon::parse($sInfo['date'])->format('d/m/Y') }}">
                                                 {{ $sFmt }}
                                             </span>
                                         @else
-                                            <a href="{{ $sInfo['nr_url'] }}" class="ms-nr"
+                                            <a href="{{ $sInfo['nr_url'] }}" class="ms-nr-light"
                                                title="Non renseigné — {{ $sInfo['tooltip'] }}">N/R</a>
                                         @endif
                                     </td>
-                                    <td class="text-center align-middle ms-date-cell">
+                                    {{-- End cell: light tinted background --}}
+                                    <td class="text-center align-middle ms-date-cell"
+                                        style="background:{{ $cellBg }}33;">
                                         @if($eFmt)
                                             <span class="ms-date"
-                                                  data-bs-toggle="tooltip"
-                                                  data-bs-placement="top"
+                                                  data-bs-toggle="tooltip" data-bs-placement="top"
                                                   title="{{ $eInfo['tooltip'] }} : {{ \Carbon\Carbon::parse($eInfo['date'])->format('d/m/Y') }}">
                                                 {{ $eFmt }}
                                             </span>
@@ -202,6 +223,19 @@ $phases = [
     font-weight: 700;
 }
 .ms-nr:hover { background: #ffe0b2; }
+/* N/R badge on coloured cell (start column) */
+.ms-nr-light {
+    display: inline-block;
+    font-size: .68rem;
+    color: rgba(255,255,255,.95);
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 3px;
+    padding: 1px 4px;
+    text-decoration: none;
+    font-weight: 700;
+}
+.ms-nr-light:hover { background: rgba(255,255,255,.3); color: #fff; }
 
 /* Tooltip override for small cells */
 .ms-date[data-bs-toggle="tooltip"] { cursor: help; }
@@ -264,6 +298,17 @@ document.addEventListener('DOMContentLoaded', function () {
             sortTable(col, dir);
         });
     });
+
+    // ── Live filter ──
+    var msFilter = document.getElementById('msFilter');
+    if (msFilter) {
+        msFilter.addEventListener('input', function () {
+            var q = this.value.toLowerCase().trim();
+            tbody.querySelectorAll('tr').forEach(function (row) {
+                row.style.display = (q === '' || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+            });
+        });
+    }
 });
 </script>
 @endsection

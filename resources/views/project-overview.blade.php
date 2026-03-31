@@ -4,14 +4,14 @@
 @section('content')
 <style>
 :root { --ov-red:#C10202; --ov-dark:#8b0001; }
-.ov-header { background:linear-gradient(135deg,#1a3a6b,#2a5aaa); color:#fff; border-radius:1rem; padding:1.4rem 2rem; }
+.ov-header { background:linear-gradient(135deg,#c20102,#8b0001); color:#fff; border-radius:1rem; padding:1.4rem 2rem; }
 .score-ring { width:70px; height:70px; }
 .cat-card { border-radius:.75rem; border:1px solid #dee2e6; overflow:hidden; }
 .cat-card .cat-header { padding:.65rem 1rem; font-weight:600; font-size:.9rem; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
 .cat-card .cat-header:hover { filter:brightness(.95); }
 .act-row { border-bottom:1px solid #f0f0f0; padding:.5rem .8rem; font-size:.85rem; }
 .act-row:last-child { border-bottom:none; }
-.badge-responsible { background:#e8f0fe; color:#1a3a6b; font-weight:500; font-size:.75rem; padding:2px 7px; border-radius:20px; }
+.badge-responsible { background:#fde8e8; color:#c20102; font-weight:500; font-size:.75rem; padding:2px 7px; border-radius:20px; }
 .score-mini { font-size:.75rem; font-weight:600; }
 .status-completed { color:#198754; }
 .status-pending    { color:#6c757d; }
@@ -61,11 +61,123 @@
     </div>
 </div>
 
+{{-- ── Study Creation Details ───────────────────────────────── --}}
+<div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+    <div class="card-header fw-semibold py-2 px-3 d-flex align-items-center justify-content-between"
+         style="background:linear-gradient(90deg,#c20102,#8b0001);color:#fff;">
+        <span><i class="bi bi-info-circle me-2"></i>Study Details</span>
+        <a href="{{ route('project.create', ['project_id' => $project->id]) }}#step1"
+           class="btn btn-sm py-0 px-2" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:.75rem;">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+    </div>
+    <div class="card-body py-3 px-3">
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Study Code</div>
+                <div class="fw-bold" style="color:#c20102;">{{ $project->project_code }}</div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">GLP Status</div>
+                @if($project->is_glp)
+                    <span class="badge bg-success fs-6"><i class="bi bi-patch-check me-1"></i>GLP</span>
+                @else
+                    <span class="badge bg-secondary fs-6">Non-GLP</span>
+                @endif
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Start Date</div>
+                <div>{{ $project->date_debut_effective ? date('d/m/Y', strtotime($project->date_debut_effective)) : '—' }}</div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">End Date</div>
+                <div>{{ $project->date_fin_effective ? date('d/m/Y', strtotime($project->date_fin_effective)) : '—' }}</div>
+            </div>
+
+            {{-- Study Director --}}
+            @php $sdForm = $project->studyDirectorAppointmentForm; $sd = $sdForm?->studyDirector; @endphp
+            <div class="col-md-6 col-lg-4">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Study Director</div>
+                @if($sd)
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-person-badge text-primary"></i>
+                        <span class="fw-semibold">{{ trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) }}</span>
+                    </div>
+                    @if($sdForm->sd_appointment_date)
+                        <div class="small text-muted mt-1"><i class="bi bi-calendar3 me-1"></i>Appointed: {{ \Carbon\Carbon::parse($sdForm->sd_appointment_date)->format('d/m/Y') }}</div>
+                    @endif
+                    @if($sdForm->sd_appointment_file)
+                        <a href="{{ asset('storage/sd_appointment_files/' . $sdForm->sd_appointment_file) }}"
+                           target="_blank" class="btn btn-xs btn-outline-primary mt-1" style="font-size:.74rem;padding:2px 8px;">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i>Appointment Letter
+                        </a>
+                    @endif
+                @else
+                    <span class="text-muted">Not assigned</span>
+                @endif
+            </div>
+
+            {{-- Study Types --}}
+            <div class="col-md-6 col-lg-4">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Study Types</div>
+                <div class="d-flex flex-wrap gap-1">
+                    @forelse($project->studyTypesApplied as $st)
+                        <span class="badge" style="background:#c20102;font-size:.72rem;">{{ $st->study_type_name }}</span>
+                    @empty
+                        <span class="text-muted">—</span>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Products --}}
+            <div class="col-md-6 col-lg-4">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Products Evaluated</div>
+                <div class="d-flex flex-wrap gap-1">
+                    @forelse($project->productTypesEvaluated as $pt)
+                        <span class="badge bg-info text-dark" style="font-size:.72rem;">{{ $pt->product_type_name }}</span>
+                    @empty
+                        <span class="text-muted">—</span>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Key Personnel --}}
+            @if($project->keyPersonnelProject->isNotEmpty())
+            <div class="col-12">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Key Personnel</div>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($project->keyPersonnelProject as $kp)
+                        <span class="badge" style="background:#fde8e8;color:#c20102;font-weight:500;font-size:.75rem;">
+                            <i class="bi bi-person me-1"></i>{{ trim(($kp->titre_personnel ?? '') . ' ' . $kp->prenom . ' ' . $kp->nom) }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- Other submitted documents --}}
+            @if($project->otherBasicDocuments->isNotEmpty())
+            <div class="col-12">
+                <div class="small text-muted fw-semibold mb-1" style="font-size:.72rem;text-transform:uppercase;">Submitted Documents</div>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($project->otherBasicDocuments as $doc)
+                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+                           class="btn btn-sm btn-outline-secondary" style="font-size:.78rem;padding:3px 10px;">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i>{{ $doc->document_name ?? $doc->file_name ?? 'Document' }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 {{-- ── Score summary row ────────────────────────────────────── --}}
 <div class="row g-3 mb-4">
     @php
         $cats = [
-            ['label' => 'Overall',      'pct' => $score['overall'],      'icon' => 'bi-speedometer2',      'color' => '#1a3a6b'],
+            ['label' => 'Overall',      'pct' => $score['overall'],      'icon' => 'bi-speedometer2',      'color' => '#c20102'],
             ['label' => 'Activities',   'pct' => $score['actScore'],     'icon' => 'bi-list-check',         'color' => '#0d6efd'],
             ['label' => 'Inspections',  'pct' => $score['critScore'],    'icon' => 'bi-shield-check',       'color' => '#6f42c1'],
             ['label' => 'Findings',     'pct' => $score['findScore'],    'icon' => 'bi-exclamation-circle', 'color' => '#C10202'],
@@ -106,6 +218,13 @@
                 <span class="ms-2 badge {{ $score['actScore'] >= 80 ? 'bg-success' : ($score['actScore'] >= 50 ? 'bg-warning text-dark' : 'bg-danger') }}">
                     {{ $score['actScore'] }}%
                 </span>
+                <a href="{{ route('project.activities.pdf', $project->id) }}"
+                   target="_blank"
+                   class="ms-auto btn btn-sm btn-outline-light"
+                   style="font-size:.72rem;padding:2px 8px;white-space:nowrap;"
+                   onclick="event.stopPropagation();">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </a>
             </button>
         </h2>
         <div id="colAct" class="accordion-collapse collapse show" data-bs-parent="#ovAccordion">
@@ -202,6 +321,109 @@
             </div>
         </div>
     </div>
+
+    {{-- ══ ACTIVITIES TIMELINE ═══════════════════════════════ --}}
+    @php
+        $timelineActivities = $project->allActivitiesProject
+            ->filter(fn($a) => $a->estimated_activity_date || $a->actual_activity_date)
+            ->sortBy('estimated_activity_date')
+            ->values();
+    @endphp
+    @if($timelineActivities->isNotEmpty())
+    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed fw-semibold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#colTimeline">
+                <i class="bi bi-calendar3-range me-2 text-warning"></i>
+                Activities Timeline
+                <span class="ms-2 badge bg-warning text-dark">{{ $timelineActivities->count() }} activities</span>
+            </button>
+        </h2>
+        <div id="colTimeline" class="accordion-collapse collapse" data-bs-parent="#ovAccordion">
+            <div class="accordion-body pt-4 pb-2">
+                <style>
+                .tl-wrap { position:relative; padding-left:36px; }
+                .tl-wrap::before { content:''; position:absolute; left:14px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,#c20102,#dee2e6); }
+                .tl-item { position:relative; margin-bottom:18px; }
+                .tl-dot { position:absolute; left:-29px; top:4px; width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 2px currentColor; }
+                .tl-dot.done    { background:#198754; color:#198754; }
+                .tl-dot.in-prog { background:#0d6efd; color:#0d6efd; }
+                .tl-dot.pending { background:#adb5bd; color:#adb5bd; }
+                .tl-dot.critical{ background:#C10202; color:#C10202; box-shadow:0 0 0 3px rgba(193,2,2,.25); }
+                .tl-label { font-size:.8rem; font-weight:600; line-height:1.3; }
+                .tl-meta  { font-size:.72rem; color:#6c757d; margin-top:2px; }
+                .tl-date  { font-size:.72rem; white-space:nowrap; }
+                </style>
+                <div class="tl-wrap">
+                @foreach($timelineActivities as $ta)
+                @php
+                    $isDone  = $ta->status === 'completed';
+                    $isInProg= $ta->status === 'in_progress';
+                    $isCrit  = (bool)$ta->phase_critique;
+                    $dotCls  = $isDone ? 'done' : ($isInProg ? 'in-prog' : 'pending');
+                    if ($isCrit && !$isDone) $dotCls = 'critical';
+                    $dispDate = $ta->actual_activity_date
+                        ? \Carbon\Carbon::parse($ta->actual_activity_date)->format('d/m/Y')
+                        : ($ta->estimated_activity_date ? \Carbon\Carbon::parse($ta->estimated_activity_date)->format('d/m/Y') . ' (est.)' : '');
+                @endphp
+                <div class="tl-item">
+                    <span class="tl-dot {{ $dotCls }}"></span>
+                    <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <div class="tl-label">
+                                {{ $ta->study_activity_name }}
+                                @if($isCrit)
+                                    <span class="badge ms-1" style="background:#C10202;font-size:.65rem;vertical-align:middle;">
+                                        <i class="bi bi-shield-exclamation me-1"></i>Critical
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="tl-meta">
+                                {{ $ta->category->name ?? '' }}
+                                @if($ta->personneResponsable)
+                                    &nbsp;·&nbsp; <i class="bi bi-person me-1"></i>{{ $ta->personneResponsable->prenom }} {{ $ta->personneResponsable->nom }}
+                                @endif
+                            </div>
+                        </div>
+                        <div class="text-end tl-date">
+                            <span class="{{ $isDone ? 'text-success' : 'text-muted' }}">
+                                <i class="bi bi-{{ $isDone ? 'calendar-check' : 'calendar3' }} me-1"></i>{{ $dispDate }}
+                            </span>
+                            @if($isDone)
+                                <div><span class="badge bg-success-subtle text-success border border-success" style="font-size:.65rem;">Done</span></div>
+                            @elseif($isInProg)
+                                <div><span class="badge bg-primary-subtle text-primary border border-primary" style="font-size:.65rem;">In progress</span></div>
+                            @elseif($isCrit)
+                                <div><span class="badge" style="background:rgba(193,2,2,.1);color:#C10202;border:1px solid #C10202;font-size:.65rem;">Pending critical</span></div>
+                            @else
+                                <div><span class="badge bg-secondary-subtle text-secondary border" style="font-size:.65rem;">Pending</span></div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+                </div>
+
+                {{-- Legend --}}
+                <div class="d-flex flex-wrap gap-3 mt-2 ms-1" style="font-size:.75rem;color:#6c757d;">
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#198754;margin-right:4px;"></span>Completed</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0d6efd;margin-right:4px;"></span>In progress</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#adb5bd;margin-right:4px;"></span>Pending</span>
+                    <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C10202;margin-right:4px;"></span>Critical phase pending</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ══ DOCUMENTS ══════════════════════════════════════════ --}}
+    @include('partials.project-documents-overview', [
+        'project'            => $project,
+        'qaStatement'        => $qaStatement,
+        'canDownloadAll'     => $canDownloadAll,
+        'canDownloadQA'      => $canDownloadQA,
+        'canDownloadProject' => $canDownloadProject,
+    ])
 
     {{-- ══ 2. QA INSPECTIONS ══════════════════════════════════ --}}
     <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
@@ -359,6 +581,45 @@
             </div>
         </div>
     </div>
+
+    {{-- ══ QA Activities Checklist (GLP only) ══════════════════ --}}
+    @if($project->is_glp)
+    @php
+        $qaChecklistCount = \App\Models\Pro_QaActivitiesChecklist::where('project_id', $project->id)->where('is_checked', true)->count();
+        $qaChecklistTotal = 20;
+    @endphp
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;overflow:hidden;">
+        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3 py-3 px-4">
+            <div class="d-flex align-items-center gap-3">
+                <div style="background:#fde8e8;border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-card-checklist" style="font-size:1.25rem;color:#c20102;"></i>
+                </div>
+                <div>
+                    <div class="fw-semibold" style="font-size:.95rem;color:#c20102;">QA Activities Checklist</div>
+                    <div class="text-muted" style="font-size:.78rem;">
+                        QA-PR-1-011/05 &mdash;
+                        <span class="badge {{ $qaChecklistCount === $qaChecklistTotal ? 'bg-success' : 'bg-secondary' }}" style="font-size:.7rem;">
+                            {{ $qaChecklistCount }}/{{ $qaChecklistTotal }} checked
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('project.qa-checklist', $project->id) }}"
+                   class="btn btn-sm fw-semibold"
+                   style="background:#c20102;color:#fff;border:none;font-size:.8rem;">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Checklist
+                </a>
+                <a href="{{ route('printQaActivitiesChecklist', ['project_id' => $project->id]) }}"
+                   target="_blank"
+                   class="btn btn-sm btn-outline-secondary fw-semibold"
+                   style="font-size:.8rem;">
+                    <i class="bi bi-printer me-1"></i>Print
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- ══ 4. REPORT PHASE ════════════════════════════════════ --}}
     <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
