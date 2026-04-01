@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppNotification;
+use App\Models\DocumentSignature;
 use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_Personnel;
+use App\Models\Pro_Project;
 use App\Models\Pro_QaInspection;
+use App\Models\InspectionSnapshot;
+use App\Models\User;
+use App\Services\ChecklistSnapshotService;
 use Illuminate\Http\Request;
 
 class ChecklistController extends Controller
@@ -664,6 +670,30 @@ class ChecklistController extends Controller
                 ->with('error', 'Cette inspection ne peut pas être remplie avant sa date prévue (' . \Carbon\Carbon::parse($inspection->date_scheduled)->format('d/m/Y') . ').');
         }
 
+        // ── Snapshot-based system ────────────────────────────────────────────
+        if (InspectionSnapshot::where('inspection_id', $inspection_id)->exists()) {
+            $forms        = ChecklistSnapshotService::allForms($inspection);
+            $doneSlugs    = ChecklistSnapshotService::doneSlugs($inspection_id);
+            $conformities = ChecklistSnapshotService::conformities($inspection_id);
+            $total        = count($forms);
+            $progress     = count($doneSlugs);
+
+            $statuses = [];
+            foreach ($forms as $slug => $form) {
+                $statuses[$slug] = in_array($slug, $doneSlugs);
+            }
+
+            $findingCounts = \App\Models\Pro_QaInspectionFinding::where('inspection_id', $inspection_id)
+                ->whereNotNull('facility_section')
+                ->selectRaw('facility_section, count(*) as cnt')
+                ->groupBy('facility_section')
+                ->pluck('cnt', 'facility_section')
+                ->toArray();
+
+            return view('checklists.index', compact('inspection', 'forms', 'statuses', 'conformities', 'progress', 'total', 'findingCounts'));
+        }
+        // ── Legacy system (inspections created before snapshot migration) ────
+
         if ($inspection->type_inspection === 'Facility Inspection') {
             $facilityForms  = self::getFacilityForms($inspection);
             $firstForm      = reset($facilityForms);
@@ -836,6 +866,49 @@ class ChecklistController extends Controller
                 ->with('error', 'Cette inspection ne peut pas être remplie avant sa date prévue (' . \Carbon\Carbon::parse($inspection->date_scheduled)->format('d/m/Y') . ').');
         }
 
+        // ── Snapshot-based system ────────────────────────────────────────────
+        if (InspectionSnapshot::where('inspection_id', $inspection_id)->where('url_slug', $slug)->exists()) {
+            $form = ChecklistSnapshotService::buildForm($inspection, $slug);
+            abort_if(!$form, 404, 'Formulaire introuvable.');
+
+            $sectionCode = $form['section_code'];
+            $formType    = $form['form_type'];
+            $fieldPrefix = ChecklistSnapshotService::fieldPrefix(
+                InspectionSnapshot::where('inspection_id', $inspection_id)->where('url_slug', $slug)->value('template_code') ?? '',
+                $sectionCode,
+                $formType
+            );
+
+            [$record, $dqAnswers, $dqV1Answers, $dqV2Answers] = ChecklistSnapshotService::buildRecord(
+                $inspection_id, $sectionCode, $formType, $fieldPrefix
+            );
+
+            $sectionFindings = \App\Models\Pro_QaInspectionFinding::with('assignedTo')
+                ->where('inspection_id', $inspection_id)
+                ->where('facility_section', $slug)
+                ->orderBy('id')
+                ->get();
+            $personnels     = \App\Models\Pro_Personnel::orderBy('nom')->get();
+            $all_personnels = $personnels;
+
+            // DQ-specific prefills
+            $dqQaManagerId = \DB::table('pro_key_facility_personnels')
+                ->where('staff_role', 'Quality Assurance')
+                ->where('active', 1)
+                ->value('personnel_id');
+            $dqQaManager = $dqQaManagerId ? \App\Models\Pro_Personnel::find($dqQaManagerId) : null;
+            $dqProject   = $inspection->project_id
+                ? \App\Models\Pro_Project::with('studyDirector')->find($inspection->project_id)
+                : null;
+
+            return view('checklists.form', compact(
+                'inspection', 'slug', 'form', 'record', 'fieldPrefix',
+                'all_personnels', 'dqAnswers', 'dqV1Answers', 'dqV2Answers',
+                'sectionFindings', 'personnels', 'dqQaManager', 'dqProject'
+            ));
+        }
+        // ── Legacy system ────────────────────────────────────────────────────
+
         // Amendment / Deviation Inspection (single-form, no prefix)
         if ($slug === 'amendment-deviation' && self::isAmendmentType($inspection->type_inspection)) {
             $form    = self::amendmentDeviationForm();
@@ -1002,7 +1075,31 @@ class ChecklistController extends Controller
             return redirect()->back()
             ->with('error', 'This inspection has been marked as completed. The form can no longer be modified.');
             }
-            
+
+        // ── Snapshot-based system ────────────────────────────────────────────
+        if (InspectionSnapshot::where('inspection_id', $inspection_id)->where('url_slug', $slug)->exists()) {
+            ChecklistSnapshotService::saveSection($request, $inspection, $slug);
+
+            // Auto-mark inspection as performed when all sections are saved
+            if (!$inspection->date_performed) {
+                $allSlugs  = InspectionSnapshot::where('inspection_id', $inspection_id)
+                    ->pluck('url_slug')->unique()->values()->toArray();
+                $doneSlugs = ChecklistSnapshotService::doneSlugs($inspection_id);
+                if (!array_diff($allSlugs, $doneSlugs)) {
+                    $inspection->date_performed = now()->toDateString();
+                    $inspection->save();
+                        $this->notifyInspectionComplete($inspection);
+                }
+            }
+
+            $form = ChecklistSnapshotService::buildForm($inspection, $slug);
+            $label = $form ? (($form['letter'] ? $form['letter'] . '. ' : '') . $form['title']) : $slug;
+
+            return redirect()->route('checklist.index', $inspection_id)
+                ->with('success', 'Section "' . $label . '" enregistrée avec succès.');
+        }
+        // ── Legacy system ────────────────────────────────────────────────────
+
         // Amendment / Deviation Inspection
         if ($slug === 'amendment-deviation' && self::isAmendmentType($inspection->type_inspection)) {
             $form       = self::amendmentDeviationForm();
@@ -1027,6 +1124,7 @@ class ChecklistController extends Controller
             if (!$inspection->date_performed) {
                 $inspection->date_performed = now()->toDateString();
                 $inspection->save();
+                    $this->notifyInspectionComplete($inspection);
             }
 
             return redirect('/project/create?project_id=' . $inspection->project_id . '#step6')
@@ -1121,13 +1219,12 @@ class ChecklistController extends Controller
             // Conclusion : conformité pour toutes les sections du Study Protocol
             $data["{$prefix}is_conforming"] = $request->input('is_conforming') === '1' ? true : ($request->input('is_conforming') === '0' ? false : null);
 
-            // Section F special: staff training records
+            // Section F special: staff training records — iterate over submitted keys only
             if (($form['type'] ?? '') === 'study_personnel') {
-                $staffCount = $form['staff_count'] ?? 15;
-                for ($i = 1; $i <= $staffCount; $i++) {
-                    $data["f_staff_{$i}_result"]  = $request->input("f_staff_{$i}_result");
-                    $data["f_staff_{$i}_level"]   = $request->input("f_staff_{$i}_level");
-                    $data["f_staff_{$i}_remarks"] = $request->input("f_staff_{$i}_remarks");
+                foreach ($request->all() as $key => $value) {
+                    if (preg_match('/^f_staff_(\d+)_(result|level|remarks)$/', $key)) {
+                        $data[$key] = $value;
+                    }
                 }
             }
 
@@ -1146,6 +1243,7 @@ class ChecklistController extends Controller
             if (!$inspection->date_performed && !array_diff($allSpSections, $sectionsDone)) {
                 $inspection->date_performed = now()->toDateString();
                 $inspection->save();
+                    $this->notifyInspectionComplete($inspection);
             }
 
             return redirect()->route('checklist.index', $inspection_id)
@@ -1188,6 +1286,7 @@ class ChecklistController extends Controller
             if (!$inspection->date_performed && !array_diff($allSrSections, $sectionsDone)) {
                 $inspection->date_performed = now()->toDateString();
                 $inspection->save();
+                    $this->notifyInspectionComplete($inspection);
             }
 
             return redirect()->route('checklist.index', $inspection_id)
@@ -1270,6 +1369,7 @@ class ChecklistController extends Controller
             if (!$inspection->date_performed && !array_diff($allDqSections, $sectionsDone)) {
                 $inspection->date_performed = now()->toDateString();
                 $inspection->save();
+                    $this->notifyInspectionComplete($inspection);
             }
 
             return redirect()->route('checklist.index', $inspection_id)
@@ -1313,6 +1413,7 @@ class ChecklistController extends Controller
         if ($inspection->type_inspection === 'Critical Phase Inspection' && !$inspection->date_performed) {
             $inspection->date_performed = now()->toDateString();
             $inspection->save();
+                $this->notifyInspectionComplete($inspection);
         }
 
         $redirectUrl = '/project/create?project_id=' . $inspection->project_id . '#step6';
@@ -2298,5 +2399,51 @@ class ChecklistController extends Controller
                 ],
             ],
         ];
+    }
+
+    /**
+     * Send sign-request notifications to all relevant parties when an inspection completes.
+     * Called once per inspection, the first time date_performed is set.
+     */
+    private function notifyInspectionComplete(Pro_QaInspection $inspection): void
+    {
+        $project  = $inspection->project;
+        $code     = $project?->project_code ?? "#{$inspection->project_id}";
+        $type     = $inspection->type_inspection ?? 'Inspection';
+        $reportUrl = route('checklist.report', $inspection->id);
+
+        $title = "Inspection completed — {$code}";
+        $body  = "\"{$type}\" for project {$code} has been completed. Please review and sign the QA Unit Report.";
+
+        $notified = [];
+
+        // QA Inspector
+        if ($inspection->inspector?->user_id) {
+            AppNotification::send($inspection->inspector->user_id, 'signature_requested', $title, $body, $reportUrl, 'bi-pen-fill');
+            $notified[] = $inspection->inspector->user_id;
+        }
+
+        // Study Director (via appointment form)
+        $appt = $project?->studyDirectorAppointmentForm;
+        if ($appt && $appt->studyDirector?->user_id && !in_array($appt->studyDirector->user_id, $notified)) {
+            AppNotification::send($appt->studyDirector->user_id, 'signature_requested', $title, $body, $reportUrl, 'bi-pen-fill');
+            $notified[] = $appt->studyDirector->user_id;
+        }
+
+        // QA Managers
+        User::where('role', 'qa_manager')->each(function ($u) use ($title, $body, $reportUrl, &$notified) {
+            if (!in_array($u->id, $notified)) {
+                AppNotification::send($u->id, 'signature_requested', $title, $body, $reportUrl, 'bi-pen-fill');
+                $notified[] = $u->id;
+            }
+        });
+
+        // Facility Managers
+        User::where('role', 'facility_manager')->each(function ($u) use ($title, $body, $reportUrl, &$notified) {
+            if (!in_array($u->id, $notified)) {
+                AppNotification::send($u->id, 'signature_requested', $title, $body, $reportUrl, 'bi-pen-fill');
+                $notified[] = $u->id;
+            }
+        });
     }
 }

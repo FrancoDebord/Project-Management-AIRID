@@ -204,6 +204,54 @@
         </tbody>
     </table>
 
+    {{-- ── Critical Phase Impact Assessment ── --}}
+    @php
+        $cpiaEnabled    = $study_initiation_meeting && $all_phases_critiques && $all_phases_critiques->where('phase_critique', true)->count() > 0;
+        $existingCpia   = \App\Models\CpiaAssessment::where('project_id', $project_id)->first();
+    @endphp
+    <div class="mt-4 p-3 rounded-3 border" style="background:#fff7f7;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <strong style="color:#C10202;"><i class="bi bi-clipboard2-pulse me-1"></i>Critical Phase Impact Assessment</strong>
+                <div class="text-muted small">
+                    @if(!$study_initiation_meeting)
+                        Schedule the Study Initiation Meeting first.
+                    @elseif(!$cpiaEnabled)
+                        Identify at least one critical phase first.
+                    @else
+                        @if($existingCpia && $existingCpia->isCompleted())
+                            <span style="color:#198754;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i>Completed on {{ $existingCpia->completed_at->format('d/m/Y') }}</span>
+                        @elseif($existingCpia)
+                            Assessment in progress — {{ \App\Models\CpiaResponse::where('assessment_id', $existingCpia->id)->whereNotNull('impact_score')->count() }} items scored.
+                        @else
+                            Ready to fill — meeting scheduled and critical phases identified.
+                        @endif
+                    @endif
+                </div>
+            </div>
+            <div class="d-flex gap-2" style="pointer-events:auto !important;">
+                {{-- Download — always clickable if assessment exists --}}
+                @if($cpiaEnabled && isset($existingCpia) && $existingCpia)
+                <a href="{{ route('cpia.print', $project_id) }}"
+                   target="_blank"
+                   data-no-lock="1"
+                   class="btn btn-sm fw-semibold"
+                   style="background:rgba(193,2,2,.12);color:#C10202;border:1px solid #C10202;">
+                    <i class="bi bi-download me-1"></i>Download
+                </a>
+                @endif
+                <a href="{{ $cpiaEnabled ? route('cpia.index', $project_id) : '#' }}"
+                   target="{{ $cpiaEnabled ? '_blank' : '' }}"
+                   data-no-lock="1"
+                   class="btn btn-sm fw-semibold {{ $cpiaEnabled ? '' : 'disabled' }}"
+                   style="background:#C10202;color:#fff;opacity:{{ $cpiaEnabled ? '1' : '.45' }};">
+                    <i class="bi bi-clipboard2-pulse me-1"></i>
+                    Open Impact Assessment
+                </a>
+            </div>
+        </div>
+    </div>
+
     {{-- <h2 class="mb-4 text-center">📅 Mon Agenda avec FullCalendar</h2> --}}
 
     <div id="calendar" class="shadow rounded p-3 bg-white"></div>

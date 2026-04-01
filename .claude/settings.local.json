@@ -23,7 +23,20 @@
       "Bash(php artisan:*)",
       "Bash(composer require:*)",
       "Bash(php -r \":*)",
-      "Bash(php -r \"require ''vendor/autoload.php''; echo ''OK'';\")"
+      "Bash(php -r \"require ''vendor/autoload.php''; echo ''OK'';\")",
+      "Bash(xargs grep:*)",
+      "Read(//tmp/**)",
+      "Bash(python3:*)",
+      "Bash(php -l \"e:/Projets_CREC/project-management-lshtm/app/Http/Controllers/ChecklistController.php\")",
+      "Bash(php -l \"e:/Projets_CREC/project-management-lshtm/app/Http/Controllers/ProjectAjaxController.php\")",
+      "Bash(php -l \"e:/Projets_CREC/project-management-lshtm/app/Services/ChecklistSnapshotService.php\")",
+      "Bash(php -l \"e:/Projets_CREC/project-management-lshtm/resources/views/checklists/form.blade.php\")",
+      "Bash(find e:/Projets_CREC/project-management-lshtm -type f \\\\\\(-iname *cpia* -o -iname *critical*impact* \\\\\\))",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//e/Projets_CREC/project-management-lshtm/resources/views/checklists/**)",
+      "Bash(done)",
+      "Bash(php -l \"e:/Projets_CREC/project-management-lshtm/app/Http/Controllers/CpiaController.php\")"
     ]
   }
 }

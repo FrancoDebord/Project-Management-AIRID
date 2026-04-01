@@ -2398,11 +2398,18 @@ function saveEditInspection() {
                 </div>
             </div>
         </div>
-        <a href="{{ route('project.qa-checklist', $project->id) }}"
-           class="btn fw-semibold"
-           style="background:#fff;color:#4e2d8e;border:none;font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;pointer-events:auto !important;">
-            <i class="bi bi-box-arrow-up-right me-1"></i>Open Checklist
-        </a>
+        <div class="d-flex gap-2" style="pointer-events:auto !important;">
+            <a href="{{ route('printQaActivitiesChecklist') }}?project_id={{ $project->id }}"
+               class="btn fw-semibold" target="_blank"
+               style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;">
+                <i class="bi bi-download me-1"></i>Télécharger
+            </a>
+            <a href="{{ route('project.qa-checklist', $project->id) }}"
+               class="btn fw-semibold"
+               style="background:#fff;color:#4e2d8e;border:none;font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Open Checklist
+            </a>
+        </div>
     </div>
 </div>
 @endif

@@ -233,6 +233,7 @@
                            class="form-control form-control-sm cl-date"
                            data-item="{{ $num }}"
                            value="{{ $dateVal }}"
+                           max="{{ date('Y-m-d') }}"
                            {{ !$isQaMgr ? 'disabled' : '' }}>
                     @if($hasPrefill)
                         <span class="auto-badge" title="Pre-filled from project data">auto</span>
@@ -301,16 +302,29 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving…';
 
+        const today = new Date().toISOString().slice(0, 10);
         const items = [];
+        let futureError = null;
         document.querySelectorAll('#clBody tr[data-item]').forEach(row => {
-            const num = parseInt(row.dataset.item);
+            const num       = parseInt(row.dataset.item);
+            const dateVal   = row.querySelector('.cl-date')?.value || null;
+            if (dateVal && dateVal > today) {
+                futureError = `Item #${num} : la date ne peut pas être dans le futur (${dateVal}).`;
+            }
             items.push({
                 item_number:           num,
-                date_performed:        row.querySelector('.cl-date')?.value  || null,
+                date_performed:        dateVal,
                 means_of_verification: row.querySelector('.cl-mov')?.value   || null,
                 is_checked:            row.querySelector('.cl-check')?.checked ? 1 : 0,
             });
         });
+
+        if (futureError) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-save me-1"></i>Save';
+            alert(futureError);
+            return;
+        }
 
         fetch('/ajax/save-qa-activities-checklist', {
             method: 'POST',

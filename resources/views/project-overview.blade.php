@@ -66,10 +66,12 @@
     <div class="card-header fw-semibold py-2 px-3 d-flex align-items-center justify-content-between"
          style="background:linear-gradient(90deg,#c20102,#8b0001);color:#fff;">
         <span><i class="bi bi-info-circle me-2"></i>Study Details</span>
+        @unless($project->archived_at)
         <a href="{{ route('project.create', ['project_id' => $project->id]) }}#step1"
            class="btn btn-sm py-0 px-2" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:.75rem;">
             <i class="bi bi-pencil me-1"></i>Edit
         </a>
+        @endunless
     </div>
     <div class="card-body py-3 px-3">
         <div class="row g-3">

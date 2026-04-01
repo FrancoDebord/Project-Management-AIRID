@@ -145,6 +145,16 @@
                                                 <i class="bi bi-people me-2"></i>Gestion utilisateurs
                                             </a>
                                         </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.checklists.index') }}">
+                                                <i class="bi bi-list-check me-2"></i>Questions Checklists
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.cpia.index') }}">
+                                                <i class="bi bi-clipboard2-pulse me-2"></i>CPIA Sections
+                                            </a>
+                                        </li>
                                     @endif
                                 </ul>
                             </li>

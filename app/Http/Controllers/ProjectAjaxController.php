@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\FindingsResolvedMail;
 use App\Mail\MeetingMail;
 use App\Mail\StudyDirectorAssignedMail;
+use App\Services\ChecklistSnapshotService;
 use App\Models\AppNotification;
 use App\Models\AppSetting;
 use App\Models\Pro_ArchivingDocument;
@@ -1457,6 +1458,13 @@ class ProjectAjaxController extends Controller
                 'facility_location' => $request->facility_location ?? null,
             ]);
 
+            // Freeze question snapshot for this inspection
+            try {
+                ChecklistSnapshotService::createSnapshot($inspection);
+            } catch (\Exception $e) {
+                \Log::warning('Snapshot creation failed for inspection #' . $inspection->id . ': ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success'    => true,
                 'message'    => 'QA Inspection scheduled successfully',
@@ -2828,7 +2836,7 @@ class ProjectAjaxController extends Controller
             'project_id'            => 'required|exists:pro_projects,id',
             'items'                 => 'required|array|min:1',
             'items.*.item_number'   => 'required|integer|between:1,20',
-            'items.*.date_performed'=> 'nullable|date',
+            'items.*.date_performed'=> 'nullable|date|before_or_equal:today',
             'items.*.means_of_verification' => 'nullable|string|max:500',
             'items.*.is_checked'    => 'nullable|boolean',
         ]);

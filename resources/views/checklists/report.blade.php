@@ -48,31 +48,7 @@
             border-bottom: 1.5px solid #333;
             padding-bottom: 5px;
             margin-bottom: 12px;
-        }
-        .report-header .logo-area img {
-            height: 42px;
-            object-fit: contain;
-        }
-        .report-header .org-block {
-            flex: 1;
-            text-align: center;
-            padding: 0 10px;
-        }
-        .report-header .org-block .org-name {
-            font-size: 11pt;
-            font-weight: bold;
-            color: #000;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-        .report-header .contact-block {
-            text-align: right;
-            font-size: 7.5pt;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        /* ── Report title ── */
+        }/* ── Report title ── */
         .report-title {
             text-align: center;
             margin-bottom: 14px;
@@ -307,23 +283,10 @@
 ═══════════════════════════════════════════════════════════════ --}}
 <div class="page">
 
-    {{-- Header --}}
-    @php $logoPath = public_path('storage/assets/logo/airid.png'); @endphp
-    <div class="report-header">
-        <div class="logo-area">
-            <img src="{{ asset('storage/assets/logo/airid.png') }}" alt="AIRID">
-        </div>
-        <div class="org-block">
-            <div class="org-name">African Institute for Research<br>in Infectious Diseases</div>
-        </div>
-        <div class="contact-block">
-            IFU: 6202213991612<br>
-            LOT 5507, Donaten Cotonou, Benin<br>
-            Tel: +229 0167128862<br>
-            Email: admin@airid-africa.com<br>
-            www.airid-africa.com
-        </div>
+    {{-- Header --}}<div class="report-header">
+        <img src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
     </div>
+        
 
     {{-- Title --}}
     <div class="report-title">
@@ -577,20 +540,9 @@
 <div class="page">
 
     <div class="report-header">
-        <div class="logo-area">
-            <img src="{{ asset('storage/assets/logo/airid.png') }}" alt="AIRID">
-        </div>
-        <div class="org-block">
-            <div class="org-name">African Institute for Research<br>in Infectious Diseases</div>
-        </div>
-        <div class="contact-block">
-            IFU: 6202213991612<br>
-            LOT 5507, Donaten Cotonou, Benin<br>
-            Tel: +229 0167128862<br>
-            Email: admin@airid-africa.com<br>
-            www.airid-africa.com
-        </div>
+        <img src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
     </div>
+        
 
     <div class="report-title">
         <h1>Quality Assurance Unit Report</h1>

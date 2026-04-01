@@ -77,6 +77,33 @@ if ($protoDocs) {
     ];
 }
 
+// ── 2b. Planning Phase — CPIA ────────────────────────────────
+$cpiaDocs = [];
+$cpiaAssessment = \App\Models\CpiaAssessment::where('project_id', $project->id)->first();
+if ($cpiaAssessment) {
+    $cpiaFilledCount = \App\Models\CpiaResponse::where('assessment_id', $cpiaAssessment->id)
+        ->whereNotNull('impact_score')->count();
+    $cpiaDocs[] = [
+        'title'       => 'Critical Phase Impact Assessment — ' . $project->project_code,
+        'url'         => route('cpia.print', $project->id),
+        'date'        => $cpiaAssessment->updated_at,
+        'type'        => 'cpia',
+        'canDownload' => $canDownloadQA,
+        'badge'       => $cpiaFilledCount > 0
+                            ? ['label' => $cpiaFilledCount . ' items scored', 'bg' => '#0d6efd']
+                            : ['label' => 'Empty', 'bg' => '#6c757d'],
+    ];
+}
+if ($cpiaDocs) {
+    $categories[] = [
+        'label' => 'Planning Phase',
+        'icon'  => 'bi-clipboard2-pulse',
+        'color' => '#C10202',
+        'bg'    => '#fff0f0',
+        'docs'  => $cpiaDocs,
+    ];
+}
+
 // ── 3. Quality Assurance ─────────────────────────────────────
 if ($project->is_glp) {
     $qaDocs = [];

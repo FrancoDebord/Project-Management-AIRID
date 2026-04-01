@@ -308,11 +308,11 @@ class FrontendController extends Controller
             ->groupBy('project_id')
             ->get()->keyBy('project_id');
 
-        // 4. Protocol Dev documents (applicable, complete=true)
+        // 4. Protocol Dev documents (applicable, complete=true; level 5 = Amendment/Deviation is optional, excluded like ProjectController)
         $protoStats = DB::table('pro_protocols_devs_activities_projects')
             ->select('project_id',
-                DB::raw('SUM(CASE WHEN applicable=1 THEN 1 ELSE 0 END) as total'),
-                DB::raw('SUM(CASE WHEN applicable=1 AND complete=1 THEN 1 ELSE 0 END) as completed'))
+                DB::raw('SUM(CASE WHEN applicable=1 AND level_activite <> 5 THEN 1 ELSE 0 END) as total'),
+                DB::raw('SUM(CASE WHEN applicable=1 AND level_activite <> 5 AND complete=1 THEN 1 ELSE 0 END) as completed'))
             ->whereIn('project_id', $ids)
             ->groupBy('project_id')
             ->get()->keyBy('project_id');

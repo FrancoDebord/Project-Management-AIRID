@@ -225,11 +225,11 @@
                                                 }
 
                                             @endphp
-                                            <tr data-child="{{ $categorie->study_sub_category_name }}">
+                                            <tr data-child="{{ $categorie?->study_sub_category_name }}">
                                                 <td>{{ $study_activity->study_activity_name }}</td>
                                                 <td>
                                                     <span
-                                                        class="badge bg-light text-dark">{{ $categorie->study_sub_category_name }}</span>
+                                                        class="badge bg-light text-dark">{{ $categorie?->study_sub_category_name ?? '—' }}</span>
                                                 </td>
 
                                                 @php

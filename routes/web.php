@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminChecklistController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminCpiaController;
+use App\Http\Controllers\CpiaController;
 use App\Http\Controllers\FmQaReviewController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\NotificationController;
@@ -83,6 +86,32 @@ Route::prefix('fm')->middleware(['auth', 'role:super_admin,facility_manager'])->
 Route::prefix('admin')->middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/users',              [AdminController::class, 'users'])->name('admin.users');
     Route::put('/users/{user}/role',  [AdminController::class, 'updateRole'])->name('admin.users.updateRole');
+
+    // CPIA Section/Item Management
+    Route::get('/cpia',                                   [AdminCpiaController::class, 'index'])->name('admin.cpia.index');
+    Route::get('/cpia/sections/{section}',                [AdminCpiaController::class, 'show'])->name('admin.cpia.show');
+    Route::post('/cpia/sections/{section}/items',         [AdminCpiaController::class, 'storeItem'])->name('admin.cpia.items.store');
+    Route::put('/cpia/items/{item}',                      [AdminCpiaController::class, 'updateItem'])->name('admin.cpia.items.update');
+    Route::post('/cpia/items/{item}/duplicate',           [AdminCpiaController::class, 'duplicateItem'])->name('admin.cpia.items.duplicate');
+    Route::post('/cpia/items/{item}/toggle',              [AdminCpiaController::class, 'toggleItem'])->name('admin.cpia.items.toggle');
+    Route::delete('/cpia/items/{item}',                   [AdminCpiaController::class, 'destroyItem'])->name('admin.cpia.items.destroy');
+
+    // Checklist Question Management
+    Route::get('/checklists',                                   [AdminChecklistController::class, 'index'])->name('admin.checklists.index');
+    Route::get('/checklists/{template}',                        [AdminChecklistController::class, 'show'])->name('admin.checklists.show');
+    Route::post('/checklists/sections/{section}/questions',     [AdminChecklistController::class, 'storeQuestion'])->name('admin.checklists.questions.store');
+    Route::put('/checklists/questions/{question}',              [AdminChecklistController::class, 'updateQuestion'])->name('admin.checklists.questions.update');
+    Route::post('/checklists/questions/{question}/duplicate',   [AdminChecklistController::class, 'duplicateQuestion'])->name('admin.checklists.questions.duplicate');
+    Route::post('/checklists/questions/{question}/toggle',      [AdminChecklistController::class, 'toggleQuestion'])->name('admin.checklists.questions.toggle');
+    Route::delete('/checklists/questions/{question}',           [AdminChecklistController::class, 'destroyQuestion'])->name('admin.checklists.questions.destroy');
+});
+
+// ── CPIA ──
+Route::middleware('auth')->group(function () {
+    Route::get('/project/{project_id}/cpia',              [CpiaController::class, 'index'])->name('cpia.index');
+    Route::post('/project/{project_id}/cpia/save',        [CpiaController::class, 'save'])->name('cpia.save');
+    Route::post('/project/{project_id}/cpia/complete',    [CpiaController::class, 'complete'])->name('cpia.complete');
+    Route::get('/project/{project_id}/cpia/print',        [CpiaController::class, 'print'])->name('cpia.print');
 });
 
 // ── Settings ──

@@ -11,13 +11,14 @@ body { font-family: Arial, sans-serif; font-size: 9.5pt; color: #111; }
 
 /* Header */
 .doc-header {
-    display: flex; align-items: center; gap: 12px;
-    border-bottom: 2px solid #c20102; padding-bottom: 8px; margin-bottom: 10px;
+    display: block; width: 100%;
+    border-bottom: 2px solid #c20102; padding-bottom: 0; margin-bottom: 0;
 }
-.doc-header img { max-width: 70px; max-height: 70px; object-fit: contain; }
-.header-right { flex: 1; }
-.header-right .org-name { font-size: 9.5pt; font-weight: bold; color: #c20102; }
-.header-right .org-info  { font-size: 7.5pt; color: #444; line-height: 1.7; margin-top: 2px; }
+.doc-header img.entete { width: 100%; height: auto; display: block; }
+.doc-header-ref {
+    display: flex; justify-content: flex-end;
+    padding: 3px 0 8px; margin-bottom: 8px; border-bottom: 1px solid #eee;
+}
 .doc-ref { font-size: 7pt; text-align: right; white-space: nowrap; line-height: 1.7; color: #444; }
 .doc-ref strong { font-size: 8pt; color: #c20102; }
 
@@ -119,14 +120,9 @@ table.rev-table .subsection-hdr {
 
 {{-- Header --}}
 <div class="doc-header">
-    <img src="{{ $logoPath }}" alt="AIRID">
-    <div class="header-right">
-        <div class="org-name">AIRID — African Institute for Research in Infectious Diseases</div>
-        <div class="org-info">
-            IFU: 6202213991612 &nbsp;|&nbsp; LOT 5507, Donaten Cotonou, Benin<br>
-            Tél: +229 0167128862 &nbsp;|&nbsp; Email: admin@airid-africa.com &nbsp;|&nbsp; www.airid-africa.com
-        </div>
-    </div>
+    <img class="entete" src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
+</div>
+<div class="doc-header-ref">
     <div class="doc-ref">
         <strong>QA-PR-1-016/04</strong><br>
         Issue date: 01/08/2025<br>

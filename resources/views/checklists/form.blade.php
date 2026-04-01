@@ -1002,10 +1002,9 @@
                 {{-- Section F (Study Personnel): staff training records table --}}
                 @if (($form['type'] ?? '') === 'study_personnel')
                     @php
-                        $staffCount = $form['staff_count'] ?? 15;
                         $pid = $inspection->project_id ?? null;
 
-                        // Build ordered staff list: SD first, then PM, then Key Personnel
+                        // Build ordered staff list: SD first, then Key Personnel
                         $prefilledStaff = [];
                         if ($pid) {
                             // Study Director from appointment form
@@ -1019,18 +1018,7 @@
                                     'role' => 'Study Director',
                                 ];
                             }
-                            // Project Manager
-                            $proj = \App\Models\Pro_Project::find($pid);
-                            if ($proj?->project_manager) {
-                                $pm = \App\Models\Pro_Personnel::find($proj->project_manager);
-                                if ($pm) {
-                                    $prefilledStaff[] = [
-                                        'name' => trim(($pm->titre ?? '') . ' ' . $pm->prenom . ' ' . $pm->nom),
-                                        'role' => 'Project Manager',
-                                    ];
-                                }
-                            }
-                            // Key Personnel
+                            // Key Personnel linked to this project
                             $keyP = \App\Models\Pro_Project::find($pid)?->keyPersonnelProject()->orderBy('nom')->get() ?? collect();
                             foreach ($keyP as $kp) {
                                 $prefilledStaff[] = [
@@ -1039,81 +1027,79 @@
                                 ];
                             }
                         }
+                        $staffCount = count($prefilledStaff);
                     @endphp
                     <h6 class="fw-bold mb-3 mt-2" style="color:var(--qa-brand);">
                         <i class="bi bi-people me-2"></i>Study Personnel Training Records
                     </h6>
+                    @if ($staffCount === 0)
+                        <div class="alert alert-warning">No key study personnel found for this project.</div>
+                    @else
                     <div class="table-responsive mb-4">
                         <table class="table table-bordered align-middle" style="font-size:.85rem;">
                             <thead>
                                 <tr style="background:#f8f8f8;">
-                                    <th style="width:40px;">#</th>
-                                    <th style="width:180px;">Name / Code</th>
+                                    <th style="width:100px;">Staff</th>
+                                    <th style="width:200px;">Name</th>
+                                    <th style="width:140px;">Role</th>
                                     <th class="text-center" style="width:180px;">Training done?</th>
                                     <th>Level of Training</th>
                                     <th>Remarks</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @for ($i = 1; $i <= $staffCount; $i++)
+                                @foreach ($prefilledStaff as $i => $prefill)
                                     @php
-                                        $staffResult  = $record ? $record->{"f_staff_{$i}_result"}  : null;
-                                        $staffLevel   = $record ? $record->{"f_staff_{$i}_level"}   : null;
-                                        $staffRemarks = $record ? $record->{"f_staff_{$i}_remarks"} : null;
-                                        $prefill      = $prefilledStaff[$i - 1] ?? null;
+                                        $n            = $i + 1;
+                                        $staffResult  = $record ? $record->{"f_staff_{$n}_result"}  : null;
+                                        $staffLevel   = $record ? $record->{"f_staff_{$n}_level"}   : null;
+                                        $staffRemarks = $record ? $record->{"f_staff_{$n}_remarks"} : null;
                                     @endphp
                                     <tr>
-                                        <td class="text-center fw-bold text-muted">{{ $i }}</td>
-                                        <td style="font-size:.78rem;">
-                                            @if($prefill)
-                                                <div class="fw-semibold">{{ $prefill['name'] }}</div>
-                                                @if($prefill['role'])
-                                                    <div class="text-muted" style="font-size:.72rem;">{{ $prefill['role'] }}</div>
-                                                @endif
-                                            @else
-                                                <span class="text-muted fst-italic">Staff {{ $i }}</span>
-                                            @endif
-                                        </td>
+                                        <td class="text-center fw-bold" style="color:var(--qa-brand);">Staff {{ $n }}</td>
+                                        <td style="font-size:.83rem;" class="fw-semibold">{{ $prefill['name'] }}</td>
+                                        <td style="font-size:.78rem;" class="text-muted">{{ $prefill['role'] }}</td>
                                         <td>
                                             <div class="radio-group">
                                                 <div class="radio-opt">
-                                                    <input type="radio" id="f_staff_{{ $i }}_yes"
-                                                        name="f_staff_{{ $i }}_result" value="yes"
+                                                    <input type="radio" id="f_staff_{{ $n }}_yes"
+                                                        name="f_staff_{{ $n }}_result" value="yes"
                                                         {{ $staffResult === 'yes' ? 'checked' : '' }}>
-                                                    <label for="f_staff_{{ $i }}_yes">YES</label>
+                                                    <label for="f_staff_{{ $n }}_yes">YES</label>
                                                 </div>
                                                 <div class="radio-opt">
-                                                    <input type="radio" id="f_staff_{{ $i }}_no"
-                                                        name="f_staff_{{ $i }}_result" value="no"
+                                                    <input type="radio" id="f_staff_{{ $n }}_no"
+                                                        name="f_staff_{{ $n }}_result" value="no"
                                                         {{ $staffResult === 'no' ? 'checked' : '' }}>
-                                                    <label for="f_staff_{{ $i }}_no">NO</label>
+                                                    <label for="f_staff_{{ $n }}_no">NO</label>
                                                 </div>
                                                 <div class="radio-opt">
-                                                    <input type="radio" id="f_staff_{{ $i }}_na"
-                                                        name="f_staff_{{ $i }}_result" value="na"
+                                                    <input type="radio" id="f_staff_{{ $n }}_na"
+                                                        name="f_staff_{{ $n }}_result" value="na"
                                                         {{ $staffResult === 'na' ? 'checked' : '' }}>
-                                                    <label for="f_staff_{{ $i }}_na">N/A</label>
+                                                    <label for="f_staff_{{ $n }}_na">N/A</label>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            <input type="text" name="f_staff_{{ $i }}_level"
+                                            <input type="text" name="f_staff_{{ $n }}_level"
                                                 class="form-control form-control-sm"
-                                                value="{{ old("f_staff_{$i}_level", $staffLevel) }}"
+                                                value="{{ old("f_staff_{$n}_level", $staffLevel) }}"
                                                 placeholder="e.g. Basic, Advanced…">
                                         </td>
                                         <td>
-                                            <input type="text" name="f_staff_{{ $i }}_remarks"
+                                            <input type="text" name="f_staff_{{ $n }}_remarks"
                                                 class="form-control form-control-sm"
-                                                value="{{ old("f_staff_{$i}_remarks", $staffRemarks) }}"
+                                                value="{{ old("f_staff_{$n}_remarks", $staffRemarks) }}"
                                                 placeholder="Remarks…">
                                         </td>
                                     </tr>
-                                @endfor
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                @endif
+                    @endif {{-- end staffCount === 0 --}}
+                @endif {{-- end study_personnel --}}
 
                 {{-- Comments --}}
                 @php $commentsField = ($fieldPrefix ?? '') . 'comments'; @endphp

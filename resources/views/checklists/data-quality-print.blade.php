@@ -48,13 +48,7 @@
             border-bottom: 2px solid #333;
             padding-bottom: 6px;
             margin-bottom: 0;
-        }
-        .report-header .logo-area img { height: 52px; object-fit: contain; }
-        .report-header .org-block { flex: 1; text-align: center; padding: 0 12px; }
-        .report-header .org-block .org-name { font-size: 13pt; font-weight: 900; color: #000; text-transform: uppercase; line-height: 1.2; letter-spacing: .03em; }
-        .report-header .contact-block { text-align: right; font-size: 7.5pt; color: #333; line-height: 1.55; }
-
-        .doc-ref-strip {
+        }.doc-ref-strip {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -192,20 +186,9 @@
 <div class="document">
 
     <div class="report-header">
-        <div class="logo-area">
-            <img src="{{ asset('storage/assets/logo/airid.png') }}" alt="AIRID">
-        </div>
-        <div class="org-block">
-            <div class="org-name">African Institute for Research<br>in Infectious Diseases</div>
-        </div>
-        <div class="contact-block">
-            IFU: 6202213991612<br>
-            LOT 5507, Donaten Cotonou, Benin<br>
-            Tel: +229 0167128862<br>
-            Email: admin@airid-africa.com<br>
-            www.airid-africa.com
-        </div>
+        <img src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
     </div>
+        
 
     <div class="doc-ref-strip">
         <div class="ref-item">

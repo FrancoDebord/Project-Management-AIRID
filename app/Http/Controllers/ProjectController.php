@@ -76,9 +76,9 @@ class ProjectController extends Controller
                 $resolvedNc = DB::table('pro_qa_inspections_findings')->where('project_id', $pid)->where('is_conformity', 0)->where('status', 'complete')->count();
             }
 
-            // 4. Protocol Dev documents (applicable activities, complete = true)
-            $totalProtocolDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->count();
-            $completedProtocolDev = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('complete', true)->count();
+            // 4. Protocol Dev documents (applicable activities, complete = true; level 5 = Amendment/Deviation is optional)
+            $totalProtocolDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('level_activite', '<>', 5)->count();
+            $completedProtocolDev = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('level_activite', '<>', 5)->where('complete', true)->count();
 
             // 5. Report phase — single milestone (done when ≥1 submitted/published doc exists)
             $completedReportDocs = DB::table('pro_report_phase_documents')->where('project_id', $pid)->whereIn('status', ['submitted', 'published'])->count();
@@ -178,8 +178,9 @@ class ProjectController extends Controller
         ];
 
         // ── Protocol Development ────────────────────────────────────────────
-        $totalProtDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->count();
-        $completedProtDev = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('complete', true)->count();
+        // Level 5 (Amendment/Deviation) is optional — excluded from completion check
+        $totalProtDev     = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('level_activite', '<>', 5)->count();
+        $completedProtDev = DB::table('pro_protocols_devs_activities_projects')->where('project_id', $pid)->where('applicable', true)->where('level_activite', '<>', 5)->where('complete', true)->count();
         $protDevOk        = $totalProtDev > 0 && $completedProtDev === $totalProtDev;
         $statuses['protocol_development'] = [
             'can_complete' => $protDevOk,
@@ -200,18 +201,23 @@ class ProjectController extends Controller
             ->where('date_scheduled', '<=', now()->toDateString())
             ->count() > 0;
         $criticalCount = DB::table('pro_studies_activities')->where('project_id', $pid)->where('phase_critique', 1)->count();
-        $planningOk    = $meetingDone && $criticalCount > 0;
+        $cpiaAssessment = \App\Models\CpiaAssessment::where('project_id', $pid)->first();
+        $cpiaCompleted  = $cpiaAssessment && $cpiaAssessment->status === 'completed';
+        $planningOk     = $meetingDone && $criticalCount > 0 && $cpiaCompleted;
         $statuses['planning'] = [
             'can_complete' => $planningOk,
             'items' => [
-                ['label' => 'Study Initiation Meeting scheduled and date passed',           'done' => $meetingDone],
-                ['label' => "Critical phases identified ({$criticalCount} identified)",    'done' => $criticalCount > 0],
+                ['label' => 'Study Initiation Meeting scheduled and date passed',              'done' => $meetingDone],
+                ['label' => "Critical phases identified ({$criticalCount} identified)",        'done' => $criticalCount > 0],
+                ['label' => 'Critical Phase Impact Assessment completed',                      'done' => $cpiaCompleted],
             ],
             'next' => !$meetingDone
                 ? 'Schedule the Study Initiation Meeting and wait for its date to pass.'
                 : ($criticalCount === 0
                     ? 'Identify at least one critical phase in the activities.'
-                    : 'All criteria met — ready to mark as completed.'),
+                    : (!$cpiaCompleted
+                        ? 'Complete the Critical Phase Impact Assessment.'
+                        : 'All criteria met — ready to mark as completed.')),
         ];
 
         // ── Experimental ────────────────────────────────────────────────────

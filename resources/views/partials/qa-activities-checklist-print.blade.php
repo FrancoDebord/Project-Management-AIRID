@@ -17,17 +17,20 @@ body {
 
 /* ── Header ── */
 .doc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: block;
+    width: 100%;
     border-bottom: 2px solid #1a3a6b;
-    padding-bottom: 7px;
-    margin-bottom: 10px;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
-.logo-box img { max-width: 80px; max-height: 80px; object-fit: contain; }
-.header-right { flex: 1; padding-left: 10px; }
-.header-right .org-name { font-size: 9.5pt; font-weight: bold; color: #1a3a6b; }
-.header-right .org-info  { font-size: 7.5pt; color: #444; line-height: 1.7; }
+.doc-header img.entete { width: 100%; height: auto; display: block; }
+.doc-header-ref {
+    display: flex;
+    justify-content: flex-end;
+    padding: 3px 0 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ccc;
+}
 .doc-ref { font-size: 7pt; text-align: right; white-space: nowrap; }
 .doc-ref strong { font-size: 8pt; }
 
@@ -127,22 +130,15 @@ table.checklist tbody tr:nth-child(even) { background: #f9f9f9; }
 
 {{-- ── Document Header ── --}}
 <div class="doc-header">
-    <div class="logo-box">
-        <img src="{{ public_path('storage/assets/logo/airid.jpg') }}" alt="AIRID">
-    </div>
-    <div class="header-right">
-        <div class="org-name">AIRID — African Institute for Research in Infectious Diseases</div>
-        <div class="org-info">
-            IFU: 6202213991612 &nbsp;|&nbsp; LOT 5507, Donaten Cotonou, Benin<br>
-            Tél: +229 0167128862 &nbsp;|&nbsp; Email: admin@airid-africa.com &nbsp;|&nbsp; www.airid-africa.com
-        </div>
-    </div>
+    <img class="entete" src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
+</div>
+<div class="doc-header-ref">
+    @php
+        $docRef     = $globalSettings['doc_ref_master'] ?? 'QA-PR-1-011/05';
+        $issueDate  = $globalSettings['doc_issue_date']  ?? '01/08/2025';
+        $nextReview = $globalSettings['doc_next_review'] ?? '31/07/2027';
+    @endphp
     <div class="doc-ref">
-        @php
-            $docRef        = $globalSettings['doc_ref_master'] ?? 'QA-PR-1-011/05';
-            $issueDate     = $globalSettings['doc_issue_date']   ?? '01/08/2025';
-            $nextReview    = $globalSettings['doc_next_review']  ?? '31/07/2027';
-        @endphp
         <strong>QA-PR-1-011/05</strong><br>
         Issue date: {{ $issueDate }}<br>
         Next review date: {{ $nextReview }}

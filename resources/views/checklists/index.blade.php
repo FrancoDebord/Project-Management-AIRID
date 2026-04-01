@@ -127,21 +127,20 @@
             </small>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            @if(isset($progress))
-                @php
-                    $printRoute = match($inspection->type_inspection) {
-                        'Process Inspection'        => 'checklist.processPrint',
-                        'Study Protocol Inspection' => 'checklist.studyProtocolPrint',
-                        'Study Report Inspection'   => 'checklist.studyReportPrint',
-                        'Data Quality Inspection'   => 'checklist.dataQualityPrint',
-                        default                     => 'checklist.facilityPrint',
-                    };
-                    @endphp
-                    
-                @elseif (in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
-                @php
-                    $printRoute = 'checklist.amendmentPrint';
-                @endphp
+            @php
+                $printRoute = match($inspection->type_inspection) {
+                    'Process Inspection'                            => 'checklist.processPrint',
+                    'Study Protocol Inspection'                     => 'checklist.studyProtocolPrint',
+                    'Study Report Inspection'                       => 'checklist.studyReportPrint',
+                    'Data Quality Inspection'                       => 'checklist.dataQualityPrint',
+                    'Study Protocol Amendment/Deviation Inspection',
+                    'Study Report Amendment Inspection'             => 'checklist.amendmentPrint',
+                    default                                         => 'checklist.facilityPrint',
+                };
+            @endphp
+
+            {{-- Print buttons (multi-section & amendment types) --}}
+            @if(isset($progress) || in_array($inspection->type_inspection, ['Study Protocol Amendment/Deviation Inspection', 'Study Report Amendment Inspection']))
                 <a href="{{ route($printRoute, $inspection->id) }}?mode=filled"
                    class="btn btn-back" target="_blank">
                     <i class="bi bi-printer me-1"></i>Imprimer rempli
@@ -150,15 +149,9 @@
                    class="btn btn-back" target="_blank">
                     <i class="bi bi-file-earmark me-1"></i>Imprimer vierge
                 </a>
-                <a href="{{ route('checklist.report', $inspection->id) }}"
-                   class="btn btn-back" target="_blank">
-                    <i class="bi bi-file-earmark-text me-1"></i>QA Unit Report
-                </a>
-                <a href="{{ route('checklist.followup', $inspection->id) }}"
-                   class="btn btn-back" target="_blank">
-                    <i class="bi bi-file-earmark-check me-1"></i>Follow-Up Report
-                </a>
             @endif
+
+            {{-- Always show these 4 buttons --}}
             <a href="{{ route('qaDashboard') }}" class="btn btn-back">
                 <i class="bi bi-shield-check me-1"></i>Dashboard QA
             </a>
@@ -168,7 +161,6 @@
                     <i class="bi bi-arrow-left me-1"></i>Retour au projet
                 </a>
             @endif
-            @if(!isset($progress) && $inspection->project_id)
             <a href="{{ route('checklist.report', $inspection->id) }}"
                class="btn btn-back" target="_blank">
                 <i class="bi bi-file-earmark-text me-1"></i>QA Unit Report
@@ -177,7 +169,6 @@
                class="btn btn-back" target="_blank">
                 <i class="bi bi-file-earmark-check me-1"></i>Follow-Up Report
             </a>
-            @endif
         </div>
     </div>
 </div>
