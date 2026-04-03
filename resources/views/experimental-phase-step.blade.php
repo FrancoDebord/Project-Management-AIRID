@@ -244,47 +244,86 @@
 
 <!-- Modal pour exécuter une activité -->
 <div class="modal fade" id="executeActivityModal" tabindex="-1" aria-labelledby="executeActivityLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="executeActivityLabel">
-                    <i class="bi bi-play-circle"></i> Enregistrer l'exécution de l'activité
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+
+            {{-- Header --}}
+            <div class="modal-header border-0 py-3 px-4"
+                 style="background:linear-gradient(135deg,#C10202 0%,#8b0001 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="background:rgba(255,255,255,.15);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-check2-circle text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title text-white fw-bold mb-0" id="executeActivityLabel">
+                            Record Activity Execution
+                        </h5>
+                        <p class="text-white-50 small mb-0">Log that this activity has been performed</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Activité</label>
-                    <p class="form-control-plaintext" id="activityNameDisplay"></p>
-                    <input type="hidden" id="activityIdHidden">
+
+            <div class="modal-body px-4 py-3">
+                <input type="hidden" id="activityIdHidden">
+
+                {{-- Activity name chip --}}
+                <div class="d-flex align-items-start gap-2 p-3 rounded-3 mb-3"
+                     style="background:#fff7f7;border:1px solid #f0d0d0;">
+                    <i class="bi bi-activity text-danger mt-1 flex-shrink-0"></i>
+                    <div>
+                        <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Activity</div>
+                        <div class="fw-semibold" id="activityNameDisplay" style="font-size:.9rem;color:#1a1a2e;"></div>
+                    </div>
                 </div>
 
+                {{-- Date --}}
                 <div class="mb-3">
-                    <label for="actualActivityDate" class="form-label fw-bold">Date d'exécution réelle <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="actualActivityDate" required>
+                    <label for="actualActivityDate" class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-calendar3 me-1 text-danger"></i>Execution Date <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control form-control-sm"
+                           id="actualActivityDate" required>
                 </div>
 
+                {{-- Performed by --}}
                 <div class="mb-3">
-                    <label for="performedBySelect" class="form-label fw-bold">Exécuté par <span class="text-danger">*</span></label>
-                    <select class="form-select" id="performedBySelect" required>
-                        <option value="">-- Sélectionner une personne --</option>
+                    <label for="performedBySelect" class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-person-check me-1 text-danger"></i>Performed by <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select form-select-sm" id="performedBySelect" required>
+                        <option value="">— Select a person —</option>
                         @foreach ($all_personnels ?? [] as $personnel)
-                            <option value="{{ $personnel->id }}">{{ $personnel->prenom }} {{ $personnel->nom }}</option>
+                            <option value="{{ $personnel->id }}">
+                                {{ trim(($personnel->titre_personnel ?? $personnel->titre ?? '') . ' ' . $personnel->prenom . ' ' . $personnel->nom) }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label for="activityComments" class="form-label">Commentaires</label>
-                    <textarea class="form-control" id="activityComments" rows="3" placeholder="Ajoutez des commentaires si nécessaire..."></textarea>
+                {{-- Comments --}}
+                <div class="mb-1">
+                    <label for="activityComments" class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-chat-text me-1 text-danger"></i>Comments
+                        <span class="text-muted fw-normal">(optional)</span>
+                    </label>
+                    <textarea class="form-control form-control-sm" id="activityComments"
+                              rows="3" placeholder="Add any relevant notes about this execution…"></textarea>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-success" onclick="saveActivityExecution()">
-                    <i class="bi bi-check-circle"></i> Enregistrer l'exécution
+
+            <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2" style="background:#f8f9fa;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i>Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-sm fw-semibold text-white"
+                        style="background:linear-gradient(90deg,#C10202,#8b0001);border:none;min-width:160px;"
+                        onclick="saveActivityExecution()">
+                    <i class="bi bi-check2-circle me-1"></i>Save Execution
                 </button>
             </div>
+
         </div>
     </div>
 </div>

@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cpia_responses', function (Blueprint $table) {
+        Schema::create('pro_cpia_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('assessment_id')->constrained('cpia_assessments')->cascadeOnDelete();
-            $table->foreignId('section_id')->constrained('cpia_sections')->cascadeOnDelete();
-            $table->foreignId('item_id')->constrained('cpia_items')->cascadeOnDelete();
+            $table->foreignId('assessment_id')->constrained('pro_cpia_assessments')->cascadeOnDelete();
+            $table->foreignId('section_id')->constrained('pro_cpia_sections')->cascadeOnDelete();
+            $table->foreignId('item_id')->constrained('pro_cpia_items')->cascadeOnDelete();
 
             // Impact score out of 10 (null = not filled)
             $table->unsignedTinyInteger('impact_score')->nullable(); // 0-10

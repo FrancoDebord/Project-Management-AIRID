@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CpiaItem extends Model
 {
-    protected $table = 'cpia_items';
+    protected $table = 'pro_cpia_items';
 
     protected $fillable = [
         'section_id', 'item_number', 'text', 'sort_order',

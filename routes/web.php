@@ -66,9 +66,12 @@ Route::middleware('auth')->prefix('notifications')->group(function () {
 });
 
 // ── Signatures ──
-Route::middleware('auth')->prefix('signatures')->group(function () {
-    Route::get('/',  [SignatureController::class, 'getSignatures'])->name('signatures.get');
-    Route::post('/', [SignatureController::class, 'save'])->name('signatures.save');
+Route::middleware('auth')->group(function () {
+    Route::get('/sign/{documentType}/{documentId}', [SignatureController::class, 'showPage'])->name('sign.document');
+    Route::prefix('signatures')->group(function () {
+        Route::get('/',  [SignatureController::class, 'getSignatures'])->name('signatures.get');
+        Route::post('/', [SignatureController::class, 'save'])->name('signatures.save');
+    });
 });
 
 // ── Facility Manager — QA Review ──
@@ -110,8 +113,9 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin'])->group(function
 Route::middleware('auth')->group(function () {
     Route::get('/project/{project_id}/cpia',              [CpiaController::class, 'index'])->name('cpia.index');
     Route::post('/project/{project_id}/cpia/save',        [CpiaController::class, 'save'])->name('cpia.save');
-    Route::post('/project/{project_id}/cpia/complete',    [CpiaController::class, 'complete'])->name('cpia.complete');
-    Route::get('/project/{project_id}/cpia/print',        [CpiaController::class, 'print'])->name('cpia.print');
+    Route::post('/project/{project_id}/cpia/complete',      [CpiaController::class, 'complete'])->name('cpia.complete');
+    Route::post('/project/{project_id}/cpia/revert-draft', [CpiaController::class, 'revertToDraft'])->name('cpia.revertToDraft');
+    Route::get('/project/{project_id}/cpia/print',         [CpiaController::class, 'print'])->name('cpia.print');
 });
 
 // ── Settings ──

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('document_signatures', function (Blueprint $table) {
+        Schema::create('pro_document_signatures', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('signer_name');           // displayed name

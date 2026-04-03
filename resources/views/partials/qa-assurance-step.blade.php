@@ -604,7 +604,7 @@
                                                         title="Rouvrir cette inspection">
                                                     <i class="bi bi-arrow-counterclockwise me-1"></i>Rouvrir
                                                 </button>
-                                                @elseif($inspection->date_performed && $inspection->findings_count > 0)
+                                                @elseif($inspection->date_performed)
                                                 <button class="btn btn-outline-success btn-sm"
                                                         onclick="toggleInspectionComplete({{ $inspection->id }}, this)"
                                                         title="Marquer l'inspection comme terminée">
@@ -2287,7 +2287,7 @@ function printFindings(withCorrective) {
             ${tableRows}
         </tbody>
     </table>
-    <div class="footer">Généré par Project Management — CREC</div>
+    <div class="footer">Généré par Project Management — AIRID</div>
     <script>window.onload = function(){ window.print(); }<\/script>
 </body>
 </html>`;
@@ -2404,11 +2404,18 @@ function saveEditInspection() {
                style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;">
                 <i class="bi bi-download me-1"></i>Télécharger
             </a>
+            @if($project->archived_at)
+            <span class="btn fw-semibold disabled"
+               style="background:rgba(255,255,255,.35);color:rgba(255,255,255,.5);border:none;font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;cursor:not-allowed;">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Open Checklist
+            </span>
+            @else
             <a href="{{ route('project.qa-checklist', $project->id) }}"
                class="btn fw-semibold"
                style="background:#fff;color:#4e2d8e;border:none;font-size:.85rem;padding:.45rem 1.1rem;border-radius:8px;">
                 <i class="bi bi-box-arrow-up-right me-1"></i>Open Checklist
             </a>
+            @endif
         </div>
     </div>
 </div>

@@ -1602,7 +1602,10 @@ class ChecklistController extends Controller
             }
         }
 
-        return view('checklists.report', compact('inspection', 'forms', 'keyPersonnels', 'sectionsMeta'));
+        $signatures = \App\Models\DocumentSignature::getForDocument('qa_unit_report', $inspection->id)
+            ->keyBy('role_in_document');
+
+        return view('checklists.report', compact('inspection', 'forms', 'keyPersonnels', 'sectionsMeta', 'signatures'));
     }
 
     /**
@@ -1770,7 +1773,7 @@ class ChecklistController extends Controller
                 'a' => [
                     'title' => 'Equipment Reception, Installation and Management',
                     'questions' => [
-                        1  => 'Is there a designated personnel for the management of CREC/LSHTM equipment?',
+                        1  => 'Is there a designated personnel for the management of AIRID equipment?',
                         2  => 'Is a request made for the purchase of each type of equipment?',
                         3  => 'At delivery, are equipment in conformity with requirements submitted before purchase?',
                         4  => 'Are equipment calibrated by an external body before first use and annually or according to agreed calibration frequency?',
@@ -1799,15 +1802,15 @@ class ChecklistController extends Controller
                 'b' => [
                     'title' => 'Test Item Reception, Storage and Management',
                     'questions' => [
-                        1  => 'Is there someone responsible for the reception, storage and management of CREC/LSHTM test items?',
+                        1  => 'Is there someone responsible for the reception, storage and management of AIRID test items?',
                         2  => 'Is there a procedure for the reception, storage and management of test items?',
                         3  => 'Is there an SOP for the reception, registration and storage of test items?',
                         4  => 'Is the reception of test/control/reference items documented?',
                         5  => 'Were the documents such as certificates of analysis, MSDS, Correspondence etc. attached to test item upon delivery?',
-                        6  => 'If documents are not attached to test item upon delivery, is there a procedure in place to ensure they are requested from supplier or sponsor and made available to the personnel in charge of the managing CREC/LSHTM test items?',
+                        6  => 'If documents are not attached to test item upon delivery, is there a procedure in place to ensure they are requested from supplier or sponsor and made available to the personnel in charge of the managing AIRID test items?',
                         7  => 'Are all test items related documents kept in a folder for reference purpose?',
                         8  => 'Are test items registered at reception (i.e. Test Item reception form filled and signed)',
-                        9  => 'Is an internal code (CREC Chemical code) attributed to each test item during registration?',
+                        9  => 'Is an internal code (AIRID Chemical code) attributed to each test item during registration?',
                         10 => 'Is an acknowledgment of receipt filled and signed by the SD?',
                         11 => 'Is reception feedback done to supplier or sponsor (Acknowledgement of receipt sent?)',
                         12 => 'Are Test/control/reference substances properly labelled (Name, CAS or code number, Batch number, Expiration date, Storage conditions, MSDS) during storage?',
@@ -1818,14 +1821,14 @@ class ChecklistController extends Controller
                         17 => 'Are there records of test items transport conditions?',
                         18 => 'Is there a procedure for disposal of expired test items?',
                         19 => 'Is test item disposal documented?',
-                        20 => 'Is access to CREC/LSHTM Test items limited?',
+                        20 => 'Is access to AIRID Test items limited?',
                     ],
                 ],
                 'c' => [
                     'title' => 'Test System Request, Production, Supply and Management',
                     'questions' => [
                         1  => 'Is there a designated person in charge of test system request, production, supply and management?',
-                        2  => 'Is there a procedure in place for the request, production, supply and management of CREC/LSHTM Test system?',
+                        2  => 'Is there a procedure in place for the request, production, supply and management of AIRID Test system?',
                         3  => 'Is there an SOP for the request, production, supply and management of test system?',
                         4  => 'Is the production of test system done on a daily basis and are records of production kept?',
                         5  => 'Are different mosquito strains separated from each other in order to avoid cross contamination?',
@@ -1838,7 +1841,7 @@ class ChecklistController extends Controller
                         12 => 'When test system is supplied to the insectary, is the reception date recorded?',
                         13 => 'Is the source of the test system supplied stated on the mosquito reception sheet?',
                         14 => 'Upon reception of test system at the insectary are information such as Date received, Species, Strain, Stage, Estimated Quantity and Code recorded?',
-                        15 => 'When test system is needed by other units of CREC/LSHTM facility, is a test system request submitted to the insectary supervisor for supply of mosquitoes?',
+                        15 => 'When test system is needed by other units of AIRID facility, is a test system request submitted to the insectary supervisor for supply of mosquitoes?',
                         16 => 'Are mosquitoes supplied as requested or within an acceptable period?',
                         17 => 'Is there a registry showing record of mosquito cages released by the insectary and does the record reflect code of cage, age of mosquitoes and name of person cages were released to.',
                         18 => 'Are the material transfer sheets and chain of custody sheets filled in during operation between the insectary and other units?',
@@ -1860,7 +1863,7 @@ class ChecklistController extends Controller
                 'd' => [
                     'title' => 'Computerized system Reception, registration, validation and maintenance',
                     'questions' => [
-                        1  => 'Is there a designated person in charge of the CREC/LSHTM computerized system?',
+                        1  => 'Is there a designated person in charge of the AIRID computerized system?',
                         2  => 'Is a user request form filled before the purchase of computerized system?',
                         3  => 'Are purchase approved by the FM?',
                         4  => 'Upon delivery, are documents such as computer\'s Manual, Guarantee and Characteristics form etc. attached to computerised system?',
@@ -1882,7 +1885,7 @@ class ChecklistController extends Controller
                         20 => 'Are data sent from other units verified to ensure they were not corrupted during transfer?',
                         21 => 'Is the data verification checklist regularly filled and signed?',
                         22 => 'Is there a backup system in place where data are secured?',
-                        23 => 'Is there an inventory list of CREC/LSHTM computerized system and is the list up to date?',
+                        23 => 'Is there an inventory list of AIRID computerized system and is the list up to date?',
                         24 => 'Is there a procedure for the retrieval of data?',
                         25 => 'Is there a procedure for the retrieval/disposal of computerized system?',
                     ],
@@ -2410,7 +2413,7 @@ class ChecklistController extends Controller
         $project  = $inspection->project;
         $code     = $project?->project_code ?? "#{$inspection->project_id}";
         $type     = $inspection->type_inspection ?? 'Inspection';
-        $reportUrl = route('checklist.report', $inspection->id);
+        $reportUrl = route('sign.document', ['qa_unit_report', $inspection->id]);
 
         $title = "Inspection completed — {$code}";
         $body  = "\"{$type}\" for project {$code} has been completed. Please review and sign the QA Unit Report.";

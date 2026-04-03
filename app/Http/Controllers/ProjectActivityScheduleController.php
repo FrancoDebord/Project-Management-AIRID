@@ -175,7 +175,8 @@ class ProjectActivityScheduleController extends Controller
         $pdf = Pdf::loadView('project-activities-pdf', compact('project', 'activitiesByCategory', 'sdName', 'headerImagePath'))
             ->setPaper('a4', 'landscape');
 
-        $safeCode = str_replace(['/', '\\'], '-', $project->project_code);
+        // $safeCode = str_replace(['/', '\\'], '-', $project->project_code);
+        $safeCode = str_replace(['/', '-'], '-', $project->project_code);
         return $pdf->download('activities-' . $safeCode . '-' . now()->format('Y-m-d') . '.pdf');
     }
 

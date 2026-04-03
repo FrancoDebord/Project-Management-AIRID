@@ -183,16 +183,24 @@
 
     {{-- Status banner when completed --}}
     @if ($assessment->isCompleted())
-    <div class="alert d-flex align-items-center gap-3 mb-3"
+    <div class="alert d-flex align-items-center justify-content-between gap-3 mb-3"
          style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;">
-        <i class="bi bi-check-circle-fill fs-4" style="color:#059669;"></i>
-        <div>
-            <strong style="color:#065f46;">Assessment Completed</strong>
-            <div class="text-muted small">
-                Marked complete on {{ $assessment->completed_at->format('d/m/Y H:i') }}.
-                Signatories have been notified.
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-check-circle-fill fs-4" style="color:#059669;"></i>
+            <div>
+                <strong style="color:#065f46;">Assessment Completed — Locked</strong>
+                <div class="text-muted small">
+                    Marked complete on {{ $assessment->completed_at->format('d/m/Y H:i') }}.
+                    All fields are read-only.
+                </div>
             </div>
         </div>
+        @unless($project->archived_at)
+        <button class="btn btn-sm btn-outline-warning fw-semibold flex-shrink-0"
+                onclick="revertToDraft()" id="btn-revert">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Revert to Draft
+        </button>
+        @endunless
     </div>
     @endif
 
@@ -289,7 +297,8 @@
                            min="0" max="10" step="1"
                            value="{{ $resp && $resp->impact_score !== null ? $resp->impact_score : '' }}"
                            placeholder="—"
-                           onchange="markDirty({{ $section->id }})">
+                           onchange="markDirty({{ $section->id }})"
+                           {{ $assessment->isCompleted() ? 'disabled' : '' }}>
                 </div>
                 <div style="width:80px;text-align:center;">
                     <input type="checkbox"
@@ -297,7 +306,8 @@
                            data-item-id="{{ $item->id }}"
                            data-section-id="{{ $section->id }}"
                            {{ $resp && $resp->is_selected ? 'checked' : '' }}
-                           onchange="markDirty({{ $section->id }})">
+                           onchange="markDirty({{ $section->id }})"
+                           {{ $assessment->isCompleted() ? 'disabled' : '' }}>
                 </div>
             </div>
             @endforeach
@@ -307,9 +317,13 @@
                 <div style="font-size:.82rem;color:#888;">
                     Section total: <strong id="sec-total-{{ $section->id }}">{{ $responses->filter(fn($r) => $r->section_id === $section->id && $r->impact_score !== null)->sum('impact_score') }}</strong> / {{ $section->activeItems->count() * 10 }}
                 </div>
+                @if (!$assessment->isCompleted())
                 <button class="btn btn-save btn-sm" onclick="saveSection({{ $section->id }})">
                     <i class="bi bi-floppy me-1"></i>Save section
                 </button>
+                @else
+                <span class="text-muted small"><i class="bi bi-lock me-1"></i>Read-only</span>
+                @endif
             </div>
         </div>
     </div>
@@ -464,6 +478,38 @@ function toast(msg, type = 'success') {
     el.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${msg}`;
     container.appendChild(el);
     setTimeout(() => el.remove(), 3500);
+}
+
+// ── Revert to Draft ────────────────────────────────────────────
+function revertToDraft() {
+    if (!confirm('Revert this assessment to draft?\n\nYou will be able to edit sections again, but signatories will need to be re-notified once you mark it complete again.')) {
+        return;
+    }
+    const btn = document.getElementById('btn-revert');
+    if (btn) btn.disabled = true;
+
+    fetch('/project/{{ $project->id }}/cpia/revert-draft', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({}),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            toast(data.message, 'success');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            toast(data.message || 'Error.', 'error');
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(() => {
+        toast('Network error.', 'error');
+        if (btn) btn.disabled = false;
+    });
 }
 
 // ── Complete Assessment ────────────────────────────────────────

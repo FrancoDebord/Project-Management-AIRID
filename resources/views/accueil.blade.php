@@ -28,7 +28,17 @@
 
 
 @section('content')
-    <h1 class="h3 fw-semibold mb-4">Tableau de bord</h1>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 fw-semibold mb-0">Tableau de bord</h1>
+        @if(Auth::user()->canCreateProject())
+        <button type="button"
+                data-bs-toggle="modal" data-bs-target="#ModalformCreateNewProject"
+                class="btn btn-sm fw-semibold d-flex align-items-center gap-2"
+                style="background:linear-gradient(90deg,#1a3a6b,#4e2d8e);color:#fff;border:none;border-radius:9px;padding:.5rem 1.1rem;font-size:.88rem;box-shadow:0 2px 8px rgba(26,58,107,.25);">
+            <i class="bi bi-plus-lg"></i>Nouveau projet
+        </button>
+        @endif
+    </div>
 
     {{-- ── KPI Cards ── --}}
     <div class="row g-3 mb-4">
@@ -332,4 +342,45 @@
         @endif
 
     </div>
+
+    @if(Auth::user()->canCreateProject())
+        @include('partials.dialog-create-project')
+
+        <script>
+        (function () {
+            const form    = document.getElementById('formCreateNewProject');
+            const errBox  = document.getElementById('error-messages');
+            const btn     = form ? form.querySelector('[type=submit]') : null;
+            const redirect = '{{ route('project.create') }}';
+
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (errBox) errBox.innerHTML = '';
+                if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating…'; }
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: new FormData(form),
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.code_erreur !== 0) {
+                        if (errBox) errBox.innerHTML = `<div class="alert alert-danger py-2 px-3 small">${data.message}</div>`;
+                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Create Study'; }
+                        return;
+                    }
+                    window.location.href = redirect + '?project_id=' + data.data.project_id;
+                })
+                .catch(() => {
+                    if (errBox) errBox.innerHTML = '<div class="alert alert-danger py-2 px-3 small">Erreur réseau. Veuillez réessayer.</div>';
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Create Study'; }
+                });
+            });
+        })();
+        </script>
+    @endif
 @endsection

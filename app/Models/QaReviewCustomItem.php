@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QaReviewCustomItem extends Model
 {
-    protected $table = 'qa_review_custom_items';
+    protected $table = 'pro_qa_review_custom_items';
 
     protected $fillable = [
         'inspection_id',

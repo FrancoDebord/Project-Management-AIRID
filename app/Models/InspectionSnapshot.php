@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InspectionSnapshot extends Model
 {
-    protected $table = 'inspection_question_snapshots';
+    protected $table = 'pro_inspection_question_snapshots';
 
     protected $fillable = [
         'inspection_id', 'cl_question_id', 'template_code',

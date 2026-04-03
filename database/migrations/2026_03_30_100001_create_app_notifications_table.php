@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('app_notifications', function (Blueprint $table) {
+        Schema::create('pro_app_notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('type', 80);          // project_assigned, findings_resolved, signature_requested, etc.

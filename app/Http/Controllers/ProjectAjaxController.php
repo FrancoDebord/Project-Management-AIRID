@@ -291,7 +291,20 @@ class ProjectAjaxController extends Controller
             'role'       => '',
         ]);
 
-        $person = Pro_Personnel::find($request->staff_id);
+        $person  = Pro_Personnel::find($request->staff_id);
+        $project = Pro_Project::find($request->project_id);
+
+        if ($person && $project && $person->user_id) {
+            AppNotification::send(
+                $person->user_id,
+                'key_personnel_added',
+                "Vous avez été désigné comme Personnel Clé — {$project->project_code}",
+                "Vous avez été ajouté à l'équipe de l'étude \"{$project->project_title}\" en tant que personnel clé.",
+                route('project.create', ['project_id' => $project->id]),
+                'bi-person-plus-fill'
+            );
+        }
+
         return response()->json([
             'success' => true,
             'person'  => [
@@ -313,6 +326,20 @@ class ProjectAjaxController extends Controller
         Pro_Project_Team::where('project_id', $request->project_id)
                         ->where('staff_id', $request->staff_id)
                         ->delete();
+
+        $person  = Pro_Personnel::find($request->staff_id);
+        $project = Pro_Project::find($request->project_id);
+
+        if ($person && $project && $person->user_id) {
+            AppNotification::send(
+                $person->user_id,
+                'key_personnel_removed',
+                "Retrait de l'équipe — {$project->project_code}",
+                "Vous avez été retiré de l'équipe de l'étude \"{$project->project_title}\".",
+                '',
+                'bi-person-dash-fill'
+            );
+        }
 
         return response()->json(['success' => true]);
     }
@@ -2015,9 +2042,6 @@ class ProjectAjaxController extends Controller
             // Mark as completed — enforce prerequisites
             if (!$inspection->date_performed) {
                 return response()->json(['success' => false, 'message' => 'The inspection form must be filled before marking as completed.'], 422);
-            }
-            if ($inspection->findings()->count() === 0) {
-                return response()->json(['success' => false, 'message' => 'Findings must be documented before marking as completed.'], 422);
             }
 
             $inspection->completed_at = now();

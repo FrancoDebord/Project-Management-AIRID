@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notifications &amp; Signatures — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html" class="active"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Notifications &amp; Signatures
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">🔔</div>
+        <div>
+          <h1>Notifications &amp; Signatures électroniques</h1>
+          <p>Restez informé des événements importants et signez électroniquement les documents officiels de vos projets.</p>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <h2 class="section-title" id="notifications">🔔 Centre de notifications</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">La cloche 🔔 dans la barre de navigation affiche en temps réel vos notifications non lues. Un badge rouge indique le nombre de notifications en attente.</p>
+
+        <h3 class="subsection-title">Menu déroulant rapide</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Cliquer sur la cloche ouvre un menu déroulant affichant les <strong>dernières notifications</strong> avec :</p>
+        <ul class="doc-list">
+          <li>Icône et type de notification</li>
+          <li>Message de la notification</li>
+          <li>Date et heure</li>
+          <li>Lien vers la page complète des notifications</li>
+        </ul>
+
+        <h3 class="subsection-title">Page complète des notifications</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Accessible via <code>/notifications</code>, elle liste toutes vos notifications :</p>
+        <ul class="doc-list">
+          <li>Notifications lues et non lues</li>
+          <li>Bouton <strong>Marquer comme lu</strong> pour chaque notification individuelle</li>
+          <li>Bouton <strong>Tout marquer comme lu</strong> pour toutes les notifications</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-all">Tous les utilisateurs connectés</span></p>
+      </div>
+
+      <h2 class="section-title" id="notification-types">📬 Types de notifications</h2>
+      <div class="card" style="overflow-x:auto;">
+        <table class="feature-table">
+          <thead>
+            <tr><th>Événement</th><th>Destinataire</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ajout au personnel clé d'un projet</td>
+              <td>Le membre ajouté</td>
+            </tr>
+            <tr>
+              <td>Nomination comme Study Director</td>
+              <td>Le Study Director nommé</td>
+            </tr>
+            <tr>
+              <td>Résolution d'une constatation QA</td>
+              <td>Parties prenantes du projet</td>
+            </tr>
+            <tr>
+              <td>Invitation à une réunion d'initiation</td>
+              <td>Participants de la réunion (e-mail + notification)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title" id="emails">📧 Notifications par e-mail</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">En complément des notifications dans l'application, des e-mails sont envoyés pour :</p>
+        <ul class="doc-list">
+          <li>🗓️ <strong>Invitation à une réunion</strong> — E-mail envoyé aux participants avec les détails de la réunion</li>
+          <li>👤 <strong>Nomination Study Director</strong> — E-mail de confirmation envoyé au Study Director</li>
+          <li>✅ <strong>Résolution de constatations</strong> — E-mail notifiant les parties prenantes</li>
+        </ul>
+        <div class="info-box note">
+          <span class="info-icon">ℹ️</span>
+          <div>Les e-mails sont configurés par l'administrateur dans les paramètres de l'application. Voir <a href="administration.html#settings">→ Paramètres</a>.</div>
+        </div>
+      </div>
+
+      <!-- SIGNATURES -->
+      <h2 class="section-title" id="signatures">✍️ Signatures électroniques</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">L'application permet la <strong>signature électronique</strong> de documents officiels tels que les formulaires de nomination, les déclarations QA et les rapports.</p>
+
+        <h3 class="subsection-title">Accéder à la page de signature</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">La page de signature est accessible via <code>/sign/{documentType}/{documentId}</code>. Elle s'ouvre dans un nouvel onglet depuis le document concerné.</p>
+
+        <h3 class="subsection-title">Apposer une signature</h3>
+        <ol class="step-list">
+          <li>La page affiche le document à signer avec un résumé</li>
+          <li>Un <strong>pad de signature</strong> permet de dessiner votre signature à la souris ou au doigt (tablette)</li>
+          <li>Cliquez sur <strong>Effacer</strong> pour recommencer si nécessaire</li>
+          <li>Cliquez sur <strong>Signer</strong> pour valider</li>
+          <li>La signature est enregistrée avec horodatage et identité de l'utilisateur</li>
+        </ol>
+
+        <h3 class="subsection-title">Consulter les signatures existantes</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Les signatures enregistrées pour un document sont récupérables via l'API AJAX <code>/ajax/signatures</code> et s'affichent dans un modal sur le document concerné.</p>
+        <ul class="doc-list">
+          <li>Nom du signataire</li>
+          <li>Rôle au moment de la signature</li>
+          <li>Date et heure de la signature</li>
+          <li>Image de la signature manuscrite</li>
+        </ul>
+
+        <h3 class="subsection-title">Documents pouvant être signés</h3>
+        <div style="overflow-x:auto;">
+          <table class="feature-table">
+            <thead>
+              <tr><th>Document</th><th>Type de signataire attendu</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Formulaire de nomination Study Director</td><td>Facility Manager, Study Director</td></tr>
+              <tr><td>Formulaire de remplacement Study Director</td><td>Facility Manager, Study Director</td></tr>
+              <tr><td>Déclaration QA (QA Statement)</td><td>QA Manager</td></tr>
+              <tr><td>Rapport final</td><td>Study Director, Facility Manager</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-all">Tous les utilisateurs connectés</span> (selon le document)</p>
+
+        <div class="info-box tip">
+          <span class="info-icon">💡</span>
+          <div>Une fois signée, la signature est permanente et ne peut pas être supprimée. Elle est visible sur le PDF imprimé du document.</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checklists d'inspection — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html" class="active"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Checklists d'inspection
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">✅</div>
+        <div>
+          <h1>Checklists d'inspection</h1>
+          <p>Outil de saisie structurée des observations lors des inspections QA. Six types de checklists couvrent les différents domaines de contrôle.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">🔐</span>
+        <div>Les checklists sont accessibles depuis une inspection QA planifiée. Rôles autorisés : <span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span>.</div>
+      </div>
+
+      <h2 class="section-title" id="types">📂 Types de checklists</h2>
+      <div class="card" style="overflow-x:auto;">
+        <table class="feature-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Description</th>
+              <th>URL d'impression</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Facility</strong></td>
+              <td>Inspection des installations (locaux, équipements, conditions d'environnement)</td>
+              <td><code>checklist/{id}/facility-print</code></td>
+            </tr>
+            <tr>
+              <td><strong>Process</strong></td>
+              <td>Inspection des procédés et méthodes</td>
+              <td><code>checklist/{id}/process-print</code></td>
+            </tr>
+            <tr>
+              <td><strong>Study Protocol</strong></td>
+              <td>Vérification de la conformité du protocole d'étude</td>
+              <td><code>checklist/{id}/study-protocol-print</code></td>
+            </tr>
+            <tr>
+              <td><strong>Study Report</strong></td>
+              <td>Vérification du rapport final d'étude</td>
+              <td><code>checklist/{id}/study-report-print</code></td>
+            </tr>
+            <tr>
+              <td><strong>Amendment/Deviation</strong></td>
+              <td>Contrôle des amendements et déviations au protocole</td>
+              <td><code>checklist/{id}/amendment-print</code></td>
+            </tr>
+            <tr>
+              <td><strong>Data Quality</strong></td>
+              <td>Vérification de la qualité et intégrité des données</td>
+              <td><code>checklist/{id}/data-quality-print</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title" id="access">🚀 Accéder à une checklist</h2>
+      <div class="card">
+        <ol class="step-list">
+          <li>Depuis la <strong>phase QA</strong> d'un projet, repérez l'inspection souhaitée</li>
+          <li>Cliquez sur le bouton <strong>Checklist</strong> de l'inspection</li>
+          <li>Vous êtes redirigé vers la page de la checklist (<code>/checklist/{inspection_id}</code>)</li>
+          <li>La page affiche toutes les <strong>sections</strong> de la checklist avec les questions associées</li>
+        </ol>
+      </div>
+
+      <h2 class="section-title" id="fill">✏️ Remplir une checklist</h2>
+      <div class="card">
+        <h3 class="subsection-title">Navigation par sections</h3>
+        <p style="font-size:.88rem;margin-bottom:.8rem;">La checklist est organisée en <strong>sections</strong>. Naviguez entre les sections via le menu latéral ou les onglets. Chaque section a un slug unique dans l'URL : <code>/checklist/{inspection_id}/{slug}</code>.</p>
+
+        <h3 class="subsection-title">Types de questions</h3>
+        <ul class="doc-list">
+          <li><strong>Conforme / Non-conforme / N/A</strong> : réponse à choix unique</li>
+          <li><strong>Texte libre</strong> : commentaire ou observation</li>
+          <li><strong>Date</strong> : saisie d'une date</li>
+        </ul>
+
+        <h3 class="subsection-title">Sauvegarder les réponses</h3>
+        <ol class="step-list">
+          <li>Remplissez les réponses de la section en cours</li>
+          <li>Cliquez sur <strong>Sauvegarder</strong> pour enregistrer (POST vers <code>checklist.save</code>)</li>
+          <li>Un message de confirmation s'affiche</li>
+          <li>Naviguez vers la section suivante</li>
+        </ol>
+
+        <div class="info-box tip">
+          <span class="info-icon">💡</span>
+          <div>Vous pouvez sauvegarder partiellement et revenir plus tard. Les réponses déjà saisies sont conservées.</div>
+        </div>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="report">📊 Rapport de checklist</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le rapport (<code>/checklist/{inspection_id}/report</code>) fournit un résumé visuel de toutes les réponses :</p>
+        <ul class="doc-list">
+          <li>Taux de conformité par section</li>
+          <li>Liste des non-conformités identifiées</li>
+          <li>Statut global de la checklist (complète / incomplète)</li>
+        </ul>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="followup">🔄 Actions de suivi (Follow-up)</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">La page de suivi (<code>/checklist/{inspection_id}/followup</code>) liste les questions ayant reçu une réponse <strong>Non-conforme</strong> et permet de :</p>
+        <ul class="doc-list">
+          <li>Documenter les actions correctives prises</li>
+          <li>Marquer les points comme résolus</li>
+          <li>Suivre l'avancement de la mise en conformité</li>
+        </ul>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="print">🖨️ Impression des checklists</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Chaque type de checklist dispose d'une page d'impression dédiée générant un PDF formaté :</p>
+        <ul class="doc-list">
+          <li>En-tête avec informations du projet et de l'inspection</li>
+          <li>Toutes les questions avec les réponses saisies</li>
+          <li>Commentaires et observations</li>
+          <li>Pied de page avec date et inspecteur</li>
+        </ul>
+        <p style="font-size:.88rem;margin-top:.8rem;">Pour imprimer, cliquez sur le bouton <strong>Imprimer</strong> dans la vue de la checklist ou accédez directement à l'URL d'impression correspondante.</p>
+
+        <div class="info-box tip">
+          <span class="info-icon">💡</span>
+          <div>Certaines checklists (notamment Facility) incluent des sous-checklists spécialisées pour les tests de type Cone, Tunnel, LLIN, IRS, CDC Bottle, Cylinder Bioassay, Spatial Repellents.</div>
+        </div>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="statuses">🔵 Statuts de checklist</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">L'API AJAX (<code>/ajax/get-checklist-statuses</code>) retourne le statut de complétion de chaque section en temps réel pour affichage dans l'interface :</p>
+        <div style="overflow-x:auto;">
+          <table class="feature-table">
+            <thead><tr><th>Statut</th><th>Signification</th></tr></thead>
+            <tbody>
+              <tr><td>🔵 <strong>Non démarrée</strong></td><td>Aucune réponse saisie dans cette section</td></tr>
+              <tr><td>🟡 <strong>En cours</strong></td><td>Réponses partielles saisies</td></tr>
+              <tr><td>🟢 <strong>Complète</strong></td><td>Toutes les questions ont une réponse</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h2 class="section-title" id="admin-checklists">⚙️ Administration des checklists</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le <span class="badge badge-super_admin">super_admin</span> peut gérer les modèles de checklists depuis <code>/admin/checklists</code>. Voir <a href="administration.html#checklists">→ Administration des checklists</a>.</p>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

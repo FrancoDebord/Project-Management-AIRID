@@ -168,8 +168,11 @@
         }
         .sig-cell:last-child { border-right: none; }
         .sig-cell .sig-label { font-size: 8pt; color: #666; margin-bottom: 4px; font-weight: bold; }
-        .sig-cell .sig-name  { font-size: 9pt; margin-bottom: 30px; }
+        .sig-cell .sig-name  { font-size: 9pt; margin-bottom: 6px; }
+        .sig-cell .sig-img   { display: block; height: 46px; max-width: 160px; margin-bottom: 4px; }
+        .sig-cell .sig-signed-by { font-size: 7.5pt; color: #444; margin-bottom: 2px; }
         .sig-cell .sig-line  { border-top: 1px solid #555; margin-top: 8px; font-size: 7.5pt; color: #888; }
+        .sig-cell .sig-blank { height: 38px; }
 
         /* ── Print button ── */
         .print-btn {
@@ -350,11 +353,23 @@
                         {{ $keyPersonnels['quality_assurance']->prenom }} {{ $keyPersonnels['quality_assurance']->nom }}
                     @endif
                 </div>
+                @if(isset($signatures['qa_manager']))
+                    <img src="{{ $signatures['qa_manager']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-signed-by">{{ $signatures['qa_manager']->signer_name }} — {{ $signatures['qa_manager']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-blank"></div>
+                @endif
                 <div class="sig-line">Signature / Date</div>
             </div>
             <div class="sig-cell">
                 <div class="sig-label">Study Director</div>
                 <div class="sig-name">{{ $assessment->study_director_name }}</div>
+                @if(isset($signatures['study_director']))
+                    <img src="{{ $signatures['study_director']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-signed-by">{{ $signatures['study_director']->signer_name }} — {{ $signatures['study_director']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-blank"></div>
+                @endif
                 <div class="sig-line">Signature / Date</div>
             </div>
             <div class="sig-cell">
@@ -364,6 +379,12 @@
                         {{ $keyPersonnels['facility_manager']->prenom }} {{ $keyPersonnels['facility_manager']->nom }}
                     @endif
                 </div>
+                @if(isset($signatures['facility_manager']))
+                    <img src="{{ $signatures['facility_manager']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-signed-by">{{ $signatures['facility_manager']->signer_name }} — {{ $signatures['facility_manager']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-blank"></div>
+                @endif
                 <div class="sig-line">Signature / Date</div>
             </div>
         </div>

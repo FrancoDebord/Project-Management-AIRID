@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ClSection extends Model
 {
-    protected $table = 'cl_sections';
+    protected $table = 'pro_cl_sections';
 
     protected $fillable = [
         'template_id', 'code', 'letter', 'title', 'subtitle',

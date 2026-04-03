@@ -1,83 +1,191 @@
- <!-- Modal pour créer un meeting -->
- <div class="modal fade" id="meetingModal" tabindex="-1" aria-labelledby="meetingModalLabel" aria-hidden="true">
-     <div class="modal-dialog modal-lg">
-         <div class="modal-content ">
-             <div class="modal-header bg-primary text-white">
-                 <h5 class="modal-title" id="meetingModalLabel">Schedule Meeting</h5>
-                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                     aria-label="Close"></button>
-             </div>
+@php
+    $meeting_project_id = request('project_id');
+    $meeting_project    = App\Models\Pro_Project::with(['studyDirector','projectManager'])->find($meeting_project_id);
 
-             @php
-                 $project_id = request('project_id');
+    // Compute default participant IDs to pre-select
+    $defaultParticipantIds = [];
+    if ($meeting_project) {
+        if ($meeting_project->study_director)
+            $defaultParticipantIds[] = $meeting_project->study_director;
+        if ($meeting_project->project_manager)
+            $defaultParticipantIds[] = $meeting_project->project_manager;
+    }
+    // QA Manager from key facility personnel
+    $keyPersonnelRows = App\Models\Pro_KeyFacilityPersonnel::where('active', 1)->get();
+    foreach ($keyPersonnelRows as $kp) {
+        $defaultParticipantIds[] = $kp->personnel_id;
+    }
+    $defaultParticipantIds = array_values(array_unique(array_filter($defaultParticipantIds)));
+@endphp
 
-                 $project = App\Models\Pro_Project::find($project_id);
-             @endphp
-             <div class="modal-body">
+<div class="modal fade" id="meetingModal" tabindex="-1" aria-labelledby="meetingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
 
-                 <div id="div-messages-error7"></div>
+            {{-- Header --}}
+            <div class="modal-header border-0 py-3 px-4"
+                 style="background:linear-gradient(135deg,#1a3a6b 0%,#c41230 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="background:rgba(255,255,255,.15);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-calendar-event-fill text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title text-white fw-bold mb-0" id="meetingModalLabel">
+                            Study Initiation Meeting
+                        </h5>
+                        <p class="text-white-50 small mb-0">Schedule or update meeting details</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+            </div>
 
-                 <form id="meetingForm" action="{{ route('scheduleStudyInitiationMeeting') }}">
+            <div class="modal-body px-4 py-3">
+                <div id="div-messages-error7"></div>
 
-                     @csrf
+                <form id="meetingForm" action="{{ route('scheduleStudyInitiationMeeting') }}" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="project_id"   id="project_id_qa_meeting" value="{{ $meeting_project_id }}">
+                    <input type="hidden" name="meeting_id"   id="qa_meeting_id" value="">
+                    <input type="hidden" name="meeting_type" id="qa_meeting_type" value="study_initiation_meeting">
+                    <input type="hidden" id="default_participant_ids" value="{{ json_encode($defaultParticipantIds) }}">
 
-                     @if (!$project_id)
-                         <div class="mb-3">
-                             <p class="alert alert-info p-2 text-center">Please, first select a real project</p>
-                         </div>
-                     @endif
+                    {{-- Date / Time / Link --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold mb-1">
+                                <i class="bi bi-calendar3 me-1 text-danger"></i>Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-sm"
+                                   id="meeting_date" name="meeting_date"
+                                   placeholder="dd/mm/yyyy" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold mb-1">
+                                <i class="bi bi-clock me-1 text-danger"></i>Time <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control form-control-sm"
+                                   name="meeting_time" id="meeting_time" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold mb-1">
+                                <i class="bi bi-link-45deg me-1 text-danger"></i>Meeting Link
+                                <span class="text-muted fw-normal">(optional)</span>
+                            </label>
+                            <input type="url" class="form-control form-control-sm"
+                                   name="meeting_link" id="meeting_link"
+                                   placeholder="https://meet.google.com/...">
+                        </div>
+                    </div>
 
-                     <input type="hidden" name="project_id" id="project_id_qa_meeting" value="{{ $project_id }}">
-                     <input type="hidden" name="meeting_id" id="qa_meeting_id" value="">
-                     <input type="hidden" name="meeting_type"  id="qa_meeting_type" value="study_initiation_meeting">
-                     <div class="row">
-                         <div class="mb-3 col">
-                             <label for="meeting_date" class="form-label">Date</label>
-                             <input type="text" class="form-control" id="meeting_date" name="meeting_date" required>
-                         </div>
-                         <div class="mb-3 col">
-                             <label for="meeting_time" class="form-label">Heure</label>
-                             <input type="time" class="form-control" name="meeting_time" id="meeting_time" required>
-                         </div>
-                         <div class="mb-3 col">
-                             <label for="participants" class="form-label">Participants</label>
-                             <select id="participants" name="participants[]"
-                                 class=" form-control selectpicker show-tick" data-live-search="true" multiple>
+                    {{-- Participants --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold mb-1">
+                            <i class="bi bi-people-fill me-1 text-danger"></i>Participants <span class="text-danger">*</span>
+                        </label>
+                        <div class="p-2 rounded-2 mb-1" style="background:#fff7f7;border:1px solid #f0d0d0;font-size:.75rem;color:#888;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Study Director, QA Manager, Project Manager and Key Personnel are pre-selected. Add or remove as needed.
+                        </div>
+                        <select id="meeting_participants" name="participants[]"
+                                class="form-select form-select-sm" multiple style="height:auto;">
+                            @foreach ($all_personnels as $personnel)
+                                <option value="{{ $personnel->id }}">
+                                    {{ trim(($personnel->titre_personnel ?? $personnel->titre ?? '') . ' ' . $personnel->prenom . ' ' . $personnel->nom) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                                 @foreach ($all_personnels as $personnel)
-                                     <option value="{{ $personnel->id }}">
-                                         {{ $personnel->titre }} {{ $personnel->prenom }} {{ $personnel->nom }}
-                                     </option>
-                                 @endforeach
-                             </select>
-                         </div>
-                     </div>
+                    {{-- Description + Agenda --}}
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-7">
+                            <label class="form-label small fw-semibold mb-1">
+                                <i class="bi bi-card-text me-1 text-danger"></i>Brief description
+                            </label>
+                            <textarea name="breve_description" class="form-control form-control-sm"
+                                      id="breve_description" rows="3"
+                                      placeholder="Purpose, objectives of the meeting…"></textarea>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold mb-1">
+                                <i class="bi bi-file-earmark-text me-1 text-danger"></i>Agenda
+                                <span class="text-muted fw-normal">(optional)</span>
+                            </label>
+                            <input type="file" class="form-control form-control-sm"
+                                   name="meeting_file" id="meeting_file"
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx">
+                            <div class="form-text" style="font-size:.7rem;">PDF, Word, Excel</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-                     <div class="row">
-                         <div class="mb-3">
-                             <label for="meeting_link" class="form-label">Lien de réunion (optionnel)</label>
-                             <input type="url" class="form-control" name="meeting_link" id="meeting_link"
-                                 placeholder="https://...">
-                         </div>
-                         <div class="mb-3">
-                             <label for="breve_description" class="form-label">Brief description</label>
-                             <textarea name="breve_description" class="form-control" id="breve_description" cols="30" rows="4"></textarea>
-                         </div>
-                         <div class="mb-3">
-                             <label for="meeting_file" class="form-label">Agenda of the meeting (Optional)</label>
-                             <input type="file" class="form-control fileClass" name="meeting_file" id="meeting_file">
-                         </div>
-                     </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2" style="background:#f8f9fa;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i>Cancel
+                </button>
+                <button type="submit" form="meetingForm"
+                        class="btn btn-sm fw-semibold text-white"
+                        style="background:linear-gradient(90deg,#1a3a6b,#c41230);border:none;min-width:140px;">
+                    <i class="bi bi-calendar-check me-1"></i>Save Meeting
+                </button>
+            </div>
 
+        </div>
+    </div>
+</div>
 
+<script>
+(function () {
+    let _meetingTomSelect = null;
 
-                     <div class="modal-footer">
-                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                         <button type="submit" form="meetingForm" class="btn btn-primary">Enregistrer</button>
-                     </div>
-                 </form>
-             </div>
+    function initMeetingTomSelect() {
+        if (_meetingTomSelect) return;
+        if (typeof TomSelect === 'undefined') return;
 
-         </div>
-     </div>
- </div>
+        _meetingTomSelect = new TomSelect('#meeting_participants', {
+            plugins: ['remove_button'],
+            placeholder: 'Search and select participants…',
+            maxOptions: null,
+            persist: false,
+            onInitialize() {
+                // Pre-select default participants for a new meeting
+                const ids = JSON.parse(document.getElementById('default_participant_ids').value || '[]');
+                if (ids.length) this.setValue(ids.map(String));
+            },
+        });
+    }
+
+    // Init when modal first opens
+    document.addEventListener('show.bs.modal', function (e) {
+        if (e.target && e.target.id === 'meetingModal') {
+            initMeetingTomSelect();
+        }
+    });
+
+    // Expose a function for the legacy JS to populate on edit
+    window.setMeetingParticipants = function (participantIds) {
+        if (_meetingTomSelect) {
+            _meetingTomSelect.clear(true);
+            _meetingTomSelect.setValue(participantIds.map(String));
+        } else {
+            // Fallback: set after a tick
+            setTimeout(function () {
+                if (_meetingTomSelect) {
+                    _meetingTomSelect.clear(true);
+                    _meetingTomSelect.setValue(participantIds.map(String));
+                }
+            }, 100);
+        }
+    };
+
+    // Reset participants to defaults when opening a NEW meeting
+    window.resetMeetingToDefaults = function () {
+        if (_meetingTomSelect) {
+            const ids = JSON.parse(document.getElementById('default_participant_ids').value || '[]');
+            _meetingTomSelect.clear(true);
+            _meetingTomSelect.setValue(ids.map(String));
+        }
+    };
+})();
+</script>

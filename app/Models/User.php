@@ -67,7 +67,7 @@ class User extends Authenticatable
     /** Can create / archive projects. */
     public function canCreateProject(): bool
     {
-        return $this->hasRole(['super_admin', 'facility_manager']);
+        return $this->hasRole(['super_admin', 'facility_manager', 'study_director']);
     }
 
     /** Can edit basic project information. */

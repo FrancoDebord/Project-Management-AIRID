@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CpiaSection extends Model
 {
-    protected $table = 'cpia_sections';
+    protected $table = 'pro_cpia_sections';
 
     protected $fillable = ['code', 'letter', 'title', 'sort_order', 'is_active'];
 

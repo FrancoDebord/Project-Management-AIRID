@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cl_templates', function (Blueprint $table) {
+        Schema::create('pro_cl_templates', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();          // ex: facility_main, cone_llin
             $table->string('name');                    // Facility Inspection Checklist (Main)

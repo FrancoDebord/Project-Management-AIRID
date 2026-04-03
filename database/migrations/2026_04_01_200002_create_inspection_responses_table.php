@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('inspection_responses', function (Blueprint $table) {
+        Schema::create('pro_inspection_responses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('inspection_id')->constrained('pro_qa_inspections')->cascadeOnDelete();
 
             // Points to the exact snapshot row this response answers.
             // Nullable for _meta rows which cover a whole section.
             $table->unsignedBigInteger('snapshot_id')->nullable();
-            $table->foreign('snapshot_id')->references('id')->on('inspection_question_snapshots')->nullOnDelete();
+            $table->foreign('snapshot_id')->references('id')->on('pro_inspection_question_snapshots')->nullOnDelete();
 
             $table->string('section_code');
 

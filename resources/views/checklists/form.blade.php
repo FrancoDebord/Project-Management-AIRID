@@ -431,7 +431,7 @@
                         <div class="text-muted small">
                             @if ($record)
                                 <i class="bi bi-check-circle-fill text-success me-1"></i>
-                                Formulaire rempli — dernière mise à jour {{ $record->updated_at->format('d/m/Y H:i') }}
+                                Formulaire rempli{{ $record->updated_at ? ' — dernière mise à jour ' . $record->updated_at->format('d/m/Y H:i') : '' }}
                             @else
                                 <i class="bi bi-clock text-warning me-1"></i>
                                 Formulaire vide — veuillez compléter les réponses ci-dessous

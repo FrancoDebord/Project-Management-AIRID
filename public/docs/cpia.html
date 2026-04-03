@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CPIA — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html" class="active"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> CPIA
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">⚠️</div>
+        <div>
+          <h1>CPIA — Critical Phase Impact Assessment</h1>
+          <p>Le CPIA est une évaluation formelle permettant d'identifier les phases critiques d'une étude GLP et d'en calculer le niveau de risque global.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">🔐</span>
+        <div>Le CPIA est accessible depuis la <strong>Phase 4 (Planning)</strong> d'un projet GLP. Rôles autorisés pour remplir et compléter : <span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span>.</div>
+      </div>
+
+      <h2 class="section-title" id="what-is-cpia">📖 Qu'est-ce que le CPIA ?</h2>
+      <div class="card">
+        <p style="font-size:.88rem;">Le <strong>Critical Phase Impact Assessment (CPIA)</strong> est un outil d'évaluation qui permet de :</p>
+        <ul class="doc-list">
+          <li>Identifier les phases de l'étude à fort impact sur la qualité des données</li>
+          <li>Qualifier chaque phase comme "critique" ou "non-critique"</li>
+          <li>Calculer automatiquement le <strong>niveau de risque global</strong> de l'étude</li>
+          <li>Documenter formellement les décisions pour les auditeurs GLP</li>
+        </ul>
+      </div>
+
+      <h2 class="section-title" id="access">🚀 Accéder au CPIA</h2>
+      <div class="card">
+        <ol class="step-list">
+          <li>Ouvrez le projet GLP concerné</li>
+          <li>Naviguez vers l'onglet <strong>Phase 4 — Planning</strong></li>
+          <li>Cliquez sur le bouton <strong>CPIA</strong> dans la section Planning</li>
+          <li>Vous êtes redirigé vers <code>/project/{project_id}/cpia</code></li>
+        </ol>
+      </div>
+
+      <h2 class="section-title" id="fill">✏️ Remplir le CPIA</h2>
+      <div class="card">
+        <h3 class="subsection-title">Structure de l'évaluation</h3>
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le formulaire CPIA est organisé en <strong>sections</strong>, chacune contenant plusieurs <strong>items d'évaluation</strong>. Pour chaque item :</p>
+        <ul class="doc-list">
+          <li>Cochez <strong>Critique</strong> si la phase est identifiée comme critique</li>
+          <li>Ajoutez un <strong>commentaire</strong> optionnel pour justifier votre choix</li>
+          <li>Les items peuvent être actifs ou inactifs (gérés par l'administrateur)</li>
+        </ul>
+
+        <h3 class="subsection-title">Sauvegarder les réponses</h3>
+        <ol class="step-list">
+          <li>Remplissez les items de chaque section</li>
+          <li>Cliquez sur <strong>Sauvegarder</strong></li>
+          <li>Le système calcule automatiquement le niveau de risque</li>
+          <li>L'évaluation passe en statut <code>draft</code> (modifiable)</li>
+        </ol>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="risk">📊 Calcul du niveau de risque</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le niveau de risque est calculé automatiquement lors de la sauvegarde en fonction du nombre de phases critiques identifiées :</p>
+        <div style="overflow-x:auto;">
+          <table class="feature-table">
+            <thead><tr><th>Nombre de phases critiques</th><th>Niveau de risque</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td style="color:var(--success);">⬤ Faible</td></tr>
+              <tr><td>1 — 3</td><td style="color:var(--warning);">⬤ Modéré</td></tr>
+              <tr><td>4 et plus</td><td style="color:var(--accent);">⬤ Élevé</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.82rem;margin-top:.5rem;">Le résultat s'affiche en haut du formulaire et dans le résumé du projet.</p>
+      </div>
+
+      <h2 class="section-title" id="complete">✅ Compléter le CPIA</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Une fois l'évaluation finalisée :</p>
+        <ol class="step-list">
+          <li>Vérifiez qu'au moins <strong>une phase critique a été identifiée</strong> (requis pour la complétion)</li>
+          <li>Cliquez sur <strong>Compléter le CPIA</strong></li>
+          <li>Le statut passe de <code>draft</code> à <code>completed</code></li>
+          <li>Le formulaire passe en <strong>lecture seule</strong></li>
+        </ol>
+        <div class="info-box warn">
+          <span class="info-icon">⚠️</span>
+          <div>Si aucune phase critique n'est cochée, le système refusera la complétion et affichera un message d'erreur.</div>
+        </div>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="revert">↩️ Remettre en brouillon</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Si vous devez modifier un CPIA déjà complété :</p>
+        <ol class="step-list">
+          <li>Cliquez sur <strong>Remettre en brouillon</strong> (Revert to Draft)</li>
+          <li>Le statut repasse à <code>draft</code></li>
+          <li>Le formulaire redevient éditable</li>
+        </ol>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="print">🖨️ Imprimer le CPIA</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Le bouton <strong>Imprimer</strong> génère un PDF formaté du CPIA contenant :</p>
+        <ul class="doc-list">
+          <li>En-tête avec code et titre du projet</li>
+          <li>Toutes les sections avec les items et réponses</li>
+          <li>Commentaires saisis</li>
+          <li>Résumé : nombre de phases critiques et niveau de risque</li>
+          <li>Date de complétion et signataire</li>
+        </ul>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <h2 class="section-title" id="admin">⚙️ Administration des sections CPIA</h2>
+      <div class="card">
+        <p style="font-size:.88rem;">Le <span class="badge badge-super_admin">super_admin</span> peut gérer les sections et items CPIA depuis <code>/admin/cpia</code>. Voir <a href="administration.html#cpia">→ Administration CPIA</a>.</p>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

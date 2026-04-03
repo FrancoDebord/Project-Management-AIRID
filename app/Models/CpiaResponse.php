@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CpiaResponse extends Model
 {
-    protected $table = 'cpia_responses';
+    protected $table = 'pro_cpia_responses';
 
     protected $fillable = [
         'assessment_id', 'section_id', 'item_id',

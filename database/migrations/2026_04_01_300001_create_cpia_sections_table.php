@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cpia_sections', function (Blueprint $table) {
+        Schema::create('pro_cpia_sections', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->unique();   // A, B, C … I
             $table->string('letter', 5);            // A, B, C …

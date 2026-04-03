@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QaReviewInspection extends Model
 {
-    protected $table = 'qa_review_inspections';
+    protected $table = 'pro_qa_review_inspections';
 
     protected $fillable = [
         'scheduled_date',

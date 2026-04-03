@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cl_sections', function (Blueprint $table) {
+        Schema::create('pro_cl_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('template_id')->constrained('cl_templates')->cascadeOnDelete();
+            $table->foreignId('template_id')->constrained('pro_cl_templates')->cascadeOnDelete();
             $table->string('code');             // A, B, III_A, sp-a, dq-c …
             $table->string('letter')->nullable(); // A, B, C …
             $table->string('title');

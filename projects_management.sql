@@ -14,6 +14,60 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+-- Listage de la structure de la table crec_rh_system_db. pro_app_notifications
+CREATE TABLE IF NOT EXISTS `pro_app_notifications` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL,
+  `type` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` text COLLATE utf8mb4_unicode_ci,
+  `data` json DEFAULT NULL,
+  `url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `icon` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT 'bi-bell',
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `app_notifications_user_id_foreign` (`user_id`),
+  CONSTRAINT `app_notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_app_notifications : ~6 rows (environ)
+INSERT INTO `pro_app_notifications` (`id`, `user_id`, `type`, `title`, `body`, `data`, `url`, `icon`, `read_at`, `created_at`, `updated_at`) VALUES
+	(1, 18, 'signature_requested', 'CPIA ready for signature — 26-02', 'The Critical Phase Impact Assessment for project "26-02" has been completed and requires your signature.', NULL, 'http://127.0.0.1:8000/project/31/cpia/print', 'bi-clipboard2-pulse', '2026-04-02 07:12:33', '2026-04-01 16:03:01', '2026-04-02 07:12:33'),
+	(2, 18, 'project_assigned', 'You have been appointed Study Director — 26-09', 'You have been assigned as Study Director for study "Projet de tests". Please fill in the SD Appointment Form and review the study details.', NULL, 'http://127.0.0.1:8000/project/39/overview', 'bi-person-badge-fill', '2026-04-02 08:26:46', '2026-04-02 08:15:24', '2026-04-02 08:26:46'),
+	(3, 18, 'signature_requested', 'CPIA ready for signature — 26-09', 'The Critical Phase Impact Assessment for project "Projet de tests" has been completed and requires your signature.', NULL, 'http://127.0.0.1:8000/sign/cpia_assessment/2', 'bi-clipboard2-pulse', '2026-04-02 08:26:39', '2026-04-02 08:24:12', '2026-04-02 08:26:39'),
+	(4, 18, 'signature_requested', 'CPIA ready for signature — 26-09', 'The Critical Phase Impact Assessment for project "Projet de tests" has been completed and requires your signature.', NULL, 'http://127.0.0.1:8000/sign/cpia_assessment/2', 'bi-clipboard2-pulse', '2026-04-02 08:25:00', '2026-04-02 08:24:36', '2026-04-02 08:25:00'),
+	(5, 18, 'signature_requested', 'Inspection completed — 26-09', '"Critical Phase Inspection" for project 26-09 has been completed. Please review and sign the QA Unit Report.', NULL, 'http://127.0.0.1:8000/sign/qa_unit_report/55', 'bi-pen-fill', '2026-04-02 12:26:56', '2026-04-02 12:26:45', '2026-04-02 12:26:56'),
+	(6, 18, 'signature_requested', 'Inspection completed — 26-09', '"Study Protocol Inspection" for project 26-09 has been completed. Please review and sign the QA Unit Report.', NULL, 'http://127.0.0.1:8000/sign/qa_unit_report/54', 'bi-pen-fill', '2026-04-02 12:35:34', '2026-04-02 12:33:28', '2026-04-02 12:35:34'),
+	(7, 18, 'signature_requested', 'Inspection completed — 26-09', '"Study Protocol Inspection" for project 26-09 has been completed. Please review and sign the QA Unit Report.', NULL, 'http://127.0.0.1:8000/sign/qa_unit_report/53', 'bi-pen-fill', '2026-04-02 12:36:05', '2026-04-02 12:34:29', '2026-04-02 12:36:05'),
+	(8, 18, 'signature_requested', 'Inspection completed — #', '"Facility Inspection" for project # has been completed. Please review and sign the QA Unit Report.', NULL, 'http://127.0.0.1:8000/sign/qa_unit_report/56', 'bi-pen-fill', '2026-04-03 13:59:09', '2026-04-03 13:56:21', '2026-04-03 13:59:09');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_app_settings
+CREATE TABLE IF NOT EXISTS `pro_app_settings` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci,
+  `label` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('text','date','number','textarea','email','url') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text',
+  `group` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'general',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `app_settings_key_unique` (`key`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_app_settings : ~7 rows (environ)
+INSERT INTO `pro_app_settings` (`id`, `key`, `value`, `label`, `description`, `type`, `group`, `sort_order`, `created_at`, `updated_at`) VALUES
+	(1, 'doc_issue_date', '2025-08-01', 'Issue Date (documents contrôlés)', 'Date d\'émission commune à tous les documents contrôlés générés.', 'date', 'documents', 1, '2026-03-30 08:04:54', '2026-03-30 08:22:44'),
+	(2, 'doc_next_review', '2027-07-31', 'Next Review Date (documents contrôlés)', 'Date de prochaine révision commune à tous les documents contrôlés.', 'date', 'documents', 2, '2026-03-30 08:04:54', '2026-03-30 08:22:44'),
+	(4, 'org_name', 'AIRID', 'Nom de l\'organisation', NULL, 'text', 'organisation', 1, '2026-03-30 08:04:54', '2026-03-30 08:22:44'),
+	(5, 'org_address', NULL, 'Adresse', NULL, 'text', 'organisation', 2, '2026-03-30 08:04:54', '2026-03-30 08:22:44'),
+	(6, 'org_email', NULL, 'Email de contact', NULL, 'email', 'organisation', 3, '2026-03-30 08:04:54', '2026-03-30 08:22:44'),
+	(7, 'org_phone', NULL, 'Téléphone', NULL, 'text', 'organisation', 4, '2026-03-30 08:04:54', '2026-03-30 08:22:44');
+
 -- Listage de la structure de la table crec_rh_system_db. pro_archiving_documents
 CREATE TABLE IF NOT EXISTS `pro_archiving_documents` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -32,12 +86,13 @@ CREATE TABLE IF NOT EXISTS `pro_archiving_documents` (
   KEY `pro_archiving_documents_uploaded_by_foreign` (`uploaded_by`),
   CONSTRAINT `pro_archiving_documents_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `pro_projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pro_archiving_documents_uploaded_by_foreign` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_archiving_documents : ~2 rows (environ)
 INSERT INTO `pro_archiving_documents` (`id`, `project_id`, `title`, `description`, `file_path`, `document_type`, `physical_location`, `archive_date`, `uploaded_by`, `created_at`, `updated_at`) VALUES
 	(1, 19, 'dd', 'ddd', 'archiving_documents/VmfoYQTh6v3OcspDlhxc0NlAcuMdU7zJXnVqptlK.pdf', 'dddd', 'dd', '2026-03-24', 18, '2026-03-24 14:57:09', '2026-03-24 14:57:09'),
-	(2, 16, 'fff', 'ff', 'archiving_documents/PdSBxomZJdwq2JgezpyVBMGsWfDWWwDFnX4esX4f.pdf', 'dddd', 'f', '2026-03-25', 18, '2026-03-25 15:01:45', '2026-03-25 15:01:45');
+	(2, 16, 'fff', 'ff', 'archiving_documents/PdSBxomZJdwq2JgezpyVBMGsWfDWWwDFnX4esX4f.pdf', 'dddd', 'f', '2026-03-25', 18, '2026-03-25 15:01:45', '2026-03-25 15:01:45'),
+	(3, 31, 'Doc', 'dd', 'archiving_documents/fF4EC1ekGyw4MM3KoDnrWnDcyvnv8lzeQjDsFQ1t.pdf', 'dddd', NULL, '2026-04-01', 18, '2026-04-01 11:22:44', '2026-04-01 11:22:44');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_cl_amendment_deviation_inspections
 CREATE TABLE IF NOT EXISTS `pro_cl_amendment_deviation_inspections` (
@@ -93,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_cdc_bottle_coating` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_cdc_bottle_coating : ~1 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_cdc_bottle_coating : ~0 rows (environ)
 INSERT INTO `pro_cl_cdc_bottle_coating` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 16, '24-03-Y', 33, 'yes', 'yes', 'no', 'yes', 'no', 'no', 'no', 'yes', NULL, 0, 18, '2026-03-25 14:57:40', '2026-03-25 14:57:40');
 
@@ -121,7 +176,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_cdc_bottle_test` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_cdc_bottle_test : ~4 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_cdc_bottle_test : ~3 rows (environ)
 INSERT INTO `pro_cl_cdc_bottle_test` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `q9`, `q10`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 5, '24-04-B/GLP', 12, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', NULL, NULL, 18, '2026-03-17 10:27:39', '2026-03-17 10:27:39'),
 	(2, 5, '24-04-B/GLP', 14, 'no', 'no', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'no', 'yes', NULL, NULL, 18, '2026-03-17 10:28:11', '2026-03-17 10:28:11'),
@@ -236,13 +291,15 @@ CREATE TABLE IF NOT EXISTS `pro_cl_cone_llin` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_cone_llin : ~3 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_cone_llin : ~5 rows (environ)
 INSERT INTO `pro_cl_cone_llin` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `q9`, `q10`, `q11`, `q12`, `q13`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 3, '24-03', 5, 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'no', 'na', 'no', 'no', 'no', 'yes', 'no', 'Tout s\'est bien passé', NULL, 18, '2026-02-25 15:17:37', '2026-02-25 15:17:37'),
 	(2, 6, '24-05', 7, 'yes', 'no', 'no', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'yes', 'h', NULL, 18, '2026-03-16 07:43:34', '2026-03-16 07:58:58'),
-	(3, 1, '24-01', 20, 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'dd', 1, 18, '2026-03-23 12:18:13', '2026-03-23 12:36:38');
+	(3, 1, '24-01', 20, 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'dd', 1, 18, '2026-03-23 12:18:13', '2026-03-23 12:36:38'),
+	(4, 31, '26-02', 50, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 18, '2026-04-01 11:19:16', '2026-04-01 11:19:16'),
+	(5, 39, '26-09', 55, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 18, '2026-04-02 12:26:45', '2026-04-02 12:26:45');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_cl_cylinder_bioassay
 CREATE TABLE IF NOT EXISTS `pro_cl_cylinder_bioassay` (
@@ -266,7 +323,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_cylinder_bioassay` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_cylinder_bioassay : ~1 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_cylinder_bioassay : ~0 rows (environ)
 INSERT INTO `pro_cl_cylinder_bioassay` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 10, '24-09', 28, 'no', 'no', 'na', 'na', 'no', 'na', 'yes', 'no', NULL, 1, 18, '2026-03-25 10:09:21', '2026-03-25 10:09:21');
 
@@ -571,7 +628,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_facility_inspection` (
   KEY `pro_cl_facility_inspection_inspection_id_index` (`inspection_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_facility_inspection : ~3 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_facility_inspection : ~2 rows (environ)
 INSERT INTO `pro_cl_facility_inspection` (`id`, `inspection_id`, `sections_done`, `project_id`, `project_code`, `filled_by`, `a_q1`, `a_q2`, `a_q3`, `a_q4`, `a_q5`, `a_q6`, `a_q7`, `a_q8`, `a_q9`, `a_q10`, `a_q11`, `a_q12`, `a_q13`, `a_q14`, `a_q15`, `a_q16`, `a_q17`, `a_q18`, `a_q19`, `a_q20`, `a_q21`, `a_q22`, `a_q23`, `a_q24`, `a_q25`, `a_q26`, `a_comments`, `a_is_conforming`, `b_q1`, `b_q2`, `b_q3`, `b_q4`, `b_q5`, `b_q6`, `b_q7`, `b_q8`, `b_q9`, `b_q10`, `b_q11`, `b_q12`, `b_q13`, `b_q14`, `b_q15`, `b_comments`, `b_is_conforming`, `c_q1`, `c_q2`, `c_q3`, `c_q4`, `c_q5`, `c_q6`, `c_q7`, `c_q8`, `c_q9`, `c_q10`, `c_q11`, `c_comments`, `c_is_conforming`, `d_q1`, `d_q2`, `d_q3`, `d_q4`, `d_q5`, `d_comments`, `d_is_conforming`, `e_q1`, `e_q2`, `e_q3`, `e_q4`, `e_comments`, `e_is_conforming`, `f_q1`, `f_q2`, `f_q3`, `f_q4`, `f_q5`, `f_q6`, `f_q7`, `f_q8`, `f_q9`, `f_q10`, `f_q11`, `f_q12`, `f_q13`, `f_q14`, `f_q15`, `f_q16`, `f_q17`, `f_q18`, `f_q19`, `f_comments`, `f_is_conforming`, `g_q1`, `g_q2`, `g_q3`, `g_q4`, `g_q5`, `g_q6`, `g_q7`, `g_comments`, `g_is_conforming`, `h_q1`, `h_q2`, `h_q3`, `h_q4`, `h_q5`, `h_q6`, `h_comments`, `h_is_conforming`, `i_q1`, `i_q2`, `i_q3`, `i_q4`, `i_comments`, `i_is_conforming`, `j_q1`, `j_q2`, `j_q3`, `j_q4`, `j_q5`, `j_q6`, `j_q7`, `j_q8`, `j_q9`, `j_q10`, `j_q11`, `j_q12`, `j_q13`, `j_q14`, `j_q15`, `j_comments`, `j_is_conforming`, `k_q1`, `k_q2`, `k_q3`, `k_q4`, `k_q5`, `k_q6`, `k_q7`, `k_q8`, `k_q9`, `k_q10`, `k_q11`, `k_q12`, `k_q13`, `k_comments`, `k_is_conforming`, `l_q1`, `l_q2`, `l_q3`, `l_q4`, `l_q5`, `l_q6`, `l_q7`, `l_q8`, `l_q9`, `l_q10`, `l_q11`, `l_q12`, `l_q13`, `l_q14`, `l_q15`, `l_q16`, `l_q17`, `l_q18`, `l_q19`, `l_q20`, `l_q21`, `l_q22`, `l_q23`, `l_q24`, `l_q25`, `l_comments`, `l_is_conforming`, `m_q1`, `m_q2`, `m_q3`, `m_q4`, `m_q5`, `m_q6`, `m_q7`, `m_q8`, `m_q9`, `m_q10`, `m_q11`, `m_q12`, `m_q13`, `m_q14`, `m_q15`, `m_q16`, `m_comments`, `m_is_conforming`, `n_q1`, `n_q2`, `n_q3`, `n_q4`, `n_q5`, `n_q6`, `n_q7`, `n_q8`, `n_q9`, `n_q10`, `n_q11`, `n_q12`, `n_q13`, `n_q14`, `n_q15`, `n_q16`, `n_q17`, `n_q18`, `n_q19`, `n_q20`, `n_q21`, `n_q22`, `n_q23`, `n_q24`, `n_q25`, `n_comments`, `n_is_conforming`, `o_q1`, `o_q2`, `o_q3`, `o_q4`, `o_q5`, `o_q6`, `o_q7`, `o_q8`, `o_q9`, `o_q10`, `o_q11`, `o_q12`, `o_comments`, `o_is_conforming`, `created_at`, `updated_at`) VALUES
 	(1, 16, '["b", "a", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]', NULL, NULL, 18, 'yes', 'yes', 'no', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'dd', NULL, 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'no', 'yes', 'yes', 'yes', NULL, NULL, 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', NULL, NULL, 'no', 'no', 'no', 'yes', 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'no', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, '2026-03-18 09:56:51', '2026-03-18 14:12:00'),
 	(2, 19, '["a"]', NULL, NULL, 18, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-03-18 15:07:32', '2026-03-18 15:07:32'),
@@ -808,7 +865,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_irs_trial` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_irs_trial : ~1 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_irs_trial : ~0 rows (environ)
 INSERT INTO `pro_cl_irs_trial` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `q9`, `q10`, `q11`, `q12`, `q13`, `q14`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 19, '25-11/BD', 24, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'e', 1, 18, '2026-03-24 14:35:14', '2026-03-24 14:53:36');
 
@@ -846,7 +903,7 @@ CREATE TABLE IF NOT EXISTS `pro_cl_llin_exp_huts` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_llin_exp_huts : ~2 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_llin_exp_huts : ~1 rows (environ)
 INSERT INTO `pro_cl_llin_exp_huts` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `q9`, `q10`, `q11`, `q12`, `q13`, `q14`, `q15`, `q16`, `q17`, `q18`, `q19`, `q20`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 3, '24-03', 6, 'no', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'C\'est bon', NULL, 18, '2026-02-25 15:41:58', '2026-03-19 14:43:18'),
 	(2, 1, '24-01', 23, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'f', 1, 18, '2026-03-23 15:24:22', '2026-03-23 15:24:22');
@@ -1011,10 +1068,944 @@ CREATE TABLE IF NOT EXISTS `pro_cl_process_inspection` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_process_inspection : ~2 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_process_inspection : ~1 rows (environ)
 INSERT INTO `pro_cl_process_inspection` (`id`, `inspection_id`, `filled_by`, `a_q1`, `a_q2`, `a_q3`, `a_q4`, `a_q5`, `a_q6`, `a_q7`, `a_q8`, `a_q9`, `a_q10`, `a_q11`, `a_q12`, `a_q13`, `a_q14`, `a_q15`, `a_q16`, `a_q17`, `a_q18`, `a_q19`, `a_q20`, `a_q21`, `a_q22`, `a_q23`, `a_q24`, `a_comments`, `a_is_conforming`, `b_q1`, `b_q2`, `b_q3`, `b_q4`, `b_q5`, `b_q6`, `b_q7`, `b_q8`, `b_q9`, `b_q10`, `b_q11`, `b_q12`, `b_q13`, `b_q14`, `b_q15`, `b_q16`, `b_q17`, `b_q18`, `b_q19`, `b_q20`, `b_comments`, `b_is_conforming`, `c_q1`, `c_q2`, `c_q3`, `c_q4`, `c_q5`, `c_q6`, `c_q7`, `c_q8`, `c_q9`, `c_q10`, `c_q11`, `c_q12`, `c_q13`, `c_q14`, `c_q15`, `c_q16`, `c_q17`, `c_q18`, `c_q19`, `c_q20`, `c_q21`, `c_q22`, `c_q23`, `c_q24`, `c_q25`, `c_q26`, `c_q27`, `c_q28`, `c_q29`, `c_q30`, `c_q31`, `c_comments`, `c_is_conforming`, `d_q1`, `d_q2`, `d_q3`, `d_q4`, `d_q5`, `d_q6`, `d_q7`, `d_q8`, `d_q9`, `d_q10`, `d_q11`, `d_q12`, `d_q13`, `d_q14`, `d_q15`, `d_q16`, `d_q17`, `d_q18`, `d_q19`, `d_q20`, `d_q21`, `d_q22`, `d_q23`, `d_q24`, `d_q25`, `d_comments`, `d_is_conforming`, `e_q1`, `e_q2`, `e_q3`, `e_q4`, `e_q5`, `e_q6`, `e_q7`, `e_q8`, `e_q9`, `e_q10`, `e_q11`, `e_comments`, `e_is_conforming`, `sections_done`, `created_at`, `updated_at`) VALUES
 	(1, 18, 18, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'dfffd', 1, 'yes', 'no', 'no', 'no', 'no', 'na', 'no', 'no', 'yes', 'no', 'no', 'no', 'no', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'no', NULL, NULL, 'yes', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'no', 'yes', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'na', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, NULL, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', NULL, NULL, '["a", "b", "c", "d", "e"]', '2026-03-18 13:26:40', '2026-03-26 11:10:29'),
-	(2, 35, 18, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'no', 'na', 'na', 'na', 'na', 'na', 'no', 'no', 'gffg', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '["a"]', '2026-03-26 10:55:13', '2026-03-26 10:55:13');
+	(2, 35, 18, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'no', 'no', 'no', 'yes', 'yes', 'no', 'na', 'na', 'na', 'na', 'na', 'no', 'no', 'gffg', 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'no', 'yes', 'yes', 'na', 'no', 'yes', 'yes', 'no', 'yes', 'no', 'na', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '["a", "b", "c"]', '2026-03-26 10:55:13', '2026-04-03 13:56:37');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cl_questions
+CREATE TABLE IF NOT EXISTS `pro_cl_questions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `section_id` bigint unsigned NOT NULL,
+  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `response_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'yes_no_na',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `copied_from_id` bigint unsigned DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `first_used_at` timestamp NULL DEFAULT NULL,
+  `usage_count` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cl_questions_section_item_unique` (`section_id`,`item_number`),
+  KEY `cl_questions_copied_from_id_foreign` (`copied_from_id`),
+  CONSTRAINT `cl_questions_copied_from_id_foreign` FOREIGN KEY (`copied_from_id`) REFERENCES `pro_cl_questions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cl_questions_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `pro_cl_sections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=822 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cl_questions : ~821 rows (environ)
+INSERT INTO `pro_cl_questions` (`id`, `section_id`, `item_number`, `text`, `response_type`, `sort_order`, `is_active`, `copied_from_id`, `notes`, `first_used_at`, `usage_count`, `created_at`, `updated_at`) VALUES
+	(1, 1, '1', 'Study Protocol received from SD', 'checkbox_date_text', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:18:01'),
+	(2, 1, '2', 'Study Protocol inspection performed by QA Manager / Personnel', 'checkbox_date_text', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(3, 1, '3', 'Study Protocol Inspection findings reported to Facility Manager and SD', 'checkbox_date_text', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(4, 1, '4', 'Study Protocol signed by QA Manager / Personnel', 'checkbox_date_text', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(5, 1, '5', 'Copy of approved protocol received from SD', 'checkbox_date_text', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(6, 1, '6', 'Critical phase agreement meeting with SD', 'checkbox_date_text', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(7, 1, '7', 'Study inspection programme established by QA Manager / Personnel', 'checkbox_date_text', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(8, 1, '8', 'Critical phases inspections performed by QA Manager / Personnel', 'checkbox_date_text', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(9, 1, '9', 'Data Quality Inspections performed by QA Manager / Personnel', 'checkbox_date_text', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(10, 1, '10', 'Copies of Amendment / Deviation forms received from SD', 'checkbox_date_text', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(11, 1, '11', 'Amendments / Deviations inspected by QA Manager / Personnel', 'checkbox_date_text', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(12, 1, '12', 'Amendments / Deviations inspections findings reported to Facility Manager and SD', 'checkbox_date_text', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(13, 1, '13', 'Copy of draft study report received from SD', 'checkbox_date_text', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(14, 1, '14', 'Draft study report inspected by QA Manager / Personnel', 'checkbox_date_text', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(15, 1, '15', 'Draft study report inspection findings reported to FM and SD', 'checkbox_date_text', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(16, 1, '16', 'Copy of final study report received from SD', 'checkbox_date_text', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(17, 1, '17', 'Final study report inspected by QA Manager / Personnel', 'checkbox_date_text', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(18, 1, '18', 'Final study report inspection findings reported to FM and SD', 'checkbox_date_text', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(19, 1, '19', 'QA Statement signed by QA Manager / Personnel', 'checkbox_date_text', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(20, 1, '20', 'Archiving of QA file', 'checkbox_date_text', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(21, 2, '1', 'Are personnel records of QA staff complete and up to date?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(22, 2, '2', 'Have all QA staff been trained in line with their respective training logs?', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(23, 2, '3', 'Are the training logs of each staff up to date?', 'yes_no', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(24, 2, '4', 'Did staff achieve competence for each training?', 'yes_no', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(25, 2, '5', 'Where there any delays in staff trainings?', 'yes_no', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(26, 3, '1', 'Are all QA Manuals and SOPs up to date?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(27, 3, '2', 'Are all QA Manuals and SOPs available to all QA staff?', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(28, 3, '3', 'Can QA staff confidently explain the procedures in the manuals and SOPs?', 'yes_no', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(29, 3, '4', 'Is the Master Schedule regularly maintained by QA and made available to the Facility manager?', 'yes_no', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(30, 4, '1', 'Is the QA calendar available and known by all QA staff?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(31, 4, '2', 'Is the inspection calendar respected? If not explain any delays', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(32, 4, '3', 'Are there documented reports of each QA inspection?', 'yes_no', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(33, 4, '4', 'Are reports signed and staff responsible for corrective actions fully informed?', 'yes_no', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(34, 4, '5', 'Does QA follow-up on corrective actions? Is this documented regularly?', 'yes_no', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(35, 5, '1', 'Are all GLP protocols inspected and signed by QAM?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(36, 5, '2', 'Are critical phases for GLP studies selected according to procedures of the Facility?', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(37, 5, '3', 'Are critical phases performed as planned?', 'yes_no', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(38, 5, '4', 'Are QA findings of study-based inspections promptly reported to the Study Director & FM?', 'yes_no', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(39, 5, '5', 'Does QA follow-up on corrective actions from study-based inspections?', 'yes_no', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(40, 6, '1', 'Has QA included a statement in each GLP report?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(41, 6, '2', 'Does QA follow-up on study deviations and amendments to ensure they are included in final reports of GLP studies?', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(42, 7, '1', 'Are external QA trainings up to date?', 'yes_no', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(43, 7, '2', 'Are assessment scores achieved acceptable?', 'yes_no', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(44, 7, '3', 'Is there a plan of smooth succession should the QA Manager be unavoidably absent?', 'yes_no', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(45, 8, '1', 'Is there an amendment/ deviation N°', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(46, 8, '2', 'Is the number of pages over the total number of pages visible?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(47, 8, '3', 'Is the study code written?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(48, 8, '4', 'Is the study title stated?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(49, 8, '5', 'Was the amendment/ deviation described appropriately?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(50, 8, '6', 'Is the reason for the amendment/ deviation described stated?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(51, 8, '7', 'Is the impact on the study described?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(52, 8, '8', 'Was the amendment/ deviation signed by the Study Director?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(53, 9, '1', 'Is the Study code provided?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(54, 9, '2', 'Is the Study title stated?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(55, 9, '3', 'Is the page number on each page and the total number of pages in the document?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(56, 9, '4', 'Are Study purpose/objectives clearly stated?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(57, 9, '5', 'Are the Sponsor name and address provided?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(58, 9, '6', 'Are Testing facility name and address provided?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(59, 9, '7', 'Is the Identity of study participants/test sites complete?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(60, 9, '8', 'Is the Proposed start date included?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(61, 9, '9', 'Is the Proposed termination date included?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(62, 9, '10', 'Is the Name of Study Director, Principal Investigator (where applicable) included?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(63, 9, '11', 'Is there a space for the Study Director, Management, the Principal Investigator (where applicable) and the Sponsor to sign and approve protocol?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(64, 9, '12', 'Are records to be maintained listed?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(65, 9, '13', 'Is the archive location of the list of records to be retained and length of time for which records will be retained stated?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(66, 9, '14', 'Is reference to test guideline(s) and/or method(s) used (where applicable)?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(67, 9, '15', 'Is the description of any acceptance criteria that must be fulfilled for the study to be considered to be valid (if applicable) stated?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(68, 9, '16', 'Is there a statement stating that the study is to GLP or not?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(69, 9, '17', 'Is there a space to show that the QAU Manager has verified the protocol?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(70, 9, '18', 'Are the procedures for the production of amendments and deviations described?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(71, 9, '19', 'Is a distribution list of the protocol included?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(72, 9, '20', 'Is the study timeline included?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(73, 10, '1', 'Is the Test system described?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(74, 10, '2', 'Is the Source of test system stated?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(75, 10, '3', 'Are the Characteristics/status of test system described?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(76, 10, '4', 'Is the number of test system defined?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(77, 11, '1', 'Is the Name, CAS number or code number provided?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(78, 11, '2', 'Is the Supplier of test, control & ref. substance stated?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(79, 11, '3', 'Are Storage conditions information for the test, control, ref. substance stated?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(80, 11, '4', 'Is the Carrier or vehicle identified?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(81, 11, '5', 'Is the Concentration of test material stated?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(82, 11, '6', 'Is the frequency of applications stated?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(83, 12, '1', 'Are the Equipment needed for study available?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(84, 12, '2', 'Are Equipment calibrated and well maintained?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(85, 13, '1', 'Are SOPs to be used listed in the study protocol?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(86, 13, '2', 'Are the SOPs to be used in the study available?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(87, 13, '3', 'Have the SOPs been approved?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(88, 13, '4', 'Have the study personnel read, understood the SOPs to be used in the study?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(89, 14, '1', 'Are study personnel appointed for study sufficient?', 'staff_training', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(90, 15, '1', 'Is the Project code provided?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(91, 15, '2', 'Is the Protocol code provided?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(92, 15, '3', 'Is the Study title stated?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(93, 15, '4', 'Is the Study director clearly identified?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(94, 15, '5', 'Is the Study Report date stated?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(95, 15, '6', 'Is the number on each page and the total number of pages visible in the entire document?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(96, 15, '7', 'Is the Name and address of testing facility provided?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(97, 15, '8', 'Is the Name and address of sponsor provided?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(98, 15, '9', 'Is there a table of content?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(99, 15, '10', 'Is there a list of annexes?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(100, 15, '11', 'Is there a list of tables?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(101, 15, '12', 'Is there a list of figures?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(102, 15, '13', 'Is there a signed SD Statement on GLP compliance included in the report?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(103, 15, '14', 'Is the certificate of affirmation issued by the FM dated, signed and included in the report?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(104, 15, '15', 'Is there a copy of GLP accreditation certificate included?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(105, 15, '16', 'Is the study start date and end date included?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(106, 15, '17', 'Are references guidelines enumerated?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(107, 15, '18', 'Are the Names of all scientists and key personnel involved mentioned?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(108, 15, '19', 'Were the tests performed during the study, test procedures and outcome measures mentioned?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(109, 15, '20', 'Is the list of SOPs used during the study enumerated?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(110, 15, '21', 'Are Protocol amendments/deviations all signed and made available in the study report?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(111, 15, '22', 'Is the list of equipment used during the study and their respective codes enumerated?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(112, 15, '23', 'Is there a list of acronyms?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(113, 15, '24', 'Are all study related documents archived, listed and available?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(114, 15, '25', 'Are all pages of the final report clear and readable?', 'yes_no_na', 25, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(115, 15, '26', 'Is the description of all circumstances affecting the quality of integrity of the data (major and minor incident) mentioned?', 'yes_no_na', 26, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(116, 15, '27', 'Does the report contain all details necessary to summarize the study procedures and conclusions?', 'yes_no_na', 27, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(117, 15, '28', 'Is there a distribution list of Study report?', 'yes_no_na', 28, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(118, 16, '1', 'Is the Name, CAS or code number of test and control or reference substance mentioned in the final report?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(119, 16, '2', 'Is the supplier of test and control or reference substance stated?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(120, 16, '3', 'Are storage conditions information for test and control or reference substance monitored and mentioned?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(121, 17, '1', 'Are the following described about the test system? (a-Strain, b-Age, c-Source, d-Resistance status, e-Number)', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(122, 17, '2', 'Is the test condition (temperature) mentioned?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(123, 18, '1', 'Is there evidence of the validation of the software used for data entry and is it included in the final report?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(124, 18, '2', 'Are all data double entered?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(125, 18, '3', 'Are all relevant raw data reported and omissions (if applicable) explained?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(126, 18, '4', 'Is there a description of: a-Summary of analysis of data, b-Conclusions drawn from data', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(127, 19, '1', 'Are all QA audit/inspection reports complete with findings addressed?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(128, 19, '2', 'Was a QA statement issued and included in the report?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(129, 19, '3', 'Is a Quality Assurance statement accurate, complete, signed and dated by the QA Manager?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(130, 19, '4', 'Is the QA file for the Study complete?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(131, 20, '1', 'Are all staff trained on GLP?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(132, 20, '2', 'Are all key study personnel trained on Data Management?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(133, 20, '3', 'Are all key study personnel trained on study related activities?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(134, 21, '1', 'Are computerised systems (Computers, data loggers etc.) to be used for GLP study clearly identified?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(135, 21, '2', 'Are softwares (Excel, Stata etc.) to be used during GLP study clearly identified?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(136, 21, '3', 'Are computerised systems validated before study start date?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(137, 21, '4', 'Are softwares validated before study start date?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(138, 21, '5', 'Is the maintenance of computerised systems used for study up to date?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(139, 21, '6', 'Are all computers to be used equipped with an up-to-date anti-virus programme?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(140, 21, '7', 'Was a computerised system risk assessment performed for study?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(141, 21, '8', 'Is the Data-base established before study start date?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(142, 21, '9', 'Is the Data-base approved by Study Director and Facility Manager?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(143, 21, '10', 'Is the study code clearly identified?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(144, 21, '11', 'Is / Are the type(s) of test(s) clearly stated?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(145, 21, '12', 'Has there been any amendment made to the database since first validation?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(146, 22, '1', 'Are expected outcome measures (Knock-down, mortality, passage rate, blood feeding, blood feeding inhibition, hut entry or deterrence etc.) clearly stated', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(147, 22, '2', 'Are test validity criteria clearly defined?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(148, 22, '3', 'Is there a description of all circumstances affecting the quality of integrity of Data (major and minor incidents)?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(149, 22, '4', 'Are test performed valid? (Check if KD or mortality etc. in controls are not inferior to acceptable range, check if environmental conditions are all within required range)', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(150, 22, '5', 'Was the first data entry performed and signed?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(151, 22, '6', 'Are data received by data management verified to ensure they are not corrupted during transfer? Was a data verification conducted by data management?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(152, 22, '7', 'Was a second data entry performed and signed?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(153, 22, '8', 'Are there any issues raised from data verification performed?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(154, 22, '9', 'Was there any data retrieved from server?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(155, 22, '10', 'Is the procedure for request for data retrieval from server respected?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(156, 23, '1', 'Is the correct data sheet used for each type of test or to record raw data?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(157, 23, '2', 'Is the information on each data sheet complete?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(158, 23, '2a', 'a. Is the heading completely filled?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(159, 23, '2b', 'b. Is the date at which data was recorded clearly stated?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(160, 23, '2c', 'c. Is the study code clearly identified?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(161, 23, '2d', 'd. Is the mosquito strain clearly identified?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(162, 23, '2e', 'e. Is the mosquito age clearly identified?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(163, 23, '2f', 'f. Is the environmental condition clearly identified?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(164, 23, '2g', 'g. Are data recorded directly, legibly and indelibly?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(165, 23, '2h', 'h. Are each data sheet verified by Supervisor and/or Study Director?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(166, 23, '2i', 'i. Are each data sheet signed by the Supervisor and/or Study Director?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(167, 23, '2j', 'j. Are error resolution procedures for data respected?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(168, 23, '2k', 'k. Are alterations to data (due to wrong entry) such that they do not obscure the original and indicate the person making the alteration, the date of alteration and the reason for alteration using the appropriate error correction code where appropriate?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(169, 23, '2l', 'l. Are there data missing?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(170, 23, '2m', 'm. Are there repeated data?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(171, 23, '2n', 'n. Are there incorrect data?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(172, 23, '3', 'Are all raw data organised?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(173, 23, '4', 'Are all raw data complete?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(174, 24, '1', 'Is there a SD appointment form?', 'study_box_item', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(175, 24, '2', 'Is there a copy of the study protocol?', 'study_box_item', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(176, 24, '3', 'Is there a copy of the study initiation meeting minutes with SD, study personnel and safety officer?', 'study_box_item', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(177, 24, '4', 'Are there certificates of analysis of test items?', 'study_box_item', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(178, 24, '5', 'Acknowledgement of receipt of test items?', 'study_box_item', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(179, 24, '6', 'Is there a folder for decontamination sheets?', 'study_box_item', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(180, 24, '7', 'Is there a folder for material safety data sheets?', 'study_box_item', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(181, 24, '8', 'Is there a folder for ethical approval documents?', 'study_box_item', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(182, 24, '9', 'Is there a folder for consent forms?', 'study_box_item', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(183, 24, '10', 'Is there a folder for the selection and training of volunteer sleepers?', 'study_box_item', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(184, 24, '11', 'Is there a folder for study participant information sheets?', 'study_box_item', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(185, 24, '12', 'Is there a copy of the risk assessment performed by safety officer?', 'study_box_item', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(186, 24, '13', 'Is there a copy of software and program validation documents?', 'study_box_item', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(187, 24, '14', 'Is there a folder for each type of test performed?', 'study_box_item', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(188, 24, '15', 'Is there a copy of treatment and sleepers rotation plan?', 'study_box_item', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(189, 24, '16', 'Is there a copy of net washing calendar?', 'study_box_item', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(190, 24, '17', 'Is there a folder for amendments or deviations?', 'study_box_item', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(191, 24, '18', 'Is there a folder for material transfer sheets?', 'study_box_item', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(192, 24, '19', 'Is there a folder for records of procedures sheets?', 'study_box_item', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(193, 24, '20', 'Is there a folder for net cutting sheets?', 'study_box_item', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(194, 24, '21', 'Is there a folder for collection of mosquitoes in experimental huts sheets?', 'study_box_item', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(195, 24, '22', 'Is there a folder for surprise visit checklist?', 'study_box_item', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(196, 24, '23', 'Is there a folder for cleaning of experimental huts checklists?', 'study_box_item', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(197, 24, '24', 'Is there a folder for animals\' related documents?', 'study_box_item', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(198, 24, '25', 'Is there a folder for test item transport condition forms?', 'study_box_item', 25, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(199, 24, '26', 'Is there a study director activity checklist?', 'study_box_item', 26, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(200, 24, '27', 'Is the project journal available?', 'study_box_item', 27, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(201, 24, '28', 'Are there any documents available? If yes… List them.', 'study_box_item', 28, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(202, 24, '29', 'Are all documents signed appropriately and blank spaces filled up?', 'study_box_item', 29, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(203, 24, '30', 'Is there a copy of the Study final report?', 'study_box_item', 30, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(204, 25, '1', 'Have all non-conformances raised from previous facility inspection been corrected?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(205, 25, '2', 'Does the Facility have a current GLP compliance certificate?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(206, 25, '3', 'Is the organizational chart up to date and available in every section?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(207, 25, '4', 'Does the organization chart adequately describe reporting structure?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(208, 25, '5', 'Is the Facility Manager clearly identified?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(209, 25, '6', 'Is the QA Manager clearly identified?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(210, 25, '7', 'Are Study Director(s) clearly identified?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(211, 25, '8', 'Is the Data Manager clearly identified?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(212, 25, '9', 'Is the Archivist clearly identified?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(213, 25, '10', 'Is the Administration clearly identified?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(214, 25, '11', 'Is a floor plan of the Facility up to date and available?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(215, 25, '12', 'Is the Master schedule up to date and available?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(216, 25, '13', 'Is the List of Projects up to date and available?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(217, 25, '14', 'Is the Facility Quality Manual up to date and available?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(218, 25, '15', 'Is there a system for keeping personnel records?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(219, 25, '16', 'Is the personnel records accessible to everyone?', 'yes_no_na', 16, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(220, 25, '17', 'Does each staff have a file?', 'yes_no_na', 17, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(221, 25, '18', 'Does each staff have a work contract that is up to date?', 'yes_no_na', 18, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(222, 25, '19', 'Are the CVs up to date with detailed information, signed and available for all personnel?', 'yes_no_na', 19, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(223, 25, '20', 'Are current job descriptions signed and available for all personnel?', 'yes_no_na', 20, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(224, 25, '21', 'Are there procedures/policies covering staff training?', 'yes_no_na', 21, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(225, 25, '22', 'Is there evidence of training for each staff?', 'yes_no_na', 22, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(226, 25, '23', 'Are training records current for all personnel?', 'yes_no_na', 23, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(227, 25, '24', 'Are training records reviewed periodically as per SOP?', 'yes_no_na', 24, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(228, 25, '25', 'Is a training programme for the current year available?', 'yes_no_na', 25, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(229, 25, '26', 'Are GLP personnel files maintained after departures of staff?', 'yes_no_na', 26, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(230, 26, '1', 'Is there a document control team?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(231, 26, '2', 'Is there someone responsible for the management and distribution of SOPs?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(232, 26, '3', 'Is there an index for SOPs and other controlled documents?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(233, 26, '4', 'Is there an SOP and document control review plan?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(234, 26, '5', 'Are controlled documents reviewed every 2 years?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(235, 26, '6', 'Are all controlled documents (SOPs, Sheets, and Policy Manuals) up to date?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(236, 26, '7', 'Is there an SOP for managing SOPs?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(237, 26, '8', 'Is there an SOP for document control?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(238, 26, '9', 'All controlled documents available (SOPs, Sheets, and Policy Manuals) in each section as appropriate?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(239, 26, '10', 'Do SOPs accurately reflect current procedures?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(240, 26, '11', 'Are all SOPs signed, dated and approved by the Facility Manager?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(241, 26, '12', 'Does each SOP have the version number, the author, the list of appendices, and the number of pages over the total number of pages?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(242, 26, '13', 'Are appendix attached to all SOPs?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(243, 26, '14', 'Were the changes brought to previous version mentioned in current version of SOPs and other controlled documents?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(244, 26, '15', 'Are there procedures in place for replacing revised SOPs or other controlled documents and ensuring that old SOPs or other controlled document are not available for use (removed from circulation)?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(245, 27, '1', 'Is the bioassay laboratory secured from unauthorised access?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(246, 27, '2', 'Is the work area neat?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:19', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:19'),
+	(247, 27, '3', 'Is the water under the tables clean and changed regularly?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(248, 27, '4', 'Are laboratory tools safely secured and stored when not in use?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(249, 27, '5', 'Are racks labelled accordingly providing detailed information and well arranged?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(250, 27, '6', 'Are insecticide product waste disposed separately from regular waste?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(251, 27, '7', 'Is the laboratory environmentally controlled?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(252, 27, '8', 'Is the laboratory temperature monitored?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(253, 27, '9', 'Are appropriate dress procedures followed?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(254, 27, '10', 'Are lab coats clean and well arranged?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(255, 27, '11', 'Are SOPs related to laboratory activities up to date, signed and available?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(256, 28, '1', 'Is access to the biomolecular room limited?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(257, 28, '2', 'Is the biomolecular room clean and well organised?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(258, 28, '3', 'Is the biomolecular room environmentally controlled?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(259, 28, '4', 'Is the biomolecular room temperature monitored?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(260, 28, '5', 'Are the equipment in the biomolecular room clean?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(261, 29, '1', 'Is the shaker-bath room clean and well organised?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(262, 29, '2', 'Is the shaker-bath room free from water spillage?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(263, 29, '3', 'Are the equipment sheets for all shaker-baths up to date and available?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(264, 29, '4', 'Is the LLIN washing area neat and free from water spillage?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(265, 30, '1', 'Is there someone responsible for the management of the chemical room?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(266, 30, '2', 'Is there limited access to chemical storage room?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(267, 30, '3', 'Is the chemical storage room neat and organized?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(268, 30, '4', 'Are there separate areas for storage of test/control/reference items?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(269, 30, '5', 'Is the chemical storage room environmentally controlled?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(270, 30, '6', 'Is the chemical room temperature continuously monitored?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(271, 30, '7', 'Is the chemical room temperature range adequate for insecticide products?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(272, 30, '8', 'Is the storage area adequately ventilated?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(273, 30, '9', 'Is there a separate area for the mixing of test items e.g. fume hood?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(274, 30, '10', 'Is there a separate area for spraying insecticides on substrates?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(275, 30, '11', 'Is there an extraction fan in the potter tower room?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(276, 30, '12', 'Are Test/control/reference substances and dilutions properly labelled (Name, CAS or code number, Batch number, Expiration date, Storage conditions) to ensure proper identification of test items?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(277, 30, '13', 'Is the SOP for reception, registration and storage of materials followed?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(278, 30, '14', 'Is the reception of test/control/reference items documented?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(279, 30, '15', 'Are there records of MSDS and Chemical analysis certificates of test items?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(280, 30, '16', 'Are there records of test/control/reference items usage?', 'yes_no_na', 16, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(281, 30, '17', 'Is there a procedure for disposal of test items?', 'yes_no_na', 17, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(282, 30, '18', 'Is test item disposal documented?', 'yes_no_na', 18, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(283, 30, '19', 'Is there a calendar to update list of chemical products and mosquito nets?', 'yes_no_na', 19, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(284, 31, '1', 'Is there someone responsible for the management of the safety (changing) room?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(285, 31, '2', 'Is the safety room separated from other sections?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(286, 31, '3', 'Is there limited access to the safety room?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(287, 31, '4', 'Is the locker for storage of facemask adequately locked?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(288, 31, '5', 'Are safety materials adequate for use?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(289, 31, '6', 'Is there a safety procedure for the Facility?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(290, 31, '7', 'Is there a calendar for safety inspections?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(291, 32, '1', 'Is there limited access to storage and untreated block rooms?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(292, 32, '2', 'Are the storage room and the untreated block room neat and organized?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(293, 32, '3', 'Is the untreated block room environmentally controlled?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(294, 32, '4', 'Is the untreated block room temperature continuously monitored?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(295, 32, '5', 'Are untreated blocks labelled for easy identification?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(296, 32, '6', 'Is there a separate area for the mixing of test items e.g. fume hood?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(297, 33, '1', 'Is there limited access to net storage room and the expired products room?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(298, 33, '2', 'Are the net and expired products storage rooms neat and organized?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(299, 33, '3', 'Is the net storage room environmentally controlled?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(300, 33, '4', 'Is the net room temperature continuously monitored?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(301, 34, '1', 'Is there a person designated as responsible for equipment?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(302, 34, '2', 'Are equipment uniquely identified and included on the equipment inventory list?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(303, 34, '3', 'Is the equipment inventory up to date?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(304, 34, '4', 'Does each equipment have a file?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(305, 34, '5', 'Are Equipment instructions manual available and easily accessible?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(306, 34, '6', 'Are Equipment SOPs available and easily accessible and for each piece of equipment?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(307, 34, '7', 'Are calibration certificates available for each equipment?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(308, 34, '8', 'Are all equipment calibration certificate up to date?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(309, 34, '9', 'Is the Equipment calibration programme defined and regularly followed?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(310, 34, '10', 'Are Usage/maintenance/calibration/fault report sheets accessible and regularly filled in?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:57', '2026-04-03 13:28:20'),
+	(311, 34, '11', 'Are Maintenance logs on equipment up-to-date?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(312, 34, '12', 'Is the equipment history regularly written in the log book?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(313, 34, '13', 'Are equipment cleaned after use?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(314, 34, '14', 'Do all equipment appear to be in good repair?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(315, 34, '15', 'Are equipment adequately stored when not used?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(316, 35, '1', 'Are different sections within the Facility clearly defined?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(317, 35, '2', 'Are all entry ways secured from unauthorized access?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(318, 35, '3', 'Are offices clean and well maintained?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(319, 35, '4', 'Is the entire building clean and well maintained on daily basis?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(320, 35, '5', 'Are all floors free of liquids to avoid slips and falls?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(321, 35, '6', 'Is there any housekeeping issues that need to be addressed?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(322, 35, '7', 'Are all plugs and cords in good condition?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(323, 35, '8', 'Are there electrical switches, switch plates or receptacles that are cracked, broken or have exposed contacts?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(324, 35, '9', 'Are all electrical circuit breakers identified?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(325, 35, '10', 'Is there any circuit breakers regularly tripping?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(326, 35, '11', 'Are surveillance video cameras working?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(327, 35, '12', 'Is the building equipped with fire extinguishers?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(328, 35, '13', 'Are there any security issues to be addressed?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(329, 36, '1', 'Is there a personnel responsible for the development, validation, operation and maintenance of computerised systems?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(330, 36, '2', 'Is the data entry room secured from unauthorised access?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(331, 36, '3', 'Is the data entry room equipped with an extinguisher?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(332, 36, '4', 'Is the data entry room clean and well organised?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(333, 36, '5', 'Is the data entry room environmentally controlled and monitored?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(334, 36, '6', 'Is the temperature or humidity reported when out of range?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(335, 36, '7', 'Is there a documented policy for the recording and management of data?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(336, 36, '8', 'Are there SOPs for data management and are they all available?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(337, 36, '9', 'Are all data entry computers protected by a password system?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(338, 36, '10', 'Are computers regularly maintained?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(339, 36, '11', 'Is the maintenance of computerised systems used in GLP studies up to date?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(340, 36, '12', 'Are all computers equipped with an up-to-date anti-virus programme?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(341, 36, '13', 'Are peripheral components of computer hardware in good state?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(342, 36, '14', 'Is there records of any problems or fault detected and any remedial action taken during operation of the system?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(343, 36, '15', 'Are there computers taken out of the system?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(344, 36, '16', 'Is the server regularly maintained?', 'yes_no_na', 16, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(345, 36, '17', 'Is there a backup system in place where data are secured?', 'yes_no_na', 17, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(346, 36, '18', 'Is data recorded directly, legibly and indelibly?', 'yes_no_na', 18, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(347, 36, '19', 'Are all data signed and dated at the time of entry?', 'yes_no_na', 19, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(348, 36, '20', 'Are all data double entered?', 'yes_no_na', 20, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(349, 36, '21', 'Are alterations to data such that they do not obscure the original and indicate the person making the alteration, the date of the alteration and the reason for the alteration using the appropriate error correction code where appropriate?', 'yes_no_na', 21, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(350, 36, '22', 'Are computer systems used to generate study data?', 'yes_no_na', 22, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(351, 36, '23', 'Are computerised systems regularly validated?', 'yes_no_na', 23, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(352, 36, '24', 'Is the frequency for validation of computerised system defined?', 'yes_no_na', 24, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(353, 36, '25', 'Are there any issues to be addressed?', 'yes_no_na', 25, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(354, 37, '1', 'Is the archive room secured from unauthorised access?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(355, 37, '2', 'Is the archive room equipped with an extinguisher?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(356, 37, '3', 'Are the facilities secured and resistant to fire?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(357, 37, '4', 'Is the archive room neat and well organised?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(358, 37, '5', 'Is the archive room environmentally controlled?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(359, 37, '6', 'Is the archive room temperature monitored?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(360, 37, '7', 'Is there a designated archivist?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(361, 37, '8', 'Is there a deputy archivist?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(362, 37, '9', 'Are non GLP files separated from GLP files?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(363, 37, '10', 'Are all cabinets locked?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(364, 37, '11', 'Are there documented procedures for the submission of data to and the withdrawal of data from archive?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(365, 37, '12', 'Are there SOPs for activities performed in the archive and are they available?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(366, 37, '13', 'Is the material indexed to expedite retrieval?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(367, 37, '14', 'Is the Archive logbook regularly filled in?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(368, 37, '15', 'Is the archivist made aware of the contents of study files to be archived?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(369, 37, '16', 'Are completed studies project boxes followed up for archive?', 'yes_no_na', 16, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(370, 38, '1', 'Is there a designated personnel responsible for the management of the insectary and the animal house?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(371, 38, '2', 'Are copies of personnel file available and up to date?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(372, 38, '3', 'Is the insectary neat and well kept?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(373, 38, '4', 'Is access to the insectary rooms limited?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(374, 38, '5', 'Are surveillance video cameras in working order?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(375, 38, '6', 'Is the organogram available?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(376, 38, '7', 'Is the floor plan available?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(377, 38, '8', 'Is the insectary policy manual available?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(378, 38, '9', 'Are SOPs related to insectary activities available?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(379, 38, '10', 'Is there a calibration plan for insectary equipment?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(380, 38, '11', 'Are all equipment sheets regularly filled and signed by unit supervisor?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(381, 38, '12', 'Are insectary materials well arranged?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(382, 38, '13', 'Are appropriate dress procedures followed?', 'yes_no_na', 13, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(383, 38, '14', 'Are insectary coats clean and well arranged?', 'yes_no_na', 14, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(384, 38, '15', 'Is the water under the tables regularly changed and clean?', 'yes_no_na', 15, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(385, 38, '16', 'Are different mosquito strains separated from each other in order to avoid cross contamination?', 'yes_no_na', 16, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(386, 38, '17', 'Are adult mosquito separated from larvae?', 'yes_no_na', 17, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(387, 38, '18', 'Are adult mosquito rooms environmentally controlled and monitored?', 'yes_no_na', 18, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(388, 38, '19', 'Are the mosquito cages labelled accordingly and well arranged?', 'yes_no_na', 19, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(389, 38, '20', 'Are breeding cages separated from test cages?', 'yes_no_na', 20, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(390, 38, '21', 'Is resistance test performed for each mosquito strain?', 'yes_no_na', 21, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(391, 38, '22', 'Is the resistance status report provided to the FM and satisfactory?', 'yes_no_na', 22, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(392, 38, '23', 'Are mosquito production sheets regularly filled?', 'yes_no_na', 23, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(393, 38, '24', 'Is there a registry showing record of mosquito cages released by the insectary and does the record reflect code of cage, age of mosquitoes and name of person cages were released to?', 'yes_no_na', 24, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(394, 38, '25', 'Are all sheets signed by the unit supervisor?', 'yes_no_na', 25, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(395, 39, '1', 'Is there a person responsible for the management of the animal house?', 'yes_no_na', 1, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(396, 39, '2', 'Is the animal house neat?', 'yes_no_na', 2, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(397, 39, '3', 'Is access to the animal house limited?', 'yes_no_na', 3, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(398, 39, '4', 'Are the animal cages clearly labelled?', 'yes_no_na', 4, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(399, 39, '5', 'Is each animal cage locked?', 'yes_no_na', 5, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(400, 39, '6', 'Are breeding animal separated from test animal?', 'yes_no_na', 6, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(401, 39, '7', 'Are animal house materials well arranged?', 'yes_no_na', 7, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(402, 39, '8', 'Are appropriate dress procedures followed?', 'yes_no_na', 8, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(403, 39, '9', 'Are SOPs related to animal house activities available?', 'yes_no_na', 9, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(404, 39, '10', 'Are animal maintenance forms regularly filled and signed?', 'yes_no_na', 10, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(405, 39, '11', 'Is there a documented procedure for releasing animals for test or blood feeding?', 'yes_no_na', 11, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(406, 39, '12', 'Is the animal house regularly disinfected?', 'yes_no_na', 12, 1, NULL, NULL, '2026-04-03 13:28:20', 1, '2026-04-01 10:15:58', '2026-04-03 13:28:20'),
+	(407, 40, '1', 'Have all non-conformances raised from previous facility inspection been corrected?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(408, 41, '1', 'Are different sections within the Facility clearly defined?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(409, 41, '2', 'Are all entry ways secured from unauthorized access?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(410, 41, '3', 'Are offices clean and well maintained?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(411, 41, '4', 'Is the entire building clean and well maintained on daily basis?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(412, 41, '5', 'Are all floors free of liquids to avoid trips and falls?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(413, 41, '6', 'Is there any housekeeping issues that need to be addressed?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(414, 41, '7', 'Are all plugs and cords in good condition?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(415, 41, '8', 'Are there electrical switches, switch plates or receptacles that are cracked, broken or have exposed contacts?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(416, 41, '9', 'Are all electrical circuit breakers identified?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(417, 41, '10', 'Is there any circuit breakers regularly tripping?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(418, 41, '11', 'Are surveillance video cameras working?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(419, 41, '12', 'Is the building equipped with fire extinguishers?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(420, 41, '13', 'Are there any security issues to be addressed?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(421, 41, '14', 'Is the organizational chart up to date and available in every section?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(422, 41, '15', 'Is a floor plan up to date and available?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(423, 41, '16', 'Is there a copy of the field site staff file?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(424, 41, '17', 'Are SOPs related to field site activities up to date and available?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(425, 41, '18', 'Are all data entry computers protected by a code system?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(426, 41, '19', 'Are computers regularly maintained?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(427, 41, '20', 'Are all computers equipped with an up-to-date anti-virus programme?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(428, 41, '21', 'Is there a backup system in place where data are secured?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(429, 41, '22', 'Is data recorded directly, legibly and indelibly?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(430, 41, '23', 'Are all data signed and dated at the time of entry?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(431, 41, '24', 'Are softwares regularly validated?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(432, 42, '1', 'Is the bioassay laboratory secured from unauthorised access?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(433, 42, '2', 'Is the work area neat?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(434, 42, '3', 'Is the water under the tables clean and changed regularly?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(435, 42, '4', 'Are laboratory tools safely secured and stored when not in used?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(436, 42, '5', 'Are racks labelled accordingly providing detailed information and well arranged?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(437, 42, '6', 'Are appropriate dress procedures followed?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(438, 42, '7', 'Are insecticide product waste disposed separately from regular waste?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(439, 42, '8', 'Is the laboratory environmentally controlled?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(440, 42, '9', 'Is the laboratory temperature monitored?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(441, 42, '10', 'Are lab coats clean and well arranged?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(442, 42, '11', 'Is there a person designated as responsible for equipment, is this clearly defined and are designated individuals aware of their responsibilities?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(443, 42, '12', 'Are equipment cleaned after use?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(444, 42, '13', 'Are equipment uniquely identified and included on the equipment inventory list?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(445, 42, '14', 'Do Equipment appear to be in good repair?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(446, 42, '15', 'Are Equipment adequately stored when not used?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(447, 42, '16', 'Are Instructions manual easily accessible?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(448, 42, '17', 'Are Equipment SOP easily accessible and available and each piece of equipment?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(449, 42, '18', 'Are Usage/maintenance/calibration/fault report sheets accessible and regularly filled in?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(450, 42, '19', 'Is the Equipment calibration programme defined and regularly followed?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(451, 42, '20', 'Are Maintenance logs on equipment up-to-date?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(452, 42, '21', 'Are Equipment history regularly written in the log book?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(453, 42, '22', 'Are SOPs related to laboratory activities up to date, signed and available?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(454, 43, '1', 'Is there someone responsible for the management of the chemical room?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(455, 43, '2', 'Is there limited access to chemical storage room and non-treated material storage room?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(456, 43, '3', 'Is the Test/control/reference substance storage room neat and organized?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(457, 43, '4', 'Are there separate areas for storage of test/control/reference items?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(458, 43, '5', 'Is the chemical storage room environmentally controlled?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(459, 43, '6', 'Is the chemical room temperature continuously monitored?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(460, 43, '7', 'Is the chemical room temperature range adequate for insecticide products?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(461, 43, '8', 'Is the storage area adequately ventilated?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(462, 43, '9', 'Is there a separate area for the mixing of test items?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(463, 43, '10', 'Are test item dilutions labelled to ensure proper identification of test item?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(464, 43, '11', 'Is the SOP for reception, registration and storage of materials followed?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(465, 43, '12', 'Is the reception of test/control/reference items documented (test item reception book)?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(466, 43, '13', 'Are Test/control/reference substances properly labelled (Name, CAS or code number, Batch number, Expiration date, Storage conditions, MSDS)?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(467, 43, '14', 'Are there records of test/control/reference items usage?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(468, 43, '15', 'Is there a procedure for disposal of test items?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(469, 43, '16', 'Is test item disposal documented?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(470, 44, '1', 'Is the experimental hut site secured?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(471, 44, '2', 'Are the huts clean and well maintained?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(472, 44, '3', 'Are the gutters filled with clean water?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(473, 44, '4', 'Are there any cracks on the walls of the huts?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(474, 44, '5', 'Are all the huts locked?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(475, 44, '6', 'Is the security guard available?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(476, 44, '7', 'Are the hut surroundings clean and well maintained?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(477, 44, '8', 'Are the toilets clean and well maintained?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(478, 44, '9', 'Are the preparation rooms clean and well maintained?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(479, 44, '10', 'Is the temperature in the huts being recorded?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(480, 44, '11', 'Are the checklist being filled on a daily basis?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(481, 44, '12', 'Are the cows well maintained?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(482, 44, '13', 'Are there any issues to be addressed?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(483, 45, '1', 'Is the experimental hut site secured?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(484, 45, '2', 'Are the huts clean and well maintained?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(485, 45, '3', 'Are the gutters filled with clean water?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(486, 45, '4', 'Are there any cracks on the walls of the huts?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(487, 45, '5', 'Are all the huts locked?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(488, 45, '6', 'Is the security guard available?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(489, 45, '7', 'Are the hut surroundings clean and well maintained?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(490, 45, '8', 'Are the toilets clean and well maintained?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(491, 45, '9', 'Are the preparation rooms clean and well maintained?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(492, 45, '10', 'Is the temperature in the huts being recorded?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(493, 45, '11', 'Are the checklist being filled on a daily basis?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(494, 45, '12', 'Are the cows well maintained?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(495, 45, '13', 'Are there any issues to be addressed?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(496, 46, '1', 'Is the experimental hut site secured?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(497, 46, '2', 'Are the huts clean and well maintained?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(498, 46, '3', 'Are the gutters filled with clean water?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(499, 46, '4', 'Are there any cracks on the walls of the huts?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(500, 46, '5', 'Are all the huts locked?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(501, 46, '6', 'Is the security guard available?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(502, 46, '7', 'Are the hut surroundings clean and well maintained?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(503, 46, '8', 'Are the toilets clean and well maintained?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(504, 46, '9', 'Are the preparation rooms clean and well maintained?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(505, 46, '10', 'Is the temperature in the huts being recorded?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(506, 46, '11', 'Are the checklist being filled on a daily basis?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(507, 46, '12', 'Are the cows well maintained?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(508, 46, '13', 'Are there any issues to be addressed?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(509, 47, '1', 'Is there a designated personnel responsible for the management of the insectary and the animal house?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(510, 47, '2', 'Are copies of personnel file available and up to date?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(511, 47, '3', 'Is the insectary neat and well kept?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(512, 47, '4', 'Is access to the insectary rooms limited?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(513, 47, '5', 'Are surveillance video cameras in working order?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(514, 47, '6', 'Is the organogram available?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(515, 47, '7', 'Is the floor plan available?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(516, 47, '8', 'Is the insectary policy manual available?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(517, 47, '9', 'Are SOPs related to insectary activities available?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(518, 47, '10', 'Is there a calibration plan for insectary equipment?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(519, 47, '11', 'Are all equipment sheets regularly filled and signed by unit supervisor?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(520, 47, '12', 'Are insectary materials well arranged?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(521, 47, '13', 'Are appropriate dress procedures followed?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(522, 47, '14', 'Are insectary coats clean and well arranged?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(523, 47, '15', 'Is the water under the tables regularly changed and clean?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(524, 47, '16', 'Are different mosquito strains separated from each other in order to avoid cross contamination?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(525, 47, '17', 'Are adult mosquito separated from larvae?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(526, 47, '18', 'Are adult mosquito rooms environmentally controlled and monitored?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(527, 47, '19', 'Are the mosquito cages labelled accordingly and well arranged?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(528, 47, '20', 'Are breeding cages separated from test cages?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(529, 47, '21', 'Is resistance test performed for each mosquito strain?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(530, 47, '22', 'Is the resistance status report provided to the FM and satisfactory?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(531, 47, '23', 'Are mosquito production sheets regularly filled?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(532, 47, '24', 'Is there a registry showing record of mosquito cages released by the insectary and does the record reflect code of cage, age of mosquitoes and name of person cages were released to?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(533, 47, '25', 'Are all sheets signed by the unit supervisor?', 'yes_no_na', 25, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(534, 48, '1', 'Is there a person responsible for the management of the animal house?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(535, 48, '2', 'Is the animal house neat?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(536, 48, '3', 'Is access to the animal house limited?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(537, 48, '4', 'Are the animal cages clearly labelled?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(538, 48, '5', 'Is each animal cage locked?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(539, 48, '6', 'Are breeding animal separated from test animal?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(540, 48, '7', 'Are animal house materials well arranged?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(541, 48, '8', 'Are appropriate dress procedures followed?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(542, 48, '9', 'Are SOPs related to animal house activities available?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(543, 48, '10', 'Are animal maintenance forms regularly filled and signed?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(544, 48, '11', 'Is there a documented procedure for releasing animals for test or blood feeding?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(545, 48, '12', 'Is the animal house regularly disinfected?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(546, 49, '1', 'Is there a designated personnel for the management of CREC/LSHTM equipment?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(547, 49, '2', 'Is a request made for the purchase of each type of equipment?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(548, 49, '3', 'At delivery, are equipment in conformity with requirements submitted before purchase?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(549, 49, '4', 'Are equipment calibrated by an external body before first use and annually or according to agreed calibration frequency?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(550, 49, '5', 'Are calibration certificates attached at delivery or before First use?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(551, 49, '6', 'Are equipment delivered with manufacturer\'s guide?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(552, 49, '7', 'Are equipment approved by the Facility Manager?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(553, 49, '8', 'Is an internal code attributed to equipment and equipment included in the inventory list? (Registration)', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(554, 49, '9', 'Are equipment tested after installation?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(555, 49, '10', 'Is a file created for each type of equipment?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(556, 49, '11', 'Are equipment stored according to the manufacturer\'s guide?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(557, 49, '12', 'Are there SOPs written and available for type of equipment and in every section?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(558, 49, '13', 'Is an equipment inventory list maintained and up to date for the equipment?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(559, 49, '14', 'Are equipment use to calibrate other equipment (e.g. Master data logger) indicated on the equipment inventory list as \'Reference\'?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(560, 49, '15', 'Are staff trained on the use of equipment?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(561, 49, '16', 'Are equipment used for intended purpose?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(562, 49, '17', 'Are all equipment forms filled regularly and accordingly?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(563, 49, '18', 'Is maintenance done on each equipment and according to the equipment maintenance programme?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(564, 49, '19', 'Are Maintenance logs on equipment up-to-date?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(565, 49, '20', 'Is equipment history regularly written in the log book?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(566, 49, '21', 'Are all calibration certificates up to date?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(567, 49, '22', 'Are internal calibrations performed regularly by staff and according to the established internal calibration programme?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(568, 49, '23', 'Are GLP equipment identified as such?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(569, 49, '24', 'Are faulty or obsolete equipment taken out of the system and labelled \'Do not use\'?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(570, 50, '1', 'Is there someone responsible for the reception, storage and management of CREC/LSHTM test items?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(571, 50, '2', 'Is there a procedure for the reception, storage and management of test items?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(572, 50, '3', 'Is there an SOP for the reception, registration and storage of test items?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(573, 50, '4', 'Is the reception of test/control/reference items documented?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(574, 50, '5', 'Were the documents such as certificates of analysis, MSDS, Correspondence etc. attached to test item upon delivery?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(575, 50, '6', 'If documents are not attached to test item upon delivery, is there a procedure in place to ensure they are requested from supplier or sponsor and made available to the personnel in charge of the managing CREC/LSHTM test items?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(576, 50, '7', 'Are all test items related documents kept in a folder for reference purpose?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(577, 50, '8', 'Are test items registered at reception (i.e. Test Item reception form filled and signed)', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(578, 50, '9', 'Is an internal code (CREC Chemical code) attributed to each test item during registration?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(579, 50, '10', 'Is an acknowledgment of receipt filled and signed by the SD?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(580, 50, '11', 'Is reception feedback done to supplier or sponsor (Acknowledgement of receipt sent?)', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(581, 50, '12', 'Are Test/control/reference substances properly labelled (Name, CAS or code number, Batch number, Expiration date, Storage conditions, MSDS) during storage?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(582, 50, '13', 'Is the test item stored according to requirements stated at delivery?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(583, 50, '14', 'Are test item dilutions labelled to ensure proper identification of test item?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(584, 50, '15', 'Is the environmental condition of storage area monitored and recorded on daily basis?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(585, 50, '16', 'Are there records of test/control/reference items usage?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(586, 50, '17', 'Are there records of test items transport conditions?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(587, 50, '18', 'Is there a procedure for disposal of expired test items?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(588, 50, '19', 'Is test item disposal documented?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(589, 50, '20', 'Is access to CREC/LSHTM Test items limited?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(590, 51, '1', 'Is there a designated person in charge of test system request, production, supply and management?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(591, 51, '2', 'Is there a procedure in place for the request, production, supply and management of CREC/LSHTM Test system?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(592, 51, '3', 'Is there an SOP for the request, production, supply and management of test system?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(593, 51, '4', 'Is the production of test system done on a daily basis and are records of production kept?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(594, 51, '5', 'Are different mosquito strains separated from each other in order to avoid cross contamination?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(595, 51, '6', 'Are breeding cages separated from test cages?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(596, 51, '7', 'Are adult mosquitoes separated from larvae?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(597, 51, '8', 'Is the environmental condition of rearing areas being monitored and recorded?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(598, 51, '9', 'When environmental conditions are out of required range, is this reported using a minor or a major incident form?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(599, 51, '10', 'Is resistance test performed for each mosquito strain?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(600, 51, '11', 'Is the resistance status report provided to the FM and satisfactory?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(601, 51, '12', 'When test system is supplied to the insectary, is the reception date recorded?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(602, 51, '13', 'Is the source of the test system supplied stated on the mosquito reception sheet?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(603, 51, '14', 'Upon reception of test system at the insectary are information such as Date received, Species, Strain, Stage, Estimated Quantity and Code recorded?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(604, 51, '15', 'When test system is needed by other units of CREC/LSHTM facility, is a test system request submitted to the insectary supervisor for supply of mosquitoes?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(605, 51, '16', 'Are mosquitoes supplied as requested or within an acceptable period?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(606, 51, '17', 'Is there a registry showing record of mosquito cages released by the insectary and does the record reflect code of cage, age of mosquitoes and name of person cages were released to.', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(607, 51, '18', 'Are the material transfer sheets and chain of custody sheets filled in during operation between the insectary and other units?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(608, 51, '19', 'Are mosquitoes being controlled during transportation and are there records of this?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(609, 51, '20', 'Are all test item related sheets signed by the unit supervisor?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(610, 51, '21', 'Are breeding animal separated from test animal?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(611, 51, '22', 'Are SOPs related to animal house activities available?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(612, 51, '23', 'Are animals identified using an internal ID code, name, sex, date of birth, colour of fur, size, and physiological status?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(613, 51, '24', 'Are animal maintained on a daily basis and are records of maintenance activities kept?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(614, 51, '25', 'Are animal maintenance forms regularly filled and signed?', 'yes_no_na', 25, 1, NULL, NULL, NULL, 0, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(615, 51, '26', 'Is there a documented procedure for releasing animals for test or blood feeding?', 'yes_no_na', 26, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(616, 51, '27', 'When animals are needed for testing, is an animal request form submitted to staff in charge for supply of animals?', 'yes_no_na', 27, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(617, 51, '28', 'Are animals released as requested?', 'yes_no_na', 28, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(618, 51, '29', 'Is an animal release form filled during release of animals?', 'yes_no_na', 29, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(619, 51, '30', 'In the case where animals are returned to the animal house, are there records of this?', 'yes_no_na', 30, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(620, 51, '31', 'Are animals followed up individually and is the individual animal follow-up filled in and signed?', 'yes_no_na', 31, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(621, 52, '1', 'Is there a designated person in charge of the CREC/LSHTM computerized system?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(622, 52, '2', 'Is a user request form filled before the purchase of computerized system?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(623, 52, '3', 'Are purchase approved by the FM?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(624, 52, '4', 'Upon delivery, are documents such as computer\'s Manual, Guarantee and Characteristics form etc. attached to computerised system?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(625, 52, '5', 'In the case where these documents are not attached upon delivery, is there a system in place to ensure they are made available to the personnel in charge of computerized system?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(626, 52, '6', 'Is the user acceptance form filled and signed during reception?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(627, 52, '7', 'Is a risk assessment performed during reception?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(628, 52, '8', 'Is the computerized system validated and registered during reception?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(629, 52, '9', 'Is the computerised system configured after reception?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(630, 52, '10', 'Is there a folder for each computerized system?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(631, 52, '11', 'Are GLP computerized system clearly identified and separated from non-GLP?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(632, 52, '12', 'Is there a programme for the validation of softwares of computerized systems?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(633, 52, '13', 'Are validations performed according to established programme and are records of these kept?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(634, 52, '14', 'Are validations approved by the FM?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(635, 52, '15', 'Is there a programme for the maintenance of computerized system?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(636, 52, '16', 'Is maintenance performed following the established programme and is this recorded?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(637, 52, '17', 'Is the server regularly maintained?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(638, 52, '18', 'Are activities performed on computerized system recorded in the computer logbook?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(639, 52, '19', 'Are computers secured with a password system?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(640, 52, '20', 'Are data sent from other units verified to ensure they were not corrupted during transfer?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(641, 52, '21', 'Is the data verification checklist regularly filled and signed?', 'yes_no_na', 21, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(642, 52, '22', 'Is there a backup system in place where data are secured?', 'yes_no_na', 22, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(643, 52, '23', 'Is there an inventory list of CREC/LSHTM computerized system and is the list up to date?', 'yes_no_na', 23, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(644, 52, '24', 'Is there a procedure for the retrieval of data?', 'yes_no_na', 24, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(645, 52, '25', 'Is there a procedure for the retrieval/disposal of computerized system?', 'yes_no_na', 25, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(646, 53, '1', 'Is there a designated person in charge of the Safety?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(647, 53, '2', 'Is there a calendar for safety inspections?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(648, 53, '3', 'Is risk assessment performed before each Glp studies?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(649, 53, '4', 'Are PPE clothing put on during laboratory activities?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(650, 53, '5', 'Is decontamination regularly done before using any materials?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(651, 53, '6', 'Are fire extinguishers accessible and up to date yearly?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(652, 53, '7', 'Are first aid kits regularly checked and safety material to ensure they are intact?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(653, 53, '8', 'Are incidents reported effectively and submitted to safety officer?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(654, 53, '9', 'Are corrective actions implemented after incident reports?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(655, 53, '10', 'Are work related health issues reported in cases of occurrences?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(656, 53, '11', 'Is the Respirator Qualitative Face Fit test performed for each staff each year?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(657, 54, '1', 'Was decontamination of laboratory tools performed?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(658, 54, '2', 'Is the shaker bath calibrated at 155 rounds per minutes, at the temperature of 30°C during washing for 10 min?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(659, 54, '3', 'Are mosquito net samples stored at 30°C in the incubator?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(660, 54, '4', 'Are mosquito net sample stored according to protocol?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(661, 54, '5', 'Is the test system (mosquitoes) available for test?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(662, 54, '6', 'Is/ Are the mosquito cage(s) labelled accordingly?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(663, 54, '7', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(664, 54, '8', 'Are mosquitoes used for test of recommended age or according to protocol?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(665, 54, '9', 'Is the mosquito strain used according to protocol?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(666, 54, '10', 'Is the number of mosquitoes exposed according to protocol?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(667, 54, '11', 'Is the time of contact respected?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(668, 54, '12', 'Is the KD recorded exactly 1 hour after time of contact?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(669, 54, '13', 'Are net samples stored at correct temperature and according to protocol after use?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(670, 55, '1', 'Was the potter tower calibrated before impregnation?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(671, 55, '2', 'Are the balances used calibrated?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(672, 55, '3', 'Was the insecticide stored at the correct temperature?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(673, 55, '4', 'Was the calculation sheet filled and signed by Study Director before mixture of insecticide?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(674, 55, '5', 'Was the fume hood used for mixture of insecticide dilutions?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(675, 55, '6', 'Was the appropriate PPE (coat, mask, protection glasses etc.) followed?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(676, 55, '7', 'Are the blocks used of same age?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(677, 55, '8', 'Are the blocks used for spraying within the acceptable range of pH?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(678, 55, '9', 'Are the blocks properly labelled?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(679, 55, '10', 'Are the treated blocks stored at the correct temperature?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(680, 56, '1', 'Are all blocks used for testing within the acceptable ranges?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(681, 56, '2', 'Are laboratory tools decontaminated before use?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(682, 56, '3', 'Is the environmental condition of the laboratory monitored and recorded and according to protocol?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(683, 56, '4', 'Is the number of mosquitoes exposed according to Protocol?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(684, 56, '5', 'Is the correct mosquito strain being used?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(685, 56, '6', 'Are the mosquitoes used of the age specified by the protocol?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(686, 56, '7', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(687, 56, '8', 'Is the time of contact respected?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(688, 56, '9', 'Is the KD recorded exactly 1 hour after time of contact?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(689, 56, '10', 'Is the correct data sheet used?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(690, 56, '11', 'Are IRS blocks stored at correct temperature after use?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(691, 57, '1', 'Are tunnels decontaminated before use?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(692, 57, '2', 'Are laboratory tools decontaminated before use?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(693, 57, '3', 'Where each netting pieces with 9 holes of 1 cm in diameter each?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(694, 57, '4', 'Are mosquitoes used (strain and age) for test according to protocol?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(695, 57, '5', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(696, 57, '6', 'Is the correct animal used? According Protocol?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(697, 57, '7', 'Are mosquitoes and animals inserted in the correct compartment of the tunnels?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(698, 57, '8', 'Is test performed in recommended environmental conditions?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(699, 57, '9', 'Is the number of mosquitoes exposed according to Protocol?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(700, 57, '10', 'Are net samples stored at correct temperature after use?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(701, 57, '11', 'Is the time of contact respected?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(702, 57, '12', 'Is the correct data sheet used?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(703, 57, '13', 'Is blood feeding and immediate mortality scored?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(704, 57, '14', 'Are mosquitoes placed in appropriate holding cups and are holding cups labelled appropriately?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(705, 57, '15', 'Are mosquitoes provided access to 10% glucose solution?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(706, 57, '16', 'Are net samples used for tunnel tests wrapped and stored according to protocol?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(707, 58, '1', 'Are Whole LLIN clearly labelled?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(708, 58, '2', 'Are Whole LLIN cut as described in the protocol?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(709, 58, '3', 'Are net samples cut for laboratory bioassays and chemical analysis respectively?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(710, 58, '4', 'Is the number of net samples cut from the whole LLINs according to protocol?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(711, 58, '5', 'Are net samples cut wrapped and labelled appropriately?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(712, 58, '6', 'Are net samples stored according to protocol?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(713, 58, '7', 'Is the time for washing whole net respected?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(714, 58, '8', 'Is the washing procedure given in the protocol respected?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:45:45'),
+	(715, 58, '9', 'Are whole LLIN allowed to dry in recommended conditions (in the shade)?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(716, 58, '10', 'Are whole LLIN stored in recommended conditions?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(717, 59, '1', 'Is a signed copy of the protocol available at the field site?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(718, 59, '2', 'Were the experimental huts refurbished before start of evaluation?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(719, 59, '3', 'Were all the sleepers given an information note and trained on activities and confidentiality?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(720, 59, '4', 'Was the consent form signed by all the sleeper?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(721, 59, '5', 'Was a sleeper\'s rotation plan established?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(722, 59, '6', 'Was a mosquito net rotation plan established?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(723, 59, '7', 'Are the curtains lifted up in all the experimental huts?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(724, 59, '8', 'Were the slits opened in all the experimental huts?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(725, 59, '9', 'Were the sleepers in experimental hut for 9 hours?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(726, 59, '10', 'Was a surprise visit performed?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(727, 59, '11', 'Are mosquitoes nets rotated according to protocol?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(728, 59, '12', 'Are sleepers rotated every day?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(729, 59, '13', 'Is the environmental condition of experimental huts monitored and recorded and according to protocol?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(730, 59, '14', 'Are the experimental huts cleaned before each round?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(731, 59, '15', 'Were mosquitoes transported to laboratory in recommended conditions?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(732, 59, '16', 'Were laboratory tools decontaminated?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(733, 59, '17', 'Was the mortality recorded after 24 hours after and according to protocol?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(734, 59, '18', 'Is the laboratory environmental condition monitored, recorded and according to protocol?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(735, 59, '19', 'Were incidents (major or minor) reported accordingly?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(736, 59, '20', 'Are all raw data sheets signed by the Study Director?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(737, 60, '1', 'Is a signed copy of the protocol available at the field site?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(738, 60, '2', 'Were the experimental huts refurbished before start of evaluation?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(739, 60, '3', 'Was the calculation sheet filled and signed by Study Director before mixture of insecticide?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(740, 60, '4', 'Was the sprayer cleaned and decontaminated?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(741, 60, '5', 'Was the Hudson Sprayer calibrated before use?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(742, 60, '6', 'Was an absorbent paper fixed on the window slits and at the edges of the floor closest to the wall to avoid contamination of entry points and to pick any run off of insecticide from the walls during spraying?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(743, 60, '7', 'Were the hut walls pre-marked with swatts?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(744, 60, '8', 'Were filter papers fixed on the walls?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(745, 60, '9', 'Is the lance speed respected?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(746, 60, '10', 'Was the correct PPE used?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(747, 60, '11', 'Is the pressure checked and sprayer pumped back after spraying each wall or hut?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(748, 60, '12', 'After spraying, was the spray tank depressurised and the volume of insecticide solution left in the tank measured and recorded?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(749, 60, '13', 'Was the sprayer washed properly and according to SOP?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(750, 61, '1', 'Were all the sleepers given an information note and trained on activities and confidentiality?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(751, 61, '2', 'Was the consent form signed by all the sleepers?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(752, 61, '3', 'Was a sleeper\'s rotation plan established?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(753, 61, '4', 'Are sleepers rotated every day?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(754, 61, '5', 'Were the sleepers provided each with a torch, an aspirator, a broom, a container for urinating and labelled plastic cups?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(755, 61, '6', 'Were the windows opened, the curtain lifted and the door closed?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(756, 61, '7', 'Were the sleepers in experimental hut from 9pm and 6 am?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(757, 61, '8', 'Were mosquitoes collected in the evening and in the morning?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(758, 61, '9', 'Is the environmental condition of experimental huts monitored and recorded and according to protocol?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(759, 61, '10', 'Were captured mosquitoes transported to laboratory in recommended conditions?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(760, 61, '11', 'Was a surprise visit performed?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(761, 61, '12', 'Are the experimental huts cleaned before each round?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(762, 61, '13', 'Is the correct data sheet used?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(763, 61, '14', 'Are mosquitoes preserved in recommended conditions for analysis?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(764, 62, '1', 'Was each wall numbered including the ceiling?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(765, 62, '2', 'Were the mosquito holding cups labelled according to corresponding wall?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(766, 62, '3', 'Are mosquitoes used for test according to protocol?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(767, 62, '4', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(768, 62, '5', 'Were testing tools decontaminated?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(769, 62, '6', 'Is the environmental condition of experimental huts monitored and recorded and according to protocol?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(770, 62, '7', 'Is the number of mosquitoes exposed according to Protocol?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(771, 62, '8', 'Is the time of contact respected?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(772, 62, '9', 'Was honey juice given to the mosquitoes?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(773, 62, '10', 'Is the KD recorded exactly 1 hour after time of contact?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(774, 62, '11', 'Is the correct data sheet used?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(775, 62, '12', 'Were mosquitoes transported to laboratory in recommended conditions?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(776, 63, '1', 'Was the calculation sheet filled and signed by Study Director before mixture of insecticide?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(777, 63, '2', 'Are mosquitoes used for test according to protocol?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(778, 63, '3', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(779, 63, '4', 'Is the number of mosquitoes exposed according to Protocol?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(780, 63, '5', 'Is the time of contact respected?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(781, 63, '6', 'Is the KD recorded exactly 1 hour after time of contact?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(782, 63, '7', 'Is the correct data sheet used?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(783, 63, '8', 'Are mosquitoes preserved in proper conditions after testing?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(784, 64, '1', 'Were CDC bottles washed before use?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(785, 64, '2', 'Was the calculation sheet filled and signed by Study Director before mixture of insecticide?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(786, 64, '3', 'Was the stock solution stored in the refrigerator at 4°C?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(787, 64, '4', 'Were the CDC bottles labelled accordingly?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(788, 64, '5', 'Was the stock solution, after being removed from the refrigerator, left at room temperature for 1–2 hours before use?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(789, 64, '6', 'Were the CDC bottles allowed to rotate for 15 minutes on the tube roller?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(790, 64, '7', 'Were the CDC bottles kept in a dark place after coating?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(791, 64, '8', 'Were the CDC bottles allow to dry after coating?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(792, 65, '1', 'Is testing done 24 hours after coating?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(793, 65, '2', 'Is the correct mosquito strain being used?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(794, 65, '3', 'Are mosquitoes of the age specified by protocol?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(795, 65, '4', 'Were mosquitoes allowed to acclimatize with laboratory environment for 1 hour before testing?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(796, 65, '5', 'Is the number of mosquitoes exposed according to Protocol?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(797, 65, '6', 'Is the time of exposure according to protocol?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(798, 65, '7', 'Is the time of contact respected?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(799, 65, '8', 'Is the KD recorded according to protocol?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(800, 65, '9', 'Is the correct data sheet used?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(801, 65, '10', 'Is the delayed mortality recorded according to protocol?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(802, 66, '1', 'Is a signed copy of the protocol available at the field site?', 'yes_no_na', 1, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(803, 66, '2', 'Were the experimental huts refurbished before start of evaluation?', 'yes_no_na', 2, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(804, 66, '3', 'Were all the sleepers given an information note and trained on activities and confidentiality?', 'yes_no_na', 3, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(805, 66, '4', 'Was the consent form signed by all the sleeper?', 'yes_no_na', 4, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(806, 66, '5', 'Was a sleeper\'s rotation plan established?', 'yes_no_na', 5, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(807, 66, '6', 'Was a treatment rotation plan established?', 'yes_no_na', 6, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(808, 66, '7', 'Are the curtains lifted up in all the experimental huts?', 'yes_no_na', 7, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(809, 66, '8', 'Were the slits opened in all the experimental huts?', 'yes_no_na', 8, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(810, 66, '9', 'Were the sleepers in experimental hut for 9 hours?', 'yes_no_na', 9, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(811, 66, '10', 'Was a surprise visit performed?', 'yes_no_na', 10, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(812, 66, '11', 'Are treatments rotated according to protocol?', 'yes_no_na', 11, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(813, 66, '12', 'Are sleepers rotated every day?', 'yes_no_na', 12, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(814, 66, '13', 'Is the environmental condition of experimental huts monitored and recorded and according to protocol?', 'yes_no_na', 13, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(815, 66, '14', 'Are the experimental huts cleaned before each round?', 'yes_no_na', 14, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(816, 66, '15', 'Were mosquitoes transported to laboratory in recommended conditions?', 'yes_no_na', 15, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(817, 66, '16', 'Were laboratory tools decontaminated?', 'yes_no_na', 16, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(818, 66, '17', 'Was the mortality recorded after 24 hours after and according to protocol?', 'yes_no_na', 17, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(819, 66, '18', 'Is the laboratory environmental condition monitored, recorded and according to protocol?', 'yes_no_na', 18, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(820, 66, '19', 'Were incidents (major or minor) reported accordingly?', 'yes_no_na', 19, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(821, 66, '20', 'Are all raw data sheets signed by the Study Director?', 'yes_no_na', 20, 1, NULL, NULL, NULL, 0, '2026-04-01 10:16:01', '2026-04-01 10:16:01');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cl_sections
+CREATE TABLE IF NOT EXISTS `pro_cl_sections` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `template_id` bigint unsigned NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `letter` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `subtitle` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `display_style` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
+  `form_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cl_sections_template_code_unique` (`template_id`,`code`),
+  CONSTRAINT `cl_sections_template_id_foreign` FOREIGN KEY (`template_id`) REFERENCES `pro_cl_templates` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cl_sections : ~66 rows (environ)
+INSERT INTO `pro_cl_sections` (`id`, `template_id`, `code`, `letter`, `title`, `subtitle`, `display_style`, `form_type`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES
+	(1, 1, 'main', '', 'QA Activities', NULL, 'normal', 'checkbox_date_text', 1, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(2, 2, 'I', 'I', 'QA Staff Records & Trainings', NULL, 'normal', 'yes_no', 1, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(3, 2, 'II', 'II', 'QA Manuals & SOPs', NULL, 'normal', 'yes_no', 2, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(4, 2, 'III_A', 'A', 'QA Activities — A. Facility & Process Inspections', 'A- Facility & Process Inspections', 'subsection', 'yes_no', 3, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(5, 2, 'III_B', 'B', 'QA Activities — B. Study-based Inspections', 'B- Study-based Inspections', 'subsection', 'yes_no', 4, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(6, 2, 'III_C', 'C', 'QA Activities — C. QA and Study Reports', 'C- QA and Study Reports', 'subsection', 'yes_no', 5, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(7, 2, 'IV', 'IV', 'Continuous Progress of QA', NULL, 'normal', 'yes_no', 6, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(8, 3, 'main', 'AD', 'Amendment & Deviations', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(9, 4, 'sp-a', 'A', 'General', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(10, 4, 'sp-b', 'B', 'Test System', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(11, 4, 'sp-c', 'C', 'Test, Control & Reference Articles', NULL, 'normal', 'yes_no_na', 3, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(12, 4, 'sp-d', 'D', 'Equipment', NULL, 'normal', 'yes_no_na', 4, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(13, 4, 'sp-e', 'E', 'SOPs', NULL, 'normal', 'yes_no_na', 5, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(14, 4, 'sp-f', 'F', 'Study Personnel', NULL, 'normal', 'staff_training', 6, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(15, 5, 'sr-a', 'A', 'General', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(16, 5, 'sr-b', 'B', 'Test, Control and Reference Substances', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(17, 5, 'sr-c', 'C', 'Test System Description', NULL, 'normal', 'yes_no_na', 3, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(18, 5, 'sr-d', 'D', 'Data Management and Statistical Analysis', NULL, 'normal', 'yes_no_na', 4, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(19, 5, 'sr-e', 'E', 'Quality Assurance', NULL, 'normal', 'yes_no_na', 5, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(20, 6, 'dq-a', 'A', 'Staff Training', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(21, 6, 'dq-b', 'B', 'Computerised Systems and Softwares Validation', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(22, 6, 'dq-c', 'C', 'Data Validity', NULL, 'normal', 'dual_verification', 3, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(23, 6, 'dq-d', 'D', 'Data Sheet Information', NULL, 'normal', 'dual_verification', 4, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(24, 6, 'dq-e', 'E', 'Study Box', NULL, 'normal', 'study_box', 5, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(25, 7, 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(26, 7, 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(27, 7, 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(28, 7, 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(29, 7, 'e', 'E', 'Shaker-Bath room and LLIN Washing area', NULL, 'normal', 'yes_no_na', 5, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(30, 7, 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(31, 7, 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(32, 7, 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(33, 7, 'i', 'I', 'Net storage room and expired products Room', NULL, 'normal', 'yes_no_na', 9, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(34, 7, 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(35, 7, 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(36, 7, 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(37, 7, 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(38, 7, 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(39, 7, 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(40, 8, 'a', 'A', 'General', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(41, 8, 'b', 'B', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(42, 8, 'c', 'C', 'Bioassay Laboratory Field site', NULL, 'normal', 'yes_no_na', 3, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(43, 8, 'd', 'D', 'Chemical Room & Non-treated material Room', NULL, 'normal', 'yes_no_na', 4, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(44, 8, 'e', 'E', 'Experimental Huts – SITE 1', NULL, 'normal', 'yes_no_na', 5, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(45, 8, 'f', 'F', 'Experimental Huts – SITE 2', NULL, 'normal', 'yes_no_na', 6, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(46, 8, 'g', 'G', 'Experimental Huts – SITE 3', NULL, 'normal', 'yes_no_na', 7, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(47, 8, 'h', 'H', 'Insectary', NULL, 'normal', 'yes_no_na', 8, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(48, 8, 'i', 'I', 'Animal House', NULL, 'normal', 'yes_no_na', 9, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(49, 9, 'a', 'A', 'Equipment Reception, Installation and Management', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(50, 9, 'b', 'B', 'Test Item Reception, Storage and Management', NULL, 'normal', 'yes_no_na', 2, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(51, 9, 'c', 'C', 'Test System Request, Production, Supply and Management', NULL, 'normal', 'yes_no_na', 3, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(52, 9, 'd', 'D', 'Computerized system Reception, registration, validation and maintenance', NULL, 'normal', 'yes_no_na', 4, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(53, 9, 'e', 'E', 'Safety Procedures', NULL, 'normal', 'yes_no_na', 5, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(54, 10, 'main', 'A', 'Cone Bioassay with LLIN samples', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(55, 11, 'main', 'B', 'Cone Bioassay with IRS blocks (Blocks treatment)', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(56, 12, 'main', 'C', 'Cone Bioassay with IRS blocks (Test)', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(57, 13, 'main', 'D', 'Tunnel Test', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(58, 14, 'main', 'E', 'Evaluation of Whole LLIN in Experimental huts (Washing and Cutting of Whole Nets)', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(59, 15, 'main', 'F', 'Evaluation of Whole LLIN in Experimental huts', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(60, 16, 'main', 'G', 'IRS Treatment application', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(61, 17, 'main', 'H', 'IRS Trial', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(62, 18, 'main', 'I', 'Cone Bioassay on IRS treated walls', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(63, 19, 'main', 'J', 'Cylinder Bioassay', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(64, 20, 'main', 'K', 'CDC Bottle Bioassay (Coating)', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(65, 21, 'main', 'L', 'CDC Bottle Bioassay (Test)', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(66, 22, 'main', 'M', 'Evaluation of spatial repellents in Experimental huts', NULL, 'normal', 'yes_no_na', 1, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_cl_spatial_repellents
 CREATE TABLE IF NOT EXISTS `pro_cl_spatial_repellents` (
@@ -1165,14 +2156,18 @@ CREATE TABLE IF NOT EXISTS `pro_cl_study_protocol_inspections` (
   PRIMARY KEY (`id`),
   KEY `pro_cl_study_protocol_inspections_inspection_id_foreign` (`inspection_id`),
   CONSTRAINT `pro_cl_study_protocol_inspections_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_study_protocol_inspections : ~4 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_study_protocol_inspections : ~8 rows (environ)
 INSERT INTO `pro_cl_study_protocol_inspections` (`id`, `inspection_id`, `filled_by`, `sections_done`, `a_q1`, `a_q2`, `a_q3`, `a_q4`, `a_q5`, `a_q6`, `a_q7`, `a_q8`, `a_q9`, `a_q10`, `a_q11`, `a_q12`, `a_q13`, `a_q14`, `a_q15`, `a_q16`, `a_q17`, `a_q18`, `a_q19`, `a_q20`, `a_comments`, `a_is_conforming`, `b_q1`, `b_q2`, `b_q3`, `b_q4`, `b_comments`, `b_is_conforming`, `c_q1`, `c_q2`, `c_q3`, `c_q4`, `c_q5`, `c_q6`, `c_comments`, `c_is_conforming`, `d_q1`, `d_q2`, `d_comments`, `d_is_conforming`, `e_q1`, `e_q2`, `e_q3`, `e_q4`, `e_comments`, `e_is_conforming`, `f_q1`, `f_staff_1_result`, `f_staff_1_level`, `f_staff_1_remarks`, `f_staff_2_result`, `f_staff_2_level`, `f_staff_2_remarks`, `f_staff_3_result`, `f_staff_3_level`, `f_staff_3_remarks`, `f_staff_4_result`, `f_staff_4_level`, `f_staff_4_remarks`, `f_staff_5_result`, `f_staff_5_level`, `f_staff_5_remarks`, `f_staff_6_result`, `f_staff_6_level`, `f_staff_6_remarks`, `f_staff_7_result`, `f_staff_7_level`, `f_staff_7_remarks`, `f_staff_8_result`, `f_staff_8_level`, `f_staff_8_remarks`, `f_staff_9_result`, `f_staff_9_level`, `f_staff_9_remarks`, `f_staff_10_result`, `f_staff_10_level`, `f_staff_10_remarks`, `f_staff_11_result`, `f_staff_11_level`, `f_staff_11_remarks`, `f_staff_12_result`, `f_staff_12_level`, `f_staff_12_remarks`, `f_staff_13_result`, `f_staff_13_level`, `f_staff_13_remarks`, `f_staff_14_result`, `f_staff_14_level`, `f_staff_14_remarks`, `f_staff_15_result`, `f_staff_15_level`, `f_staff_15_remarks`, `f_comments`, `f_is_conforming`, `created_at`, `updated_at`) VALUES
 	(1, 30, 18, '["a", "f", "b", "c", "d", "e"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 0, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, NULL, 'yes', NULL, NULL, 'no', NULL, NULL, 'no', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, 1, '2026-03-25 08:14:29', '2026-03-26 07:46:57'),
 	(2, 38, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, 1, '2026-03-27 10:27:32', '2026-03-27 10:33:18'),
 	(3, 43, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'no', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-03-27 14:17:18', '2026-03-27 14:18:09'),
-	(4, 42, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-03-27 14:18:36', '2026-03-27 14:19:11');
+	(4, 42, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-03-27 14:18:36', '2026-03-27 14:19:11'),
+	(5, 48, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'no', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, 1, '2026-04-01 11:10:48', '2026-04-01 11:13:37'),
+	(6, 49, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-04-01 11:14:11', '2026-04-01 11:17:30'),
+	(7, 54, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'no', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-04-02 12:32:52', '2026-04-02 12:33:33'),
+	(8, 53, 18, '["a", "b", "c", "d", "e", "f"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'no', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2026-04-02 12:33:56', '2026-04-02 12:34:29');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_cl_study_report_inspections
 CREATE TABLE IF NOT EXISTS `pro_cl_study_report_inspections` (
@@ -1236,12 +2231,54 @@ CREATE TABLE IF NOT EXISTS `pro_cl_study_report_inspections` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `pro_cl_study_report_inspections_inspection_id_unique` (`inspection_id`),
   CONSTRAINT `pro_cl_study_report_inspections_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_cl_study_report_inspections : ~2 rows (environ)
 INSERT INTO `pro_cl_study_report_inspections` (`id`, `inspection_id`, `filled_by`, `sections_done`, `a_q1`, `a_q2`, `a_q3`, `a_q4`, `a_q5`, `a_q6`, `a_q7`, `a_q8`, `a_q9`, `a_q10`, `a_q11`, `a_q12`, `a_q13`, `a_q14`, `a_q15`, `a_q16`, `a_q17`, `a_q18`, `a_q19`, `a_q20`, `a_q21`, `a_q22`, `a_q23`, `a_q24`, `a_q25`, `a_q26`, `a_q27`, `a_q28`, `a_comments`, `a_is_conforming`, `b_q1`, `b_q2`, `b_q3`, `b_comments`, `b_is_conforming`, `c_q1`, `c_q2`, `c_comments`, `c_is_conforming`, `d_q1`, `d_q2`, `d_q3`, `d_q4`, `d_comments`, `d_is_conforming`, `e_q1`, `e_q2`, `e_q3`, `e_q4`, `e_comments`, `e_is_conforming`, `created_at`, `updated_at`) VALUES
 	(1, 31, 18, '["a", "b", "c", "d", "e"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, '2026-03-25 10:04:30', '2026-03-25 10:08:51'),
-	(2, 40, 18, '["a", "b", "c", "d", "e"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'no', NULL, 1, 'yes', 'yes', 'd', 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, '2026-03-27 10:50:08', '2026-03-27 10:50:40');
+	(2, 40, 18, '["a", "b", "c", "d", "e"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'no', NULL, 1, 'yes', 'yes', 'd', 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, '2026-03-27 10:50:08', '2026-03-27 10:50:40'),
+	(3, 52, 18, '["a", "b", "c", "d", "e"]', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, 'yes', 'yes', 'yes', 'yes', NULL, 1, '2026-04-01 11:25:13', '2026-04-01 11:25:43');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cl_templates
+CREATE TABLE IF NOT EXISTS `pro_cl_templates` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reference_code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1.0',
+  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cl_templates_code_unique` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cl_templates : ~22 rows (environ)
+INSERT INTO `pro_cl_templates` (`id`, `code`, `name`, `reference_code`, `version`, `category`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
+	(1, 'qa_activities', 'QA Activities Checklist', 'QA-PR-1-011/05', '1.0', 'qa', '20-item checklist tracking QA activities for GLP studies, per project.', 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(2, 'qa_review', 'QA Review Inspection', 'QA-PR-1-016/04', '1.0', 'qa', 'Biennial QA Review Checklist conducted by the Facility Manager.', 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(3, 'amendment_deviation', 'Amendment & Deviations Inspection', 'QA-PR-1-004/06', '1.0', 'protocol', 'Single-section checklist for Study Protocol Amendment/Deviation Inspections.', 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(4, 'study_protocol', 'Study Protocol Inspection', NULL, '1.0', 'protocol', NULL, 1, '2026-04-01 10:15:56', '2026-04-01 10:15:56'),
+	(5, 'study_report', 'Study Report Inspection', 'QA-PR-1-005/06', '1.0', 'protocol', NULL, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(6, 'data_quality', 'Data Quality Inspection', 'QA-PR-1-018/03', '1.0', 'protocol', NULL, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(7, 'facility_main', 'Facility Inspection Checklist (Main Facility)', 'QA-PR-1-001A/06', '1.0', 'facility', NULL, 1, '2026-04-01 10:15:57', '2026-04-01 10:15:57'),
+	(8, 'facility_cove', 'Facility Inspection Checklist (Field Site — Covè)', 'QA-PR-1-001B/06', '1.0', 'facility', NULL, 1, '2026-04-01 10:15:58', '2026-04-01 10:15:58'),
+	(9, 'process_inspection', 'Process Inspection Checklist', NULL, '1.0', 'facility', NULL, 1, '2026-04-01 10:15:59', '2026-04-01 10:15:59'),
+	(10, 'cone_llin', 'Cone Bioassay with LLIN samples', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(11, 'cone_irs_blocks_treatment', 'Cone Bioassay with IRS blocks (Blocks treatment)', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(12, 'cone_irs_blocks_test', 'Cone Bioassay with IRS blocks (Test)', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(13, 'tunnel_test', 'Tunnel Test', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(14, 'llin_washing', 'Evaluation of Whole LLIN in Experimental huts (Washing and Cutting of Whole Nets)', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(15, 'llin_exp_huts', 'Evaluation of Whole LLIN in Experimental huts', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(16, 'irs_treatment', 'IRS Treatment application', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(17, 'irs_trial', 'IRS Trial', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:00', '2026-04-01 10:16:00'),
+	(18, 'cone_irs_walls', 'Cone Bioassay on IRS treated walls', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(19, 'cylinder_bioassay', 'Cylinder Bioassay', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(20, 'cdc_bottle_coating', 'CDC Bottle Bioassay (Coating)', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(21, 'cdc_bottle_test', 'CDC Bottle Bioassay (Test)', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01'),
+	(22, 'spatial_repellents', 'Evaluation of spatial repellents in Experimental huts', NULL, '1.0', 'critical_phase', NULL, 1, '2026-04-01 10:16:01', '2026-04-01 10:16:01');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_cl_tunnel_test
 CREATE TABLE IF NOT EXISTS `pro_cl_tunnel_test` (
@@ -1271,12 +2308,727 @@ CREATE TABLE IF NOT EXISTS `pro_cl_tunnel_test` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_cl_tunnel_test : ~2 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_cl_tunnel_test : ~1 rows (environ)
 INSERT INTO `pro_cl_tunnel_test` (`id`, `project_id`, `project_code`, `inspection_id`, `q1`, `q2`, `q3`, `q4`, `q5`, `q6`, `q7`, `q8`, `q9`, `q10`, `q11`, `q12`, `q13`, `q14`, `q15`, `q16`, `comments`, `is_conforming`, `filled_by`, `created_at`, `updated_at`) VALUES
 	(1, 6, '24-05', 10, 'no', 'no', 'yes', 'no', 'yes', 'yes', 'yes', 'no', 'no', 'na', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'dd', NULL, 18, '2026-03-16 08:10:44', '2026-03-16 08:10:44'),
-	(2, 1, '24-01', 22, 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'ee', 1, 18, '2026-03-23 15:23:30', '2026-03-23 15:23:30');
+	(2, 1, '24-01', 22, 'no', 'no', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'ee', 1, 18, '2026-03-23 15:23:30', '2026-03-23 15:23:30'),
+	(3, 31, '26-02', 51, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', NULL, 1, 18, '2026-04-01 11:19:42', '2026-04-01 11:19:42');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cpia_assessments
+CREATE TABLE IF NOT EXISTS `pro_cpia_assessments` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `project_code` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `study_director_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `study_title` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `completed_by` bigint unsigned DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `updated_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cpia_assessments_project_id_unique` (`project_id`),
+  CONSTRAINT `cpia_assessments_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `pro_projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cpia_assessments : ~1 rows (environ)
+INSERT INTO `pro_cpia_assessments` (`id`, `project_id`, `project_code`, `study_director_name`, `study_title`, `status`, `completed_at`, `completed_by`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+	(1, 31, '26-02', 'M. FRANCIS HOUEHA', '26-02', 'completed', '2026-04-01 16:03:01', 18, 18, NULL, '2026-04-01 15:09:04', '2026-04-01 16:03:01'),
+	(2, 39, '26-09', 'M. FRANCIS HOUEHA', 'Projet de tests', 'completed', '2026-04-02 08:24:36', 18, 18, NULL, '2026-04-02 08:22:00', '2026-04-02 08:24:36');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cpia_items
+CREATE TABLE IF NOT EXISTS `pro_cpia_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `section_id` bigint unsigned NOT NULL,
+  `item_number` smallint unsigned NOT NULL,
+  `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` smallint unsigned NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `copied_from_id` bigint unsigned DEFAULT NULL,
+  `usage_count` int unsigned NOT NULL DEFAULT '0',
+  `first_used_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cpia_items_section_id_item_number_unique` (`section_id`,`item_number`),
+  KEY `cpia_items_copied_from_id_foreign` (`copied_from_id`),
+  CONSTRAINT `cpia_items_copied_from_id_foreign` FOREIGN KEY (`copied_from_id`) REFERENCES `pro_cpia_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cpia_items_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `pro_cpia_sections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cpia_items : ~74 rows (environ)
+INSERT INTO `pro_cpia_items` (`id`, `section_id`, `item_number`, `text`, `sort_order`, `is_active`, `copied_from_id`, `usage_count`, `first_used_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, 'Net labelling', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(2, 1, 2, 'Net cutting', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(3, 1, 3, 'Net washing procedure', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(4, 1, 4, 'Number of times nets are washed', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(5, 1, 5, 'Net storage', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(6, 2, 1, 'Number of whole nets to be cut and their labelling', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(7, 2, 2, 'Batch number selection', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(8, 2, 3, 'Number of net samples cutting', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(9, 2, 4, 'Net samples labelling', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(10, 2, 5, 'Storage of net samples', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(11, 3, 1, 'Refurbishment of experimental huts', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(12, 3, 2, 'Training and consent of sleepers', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(13, 3, 3, 'Monitoring and recording of environmental condition of experimental huts', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(14, 3, 4, 'Drawing down curtains in experimental huts', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(15, 3, 5, 'Opening windows in experimental huts', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(16, 3, 6, 'Rotation of mosquito nets', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(17, 3, 7, 'Rotation of sleepers', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(18, 3, 8, 'Time spent by sleepers in experiment hut', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(19, 3, 9, 'Mosquito collection (Putting mosquitoes in correct cups)', 9, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(20, 3, 10, 'Cleaning of experimental hut before each round', 10, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(21, 3, 11, 'Mosquito transport conditions from experimental huts to laboratory', 11, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(22, 3, 12, 'Decontamination of laboratory tools', 12, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(23, 3, 13, 'Recording of mortality', 13, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(24, 3, 14, 'Monitoring and recording of environmental condition in laboratory', 14, 1, NULL, 0, NULL, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(25, 4, 1, 'Calibration of shaker bath', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(26, 4, 2, 'Number of net samples washed', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(27, 4, 3, 'Net sample washing procedure', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(28, 4, 4, 'Number of times nets are washed', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(29, 4, 5, 'Net samples storage', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(30, 5, 1, 'Storage of mosquito net samples according to protocol', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(31, 5, 2, 'Decontamination of laboratory tools', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(32, 5, 3, 'Correct labelling of mosquito cage(s)', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(33, 5, 4, 'Acclimatization of mosquitoes to laboratory environment', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(34, 5, 5, 'Use of the right mosquito strain according to protocol', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(35, 5, 6, 'Number of mosquitoes exposed according to protocol', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(36, 5, 7, 'Contact time for mosquito exposure', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(37, 5, 8, 'Time for recording KD after exposure', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(38, 5, 9, 'Use of correct data sheet for recording of raw data', 9, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(39, 6, 1, 'Decontamination of tools', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(40, 6, 2, 'Acclimatisation of mosquitoes to laboratory environment', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(41, 6, 3, 'Use of the right mosquito strain', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(42, 6, 4, 'Use of the right number of mosquitoes exposed according to protocol', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(43, 6, 5, 'Respect of contact time for mosquito exposure', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(44, 6, 6, 'Respect of KD recording time (1 hour post exposure)', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(45, 6, 7, 'Storage of net samples after test', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(46, 6, 8, 'Use of the right data sheet for recording of raw data', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(47, 7, 1, 'Decontamination of the tunnels', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(48, 7, 2, 'Presence of holes (created for mosquito passage) in the net samples during test', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(49, 7, 3, 'Acclimatization of mosquitoes to laboratory environment', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(50, 7, 4, 'Use of the right mosquito strain according to protocol', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(51, 7, 5, 'Use of the right animal according protocol', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(52, 7, 6, 'Right number of mosquitoes exposed according to protocol', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(53, 7, 7, 'Contact time for mosquito exposure', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(54, 7, 8, 'Use of the right data sheet for recording of raw data', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(55, 8, 1, 'Selection, training and consent of volunteer sleepers', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(56, 8, 2, 'Monitoring and recording of environmental condition of experimental huts', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(57, 8, 3, 'Rotation of sleepers', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(58, 8, 4, 'Rotation of methods', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(59, 8, 5, 'Time spent by sleepers in experiment hut', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(60, 8, 6, 'Mosquito transport conditions from experimental huts to laboratory', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(61, 8, 7, 'Recording of KD', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(62, 8, 8, 'Recording of immediate and delayed mortality', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(63, 8, 9, 'Cleaning of experimental hut', 9, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(64, 8, 10, 'Monitoring and recording of environmental condition in laboratory', 10, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(65, 9, 1, 'Selection, training and consent of volunteer sleepers', 1, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(66, 9, 2, 'Monitoring and recording of environmental condition of experimental huts', 2, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(67, 9, 3, 'Rotation of sleepers', 3, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(68, 9, 4, 'Rotation of methods', 4, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(69, 9, 5, 'Time spent by sleepers in experiment hut', 5, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(70, 9, 6, 'Mosquito transport conditions from experimental huts to laboratory', 6, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(71, 9, 7, 'Recording of KD', 7, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(72, 9, 8, 'Recording of immediate and delayed mortality', 8, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(73, 9, 9, 'Cleaning of experimental hut', 9, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(74, 9, 10, 'Monitoring and recording of environmental condition in laboratory', 10, 1, NULL, 0, NULL, '2026-04-01 14:56:47', '2026-04-01 14:56:47');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cpia_responses
+CREATE TABLE IF NOT EXISTS `pro_cpia_responses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `assessment_id` bigint unsigned NOT NULL,
+  `section_id` bigint unsigned NOT NULL,
+  `item_id` bigint unsigned NOT NULL,
+  `impact_score` tinyint unsigned DEFAULT NULL,
+  `is_selected` tinyint(1) NOT NULL DEFAULT '0',
+  `item_text_snapshot` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cpia_responses_assessment_id_item_id_unique` (`assessment_id`,`item_id`),
+  KEY `cpia_responses_section_id_foreign` (`section_id`),
+  KEY `cpia_responses_item_id_foreign` (`item_id`),
+  KEY `cpia_responses_assessment_id_section_id_index` (`assessment_id`,`section_id`),
+  CONSTRAINT `cpia_responses_assessment_id_foreign` FOREIGN KEY (`assessment_id`) REFERENCES `pro_cpia_assessments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cpia_responses_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `pro_cpia_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cpia_responses_section_id_foreign` FOREIGN KEY (`section_id`) REFERENCES `pro_cpia_sections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cpia_responses : ~30 rows (environ)
+INSERT INTO `pro_cpia_responses` (`id`, `assessment_id`, `section_id`, `item_id`, `impact_score`, `is_selected`, `item_text_snapshot`, `created_by`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, 1, 10, 1, 'Net labelling', 18, '2026-04-01 15:09:42', '2026-04-01 15:35:00'),
+	(2, 1, 1, 2, 8, 1, 'Net cutting', 18, '2026-04-01 15:09:42', '2026-04-01 15:35:00'),
+	(3, 1, 1, 3, 7, 1, 'Net washing procedure', 18, '2026-04-01 15:09:42', '2026-04-01 15:35:00'),
+	(4, 1, 1, 4, 4, 1, 'Number of times nets are washed', 18, '2026-04-01 15:09:42', '2026-04-01 15:35:00'),
+	(5, 1, 1, 5, 6, 1, 'Net storage', 18, '2026-04-01 15:09:42', '2026-04-01 15:35:00'),
+	(6, 1, 6, 39, 4, 1, 'Decontamination of tools', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:21'),
+	(7, 1, 6, 40, 10, 1, 'Acclimatisation of mosquitoes to laboratory environment', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:21'),
+	(8, 1, 6, 41, 5, 1, 'Use of the right mosquito strain', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(9, 1, 6, 42, 8, 1, 'Use of the right number of mosquitoes exposed according to protocol', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(10, 1, 6, 43, 7, 1, 'Respect of contact time for mosquito exposure', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(11, 1, 6, 44, 6, 1, 'Respect of KD recording time (1 hour post exposure)', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(12, 1, 6, 45, 6, 1, 'Storage of net samples after test', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(13, 1, 6, 46, 8, 1, 'Use of the right data sheet for recording of raw data', 18, '2026-04-01 15:34:13', '2026-04-01 15:34:22'),
+	(14, 2, 6, 39, 5, 1, 'Decontamination of tools', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(15, 2, 6, 40, 5, 1, 'Acclimatisation of mosquitoes to laboratory environment', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(16, 2, 6, 41, 5, 1, 'Use of the right mosquito strain', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(17, 2, 6, 42, 5, 1, 'Use of the right number of mosquitoes exposed according to protocol', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(18, 2, 6, 43, 7, 1, 'Respect of contact time for mosquito exposure', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(19, 2, 6, 44, 8, 1, 'Respect of KD recording time (1 hour post exposure)', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(20, 2, 6, 45, 7, 1, 'Storage of net samples after test', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(21, 2, 6, 46, 6, 1, 'Use of the right data sheet for recording of raw data', 18, '2026-04-02 08:23:32', '2026-04-02 08:24:02'),
+	(22, 2, 5, 30, 3, 1, 'Storage of mosquito net samples according to protocol', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(23, 2, 5, 31, 6, 1, 'Decontamination of laboratory tools', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(24, 2, 5, 32, 8, 1, 'Correct labelling of mosquito cage(s)', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(25, 2, 5, 33, 9, 1, 'Acclimatization of mosquitoes to laboratory environment', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(26, 2, 5, 34, 5, 1, 'Use of the right mosquito strain according to protocol', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(27, 2, 5, 35, 10, 1, 'Number of mosquitoes exposed according to protocol', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(28, 2, 5, 36, 4, 1, 'Contact time for mosquito exposure', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(29, 2, 5, 37, 5, 1, 'Time for recording KD after exposure', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54'),
+	(30, 2, 5, 38, 9, 1, 'Use of correct data sheet for recording of raw data', 18, '2026-04-02 08:23:43', '2026-04-02 08:23:54');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_cpia_sections
+CREATE TABLE IF NOT EXISTS `pro_cpia_sections` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `letter` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` smallint unsigned NOT NULL DEFAULT '0',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cpia_sections_code_unique` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_cpia_sections : ~9 rows (environ)
+INSERT INTO `pro_cpia_sections` (`id`, `code`, `letter`, `title`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES
+	(1, 'A', 'A', 'Whole Net cutting and washing', 1, 1, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(2, 'B', 'B', 'Net cutting and net labelling', 2, 1, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(3, 'C', 'C', 'Evaluation of whole LLINs in Experimental huts', 3, 1, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(4, 'D', 'D', 'Calibration of shaker bath and net washing', 4, 1, '2026-04-01 14:56:46', '2026-04-01 14:56:46'),
+	(5, 'E', 'E', 'Cone Bioassay with LLIN samples', 5, 1, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(6, 'F', 'F', 'Cone Test on LLIN samples (Supplementary test)', 6, 1, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(7, 'G', 'G', 'Tunnel Tests', 7, 1, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(8, 'H', 'H', 'Standard Mosquito Collection (SMC)', 8, 1, '2026-04-01 14:56:47', '2026-04-01 14:56:47'),
+	(9, 'I', 'I', 'Human Landing Catches (HLC)', 9, 1, '2026-04-01 14:56:47', '2026-04-01 14:56:47');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_document_signatures
+CREATE TABLE IF NOT EXISTS `pro_document_signatures` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `signer_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document_type` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `document_id` bigint unsigned NOT NULL,
+  `role_in_document` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `signature_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `signed_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `document_signatures_user_id_foreign` (`user_id`),
+  KEY `document_signatures_document_type_document_id_index` (`document_type`,`document_id`),
+  CONSTRAINT `document_signatures_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_document_signatures : ~4 rows (environ)
+INSERT INTO `pro_document_signatures` (`id`, `user_id`, `signer_name`, `document_type`, `document_id`, `role_in_document`, `signature_data`, `ip_address`, `signed_at`, `created_at`, `updated_at`) VALUES
+	(1, 18, 'FRANCIS HOUEHA', 'cpia_assessment', 2, 'study_director', 'data:image/png;base64,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', '127.0.0.1', '2026-04-02 08:54:12', '2026-04-02 08:54:12', '2026-04-02 08:54:12'),
+	(2, 18, 'FRANCIS HOUEHA', 'qa_unit_report', 55, 'qa_inspector', 'data:image/png;base64,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', '127.0.0.1', '2026-04-02 12:27:16', '2026-04-02 12:27:16', '2026-04-02 12:27:16'),
+	(3, 18, 'FRANCIS HOUEHA', 'qa_unit_report', 54, 'qa_inspector', 'data:image/png;base64,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', '127.0.0.1', '2026-04-02 12:35:49', '2026-04-02 12:35:49', '2026-04-02 12:35:49'),
+	(4, 18, 'FRANCIS HOUEHA', 'qa_unit_report', 53, 'qa_inspector', 'data:image/png;base64,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', '127.0.0.1', '2026-04-02 12:36:10', '2026-04-02 12:36:10', '2026-04-02 12:36:10'),
+	(5, 18, 'FRANCIS HOUEHA', 'qa_unit_report', 56, 'qa_inspector', 'data:image/png;base64,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', '127.0.0.1', '2026-04-03 13:59:27', '2026-04-03 13:59:27', '2026-04-03 13:59:27');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_inspection_question_snapshots
+CREATE TABLE IF NOT EXISTS `pro_inspection_question_snapshots` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inspection_id` bigint unsigned NOT NULL,
+  `cl_question_id` bigint unsigned DEFAULT NULL,
+  `template_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `section_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `section_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `section_letter` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `section_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `section_subtitle` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `section_display_style` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
+  `section_form_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `section_sort_order` int NOT NULL DEFAULT '0',
+  `url_slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `response_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'yes_no_na',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `snapshotted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inspection_question_snapshots_cl_question_id_foreign` (`cl_question_id`),
+  KEY `inspection_question_snapshots_inspection_id_url_slug_index` (`inspection_id`,`url_slug`),
+  KEY `inspection_question_snapshots_inspection_id_section_code_index` (`inspection_id`,`section_code`),
+  CONSTRAINT `inspection_question_snapshots_cl_question_id_foreign` FOREIGN KEY (`cl_question_id`) REFERENCES `pro_cl_questions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inspection_question_snapshots_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=204 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_inspection_question_snapshots : ~203 rows (environ)
+INSERT INTO `pro_inspection_question_snapshots` (`id`, `inspection_id`, `cl_question_id`, `template_code`, `section_code`, `section_key`, `section_letter`, `section_title`, `section_subtitle`, `section_display_style`, `section_form_type`, `section_sort_order`, `url_slug`, `item_number`, `text`, `response_type`, `sort_order`, `snapshotted_at`, `created_at`, `updated_at`) VALUES
+	(1, 56, 204, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '1', 'Have all non-conformances raised from previous facility inspection been corrected?', 'yes_no_na', 1, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(2, 56, 205, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '2', 'Does the Facility have a current GLP compliance certificate?', 'yes_no_na', 2, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(3, 56, 206, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '3', 'Is the organizational chart up to date and available in every section?', 'yes_no_na', 3, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(4, 56, 207, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '4', 'Does the organization chart adequately describe reporting structure?', 'yes_no_na', 4, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(5, 56, 208, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '5', 'Is the Facility Manager clearly identified?', 'yes_no_na', 5, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(6, 56, 209, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '6', 'Is the QA Manager clearly identified?', 'yes_no_na', 6, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(7, 56, 210, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '7', 'Are Study Director(s) clearly identified?', 'yes_no_na', 7, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(8, 56, 211, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '8', 'Is the Data Manager clearly identified?', 'yes_no_na', 8, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(9, 56, 212, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '9', 'Is the Archivist clearly identified?', 'yes_no_na', 9, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(10, 56, 213, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '10', 'Is the Administration clearly identified?', 'yes_no_na', 10, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(11, 56, 214, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '11', 'Is a floor plan of the Facility up to date and available?', 'yes_no_na', 11, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(12, 56, 215, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '12', 'Is the Master schedule up to date and available?', 'yes_no_na', 12, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(13, 56, 216, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '13', 'Is the List of Projects up to date and available?', 'yes_no_na', 13, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(14, 56, 217, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '14', 'Is the Facility Quality Manual up to date and available?', 'yes_no_na', 14, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(15, 56, 218, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '15', 'Is there a system for keeping personnel records?', 'yes_no_na', 15, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(16, 56, 219, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '16', 'Is the personnel records accessible to everyone?', 'yes_no_na', 16, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(17, 56, 220, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '17', 'Does each staff have a file?', 'yes_no_na', 17, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(18, 56, 221, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '18', 'Does each staff have a work contract that is up to date?', 'yes_no_na', 18, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(19, 56, 222, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '19', 'Are the CVs up to date with detailed information, signed and available for all personnel?', 'yes_no_na', 19, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(20, 56, 223, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '20', 'Are current job descriptions signed and available for all personnel?', 'yes_no_na', 20, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(21, 56, 224, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '21', 'Are there procedures/policies covering staff training?', 'yes_no_na', 21, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(22, 56, 225, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '22', 'Is there evidence of training for each staff?', 'yes_no_na', 22, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(23, 56, 226, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '23', 'Are training records current for all personnel?', 'yes_no_na', 23, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(24, 56, 227, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '24', 'Are training records reviewed periodically as per SOP?', 'yes_no_na', 24, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(25, 56, 228, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '25', 'Is a training programme for the current year available?', 'yes_no_na', 25, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(26, 56, 229, 'facility_main', 'a', 'a', 'A', 'Administration', NULL, 'normal', 'yes_no_na', 1, 'facility-a', '26', 'Are GLP personnel files maintained after departures of staff?', 'yes_no_na', 26, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(27, 56, 230, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '1', 'Is there a document control team?', 'yes_no_na', 1, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(28, 56, 231, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '2', 'Is there someone responsible for the management and distribution of SOPs?', 'yes_no_na', 2, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(29, 56, 232, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '3', 'Is there an index for SOPs and other controlled documents?', 'yes_no_na', 3, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(30, 56, 233, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '4', 'Is there an SOP and document control review plan?', 'yes_no_na', 4, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(31, 56, 234, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '5', 'Are controlled documents reviewed every 2 years?', 'yes_no_na', 5, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(32, 56, 235, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '6', 'Are all controlled documents (SOPs, Sheets, and Policy Manuals) up to date?', 'yes_no_na', 6, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(33, 56, 236, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '7', 'Is there an SOP for managing SOPs?', 'yes_no_na', 7, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(34, 56, 237, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '8', 'Is there an SOP for document control?', 'yes_no_na', 8, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(35, 56, 238, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '9', 'All controlled documents available (SOPs, Sheets, and Policy Manuals) in each section as appropriate?', 'yes_no_na', 9, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(36, 56, 239, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '10', 'Do SOPs accurately reflect current procedures?', 'yes_no_na', 10, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(37, 56, 240, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '11', 'Are all SOPs signed, dated and approved by the Facility Manager?', 'yes_no_na', 11, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(38, 56, 241, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '12', 'Does each SOP have the version number, the author, the list of appendices, and the number of pages over the total number of pages?', 'yes_no_na', 12, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(39, 56, 242, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '13', 'Are appendix attached to all SOPs?', 'yes_no_na', 13, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(40, 56, 243, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '14', 'Were the changes brought to previous version mentioned in current version of SOPs and other controlled documents?', 'yes_no_na', 14, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(41, 56, 244, 'facility_main', 'b', 'b', 'B', 'Document Control', NULL, 'normal', 'yes_no_na', 2, 'facility-b', '15', 'Are there procedures in place for replacing revised SOPs or other controlled documents and ensuring that old SOPs or other controlled document are not available for use (removed from circulation)?', 'yes_no_na', 15, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(42, 56, 245, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '1', 'Is the bioassay laboratory secured from unauthorised access?', 'yes_no_na', 1, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(43, 56, 246, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '2', 'Is the work area neat?', 'yes_no_na', 2, '2026-04-03 14:28:19', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(44, 56, 247, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '3', 'Is the water under the tables clean and changed regularly?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:19', '2026-04-03 13:28:19'),
+	(45, 56, 248, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '4', 'Are laboratory tools safely secured and stored when not in use?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(46, 56, 249, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '5', 'Are racks labelled accordingly providing detailed information and well arranged?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(47, 56, 250, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '6', 'Are insecticide product waste disposed separately from regular waste?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(48, 56, 251, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '7', 'Is the laboratory environmentally controlled?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(49, 56, 252, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '8', 'Is the laboratory temperature monitored?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(50, 56, 253, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '9', 'Are appropriate dress procedures followed?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(51, 56, 254, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '10', 'Are lab coats clean and well arranged?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(52, 56, 255, 'facility_main', 'c', 'c', 'C', 'Bioassay Laboratory', NULL, 'normal', 'yes_no_na', 3, 'facility-c', '11', 'Are SOPs related to laboratory activities up to date, signed and available?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(53, 56, 256, 'facility_main', 'd', 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 'facility-d', '1', 'Is access to the biomolecular room limited?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(54, 56, 257, 'facility_main', 'd', 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 'facility-d', '2', 'Is the biomolecular room clean and well organised?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(55, 56, 258, 'facility_main', 'd', 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 'facility-d', '3', 'Is the biomolecular room environmentally controlled?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(56, 56, 259, 'facility_main', 'd', 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 'facility-d', '4', 'Is the biomolecular room temperature monitored?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(57, 56, 260, 'facility_main', 'd', 'd', 'D', 'Biomolecular Room', NULL, 'normal', 'yes_no_na', 4, 'facility-d', '5', 'Are the equipment in the biomolecular room clean?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(58, 56, 261, 'facility_main', 'e', 'e', 'E', 'Shaker-Bath room and LLIN Washing area', NULL, 'normal', 'yes_no_na', 5, 'facility-e', '1', 'Is the shaker-bath room clean and well organised?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(59, 56, 262, 'facility_main', 'e', 'e', 'E', 'Shaker-Bath room and LLIN Washing area', NULL, 'normal', 'yes_no_na', 5, 'facility-e', '2', 'Is the shaker-bath room free from water spillage?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(60, 56, 263, 'facility_main', 'e', 'e', 'E', 'Shaker-Bath room and LLIN Washing area', NULL, 'normal', 'yes_no_na', 5, 'facility-e', '3', 'Are the equipment sheets for all shaker-baths up to date and available?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(61, 56, 264, 'facility_main', 'e', 'e', 'E', 'Shaker-Bath room and LLIN Washing area', NULL, 'normal', 'yes_no_na', 5, 'facility-e', '4', 'Is the LLIN washing area neat and free from water spillage?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(62, 56, 265, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '1', 'Is there someone responsible for the management of the chemical room?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(63, 56, 266, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '2', 'Is there limited access to chemical storage room?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(64, 56, 267, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '3', 'Is the chemical storage room neat and organized?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(65, 56, 268, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '4', 'Are there separate areas for storage of test/control/reference items?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(66, 56, 269, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '5', 'Is the chemical storage room environmentally controlled?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(67, 56, 270, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '6', 'Is the chemical room temperature continuously monitored?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(68, 56, 271, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '7', 'Is the chemical room temperature range adequate for insecticide products?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(69, 56, 272, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '8', 'Is the storage area adequately ventilated?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(70, 56, 273, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '9', 'Is there a separate area for the mixing of test items e.g. fume hood?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(71, 56, 274, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '10', 'Is there a separate area for spraying insecticides on substrates?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(72, 56, 275, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '11', 'Is there an extraction fan in the potter tower room?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(73, 56, 276, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '12', 'Are Test/control/reference substances and dilutions properly labelled (Name, CAS or code number, Batch number, Expiration date, Storage conditions) to ensure proper identification of test items?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(74, 56, 277, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '13', 'Is the SOP for reception, registration and storage of materials followed?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(75, 56, 278, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '14', 'Is the reception of test/control/reference items documented?', 'yes_no_na', 14, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(76, 56, 279, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '15', 'Are there records of MSDS and Chemical analysis certificates of test items?', 'yes_no_na', 15, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(77, 56, 280, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '16', 'Are there records of test/control/reference items usage?', 'yes_no_na', 16, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(78, 56, 281, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '17', 'Is there a procedure for disposal of test items?', 'yes_no_na', 17, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(79, 56, 282, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '18', 'Is test item disposal documented?', 'yes_no_na', 18, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(80, 56, 283, 'facility_main', 'f', 'f', 'F', 'Chemical & Potter tower Room', NULL, 'normal', 'yes_no_na', 6, 'facility-f', '19', 'Is there a calendar to update list of chemical products and mosquito nets?', 'yes_no_na', 19, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(81, 56, 284, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '1', 'Is there someone responsible for the management of the safety (changing) room?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(82, 56, 285, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '2', 'Is the safety room separated from other sections?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(83, 56, 286, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '3', 'Is there limited access to the safety room?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(84, 56, 287, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '4', 'Is the locker for storage of facemask adequately locked?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(85, 56, 288, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '5', 'Are safety materials adequate for use?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(86, 56, 289, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '6', 'Is there a safety procedure for the Facility?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(87, 56, 290, 'facility_main', 'g', 'g', 'G', 'Safety (changing) room', NULL, 'normal', 'yes_no_na', 7, 'facility-g', '7', 'Is there a calendar for safety inspections?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(88, 56, 291, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '1', 'Is there limited access to storage and untreated block rooms?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(89, 56, 292, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '2', 'Are the storage room and the untreated block room neat and organized?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(90, 56, 293, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '3', 'Is the untreated block room environmentally controlled?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(91, 56, 294, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '4', 'Is the untreated block room temperature continuously monitored?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(92, 56, 295, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '5', 'Are untreated blocks labelled for easy identification?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(93, 56, 296, 'facility_main', 'h', 'h', 'H', 'Storage and untreated block rooms', NULL, 'normal', 'yes_no_na', 8, 'facility-h', '6', 'Is there a separate area for the mixing of test items e.g. fume hood?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(94, 56, 297, 'facility_main', 'i', 'i', 'I', 'Net storage room and expired products Room', NULL, 'normal', 'yes_no_na', 9, 'facility-i', '1', 'Is there limited access to net storage room and the expired products room?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(95, 56, 298, 'facility_main', 'i', 'i', 'I', 'Net storage room and expired products Room', NULL, 'normal', 'yes_no_na', 9, 'facility-i', '2', 'Are the net and expired products storage rooms neat and organized?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(96, 56, 299, 'facility_main', 'i', 'i', 'I', 'Net storage room and expired products Room', NULL, 'normal', 'yes_no_na', 9, 'facility-i', '3', 'Is the net storage room environmentally controlled?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(97, 56, 300, 'facility_main', 'i', 'i', 'I', 'Net storage room and expired products Room', NULL, 'normal', 'yes_no_na', 9, 'facility-i', '4', 'Is the net room temperature continuously monitored?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(98, 56, 301, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '1', 'Is there a person designated as responsible for equipment?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(99, 56, 302, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '2', 'Are equipment uniquely identified and included on the equipment inventory list?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(100, 56, 303, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '3', 'Is the equipment inventory up to date?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(101, 56, 304, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '4', 'Does each equipment have a file?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(102, 56, 305, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '5', 'Are Equipment instructions manual available and easily accessible?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(103, 56, 306, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '6', 'Are Equipment SOPs available and easily accessible and for each piece of equipment?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(104, 56, 307, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '7', 'Are calibration certificates available for each equipment?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(105, 56, 308, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '8', 'Are all equipment calibration certificate up to date?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(106, 56, 309, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '9', 'Is the Equipment calibration programme defined and regularly followed?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(107, 56, 310, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '10', 'Are Usage/maintenance/calibration/fault report sheets accessible and regularly filled in?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(108, 56, 311, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '11', 'Are Maintenance logs on equipment up-to-date?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(109, 56, 312, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '12', 'Is the equipment history regularly written in the log book?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(110, 56, 313, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '13', 'Are equipment cleaned after use?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(111, 56, 314, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '14', 'Do all equipment appear to be in good repair?', 'yes_no_na', 14, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(112, 56, 315, 'facility_main', 'j', 'j', 'J', 'Equipment', NULL, 'normal', 'yes_no_na', 10, 'facility-j', '15', 'Are equipment adequately stored when not used?', 'yes_no_na', 15, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(113, 56, 316, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '1', 'Are different sections within the Facility clearly defined?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(114, 56, 317, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '2', 'Are all entry ways secured from unauthorized access?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(115, 56, 318, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '3', 'Are offices clean and well maintained?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(116, 56, 319, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '4', 'Is the entire building clean and well maintained on daily basis?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(117, 56, 320, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '5', 'Are all floors free of liquids to avoid slips and falls?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(118, 56, 321, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '6', 'Is there any housekeeping issues that need to be addressed?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(119, 56, 322, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '7', 'Are all plugs and cords in good condition?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(120, 56, 323, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '8', 'Are there electrical switches, switch plates or receptacles that are cracked, broken or have exposed contacts?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(121, 56, 324, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '9', 'Are all electrical circuit breakers identified?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(122, 56, 325, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '10', 'Is there any circuit breakers regularly tripping?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(123, 56, 326, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '11', 'Are surveillance video cameras working?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(124, 56, 327, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '12', 'Is the building equipped with fire extinguishers?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(125, 56, 328, 'facility_main', 'k', 'k', 'K', 'Staff Offices & Buildings', NULL, 'normal', 'yes_no_na', 11, 'facility-k', '13', 'Are there any security issues to be addressed?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(126, 56, 329, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '1', 'Is there a personnel responsible for the development, validation, operation and maintenance of computerised systems?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(127, 56, 330, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '2', 'Is the data entry room secured from unauthorised access?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(128, 56, 331, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '3', 'Is the data entry room equipped with an extinguisher?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(129, 56, 332, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '4', 'Is the data entry room clean and well organised?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(130, 56, 333, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '5', 'Is the data entry room environmentally controlled and monitored?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(131, 56, 334, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '6', 'Is the temperature or humidity reported when out of range?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(132, 56, 335, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '7', 'Is there a documented policy for the recording and management of data?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(133, 56, 336, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '8', 'Are there SOPs for data management and are they all available?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(134, 56, 337, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '9', 'Are all data entry computers protected by a password system?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(135, 56, 338, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '10', 'Are computers regularly maintained?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(136, 56, 339, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '11', 'Is the maintenance of computerised systems used in GLP studies up to date?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(137, 56, 340, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '12', 'Are all computers equipped with an up-to-date anti-virus programme?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(138, 56, 341, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '13', 'Are peripheral components of computer hardware in good state?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(139, 56, 342, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '14', 'Is there records of any problems or fault detected and any remedial action taken during operation of the system?', 'yes_no_na', 14, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(140, 56, 343, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '15', 'Are there computers taken out of the system?', 'yes_no_na', 15, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(141, 56, 344, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '16', 'Is the server regularly maintained?', 'yes_no_na', 16, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(142, 56, 345, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '17', 'Is there a backup system in place where data are secured?', 'yes_no_na', 17, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(143, 56, 346, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '18', 'Is data recorded directly, legibly and indelibly?', 'yes_no_na', 18, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(144, 56, 347, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '19', 'Are all data signed and dated at the time of entry?', 'yes_no_na', 19, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(145, 56, 348, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '20', 'Are all data double entered?', 'yes_no_na', 20, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(146, 56, 349, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '21', 'Are alterations to data such that they do not obscure the original and indicate the person making the alteration, the date of the alteration and the reason for the alteration using the appropriate error correction code where appropriate?', 'yes_no_na', 21, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(147, 56, 350, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '22', 'Are computer systems used to generate study data?', 'yes_no_na', 22, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(148, 56, 351, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '23', 'Are computerised systems regularly validated?', 'yes_no_na', 23, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(149, 56, 352, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '24', 'Is the frequency for validation of computerised system defined?', 'yes_no_na', 24, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(150, 56, 353, 'facility_main', 'l', 'l', 'L', 'Data Management', NULL, 'normal', 'yes_no_na', 12, 'facility-l', '25', 'Are there any issues to be addressed?', 'yes_no_na', 25, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(151, 56, 354, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '1', 'Is the archive room secured from unauthorised access?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(152, 56, 355, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '2', 'Is the archive room equipped with an extinguisher?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(153, 56, 356, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '3', 'Are the facilities secured and resistant to fire?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(154, 56, 357, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '4', 'Is the archive room neat and well organised?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(155, 56, 358, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '5', 'Is the archive room environmentally controlled?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(156, 56, 359, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '6', 'Is the archive room temperature monitored?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(157, 56, 360, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '7', 'Is there a designated archivist?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(158, 56, 361, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '8', 'Is there a deputy archivist?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(159, 56, 362, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '9', 'Are non GLP files separated from GLP files?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(160, 56, 363, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '10', 'Are all cabinets locked?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(161, 56, 364, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '11', 'Are there documented procedures for the submission of data to and the withdrawal of data from archive?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(162, 56, 365, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '12', 'Are there SOPs for activities performed in the archive and are they available?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(163, 56, 366, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '13', 'Is the material indexed to expedite retrieval?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(164, 56, 367, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '14', 'Is the Archive logbook regularly filled in?', 'yes_no_na', 14, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(165, 56, 368, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '15', 'Is the archivist made aware of the contents of study files to be archived?', 'yes_no_na', 15, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(166, 56, 369, 'facility_main', 'm', 'm', 'M', 'Archive', NULL, 'normal', 'yes_no_na', 13, 'facility-m', '16', 'Are completed studies project boxes followed up for archive?', 'yes_no_na', 16, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(167, 56, 370, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '1', 'Is there a designated personnel responsible for the management of the insectary and the animal house?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(168, 56, 371, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '2', 'Are copies of personnel file available and up to date?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(169, 56, 372, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '3', 'Is the insectary neat and well kept?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(170, 56, 373, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '4', 'Is access to the insectary rooms limited?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(171, 56, 374, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '5', 'Are surveillance video cameras in working order?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(172, 56, 375, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '6', 'Is the organogram available?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(173, 56, 376, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '7', 'Is the floor plan available?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(174, 56, 377, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '8', 'Is the insectary policy manual available?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(175, 56, 378, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '9', 'Are SOPs related to insectary activities available?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(176, 56, 379, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '10', 'Is there a calibration plan for insectary equipment?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(177, 56, 380, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '11', 'Are all equipment sheets regularly filled and signed by unit supervisor?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(178, 56, 381, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '12', 'Are insectary materials well arranged?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(179, 56, 382, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '13', 'Are appropriate dress procedures followed?', 'yes_no_na', 13, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(180, 56, 383, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '14', 'Are insectary coats clean and well arranged?', 'yes_no_na', 14, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(181, 56, 384, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '15', 'Is the water under the tables regularly changed and clean?', 'yes_no_na', 15, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(182, 56, 385, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '16', 'Are different mosquito strains separated from each other in order to avoid cross contamination?', 'yes_no_na', 16, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(183, 56, 386, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '17', 'Are adult mosquito separated from larvae?', 'yes_no_na', 17, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(184, 56, 387, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '18', 'Are adult mosquito rooms environmentally controlled and monitored?', 'yes_no_na', 18, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(185, 56, 388, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '19', 'Are the mosquito cages labelled accordingly and well arranged?', 'yes_no_na', 19, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(186, 56, 389, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '20', 'Are breeding cages separated from test cages?', 'yes_no_na', 20, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(187, 56, 390, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '21', 'Is resistance test performed for each mosquito strain?', 'yes_no_na', 21, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(188, 56, 391, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '22', 'Is the resistance status report provided to the FM and satisfactory?', 'yes_no_na', 22, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(189, 56, 392, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '23', 'Are mosquito production sheets regularly filled?', 'yes_no_na', 23, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(190, 56, 393, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '24', 'Is there a registry showing record of mosquito cages released by the insectary and does the record reflect code of cage, age of mosquitoes and name of person cages were released to?', 'yes_no_na', 24, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(191, 56, 394, 'facility_main', 'n', 'n', 'N', 'Insectary and Annex', NULL, 'normal', 'yes_no_na', 14, 'facility-n', '25', 'Are all sheets signed by the unit supervisor?', 'yes_no_na', 25, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(192, 56, 395, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '1', 'Is there a person responsible for the management of the animal house?', 'yes_no_na', 1, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(193, 56, 396, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '2', 'Is the animal house neat?', 'yes_no_na', 2, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(194, 56, 397, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '3', 'Is access to the animal house limited?', 'yes_no_na', 3, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(195, 56, 398, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '4', 'Are the animal cages clearly labelled?', 'yes_no_na', 4, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(196, 56, 399, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '5', 'Is each animal cage locked?', 'yes_no_na', 5, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(197, 56, 400, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '6', 'Are breeding animal separated from test animal?', 'yes_no_na', 6, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(198, 56, 401, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '7', 'Are animal house materials well arranged?', 'yes_no_na', 7, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(199, 56, 402, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '8', 'Are appropriate dress procedures followed?', 'yes_no_na', 8, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(200, 56, 403, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '9', 'Are SOPs related to animal house activities available?', 'yes_no_na', 9, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(201, 56, 404, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '10', 'Are animal maintenance forms regularly filled and signed?', 'yes_no_na', 10, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(202, 56, 405, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '11', 'Is there a documented procedure for releasing animals for test or blood feeding?', 'yes_no_na', 11, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20'),
+	(203, 56, 406, 'facility_main', 'o', 'o', 'O', 'Animal House', NULL, 'normal', 'yes_no_na', 15, 'facility-o', '12', 'Is the animal house regularly disinfected?', 'yes_no_na', 12, '2026-04-03 14:28:20', '2026-04-03 13:28:20', '2026-04-03 13:28:20');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_inspection_responses
+CREATE TABLE IF NOT EXISTS `pro_inspection_responses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inspection_id` bigint unsigned NOT NULL,
+  `snapshot_id` bigint unsigned DEFAULT NULL,
+  `section_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `yes_no_na` enum('yes','no','na') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `text_response` text COLLATE utf8mb4_unicode_ci,
+  `is_checked` tinyint(1) DEFAULT NULL,
+  `date_value` date DEFAULT NULL,
+  `comments` text COLLATE utf8mb4_unicode_ci,
+  `is_conforming` tinyint(1) DEFAULT NULL,
+  `ca_completed` tinyint(1) DEFAULT NULL,
+  `ca_date` date DEFAULT NULL,
+  `corrective_actions` text COLLATE utf8mb4_unicode_ci,
+  `extra_data` json DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `insp_resp_unique` (`inspection_id`,`section_code`,`item_number`),
+  KEY `inspection_responses_snapshot_id_foreign` (`snapshot_id`),
+  KEY `inspection_responses_inspection_id_section_code_index` (`inspection_id`,`section_code`),
+  CONSTRAINT `inspection_responses_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inspection_responses_snapshot_id_foreign` FOREIGN KEY (`snapshot_id`) REFERENCES `pro_inspection_question_snapshots` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=219 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_inspection_responses : ~212 rows (environ)
+INSERT INTO `pro_inspection_responses` (`id`, `inspection_id`, `snapshot_id`, `section_code`, `item_number`, `yes_no_na`, `text_response`, `is_checked`, `date_value`, `comments`, `is_conforming`, `ca_completed`, `ca_date`, `corrective_actions`, `extra_data`, `created_by`, `created_at`, `updated_at`) VALUES
+	(1, 56, 1, 'a', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(2, 56, 2, 'a', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(3, 56, 3, 'a', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(4, 56, 4, 'a', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(5, 56, 5, 'a', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(6, 56, 6, 'a', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(7, 56, 7, 'a', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(8, 56, 8, 'a', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(9, 56, 9, 'a', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(10, 56, 10, 'a', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(11, 56, 11, 'a', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(12, 56, 12, 'a', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(13, 56, 13, 'a', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(14, 56, 14, 'a', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(15, 56, 15, 'a', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(16, 56, 16, 'a', '16', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(17, 56, 17, 'a', '17', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(18, 56, 18, 'a', '18', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(19, 56, 19, 'a', '19', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(20, 56, 20, 'a', '20', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(21, 56, 21, 'a', '21', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(22, 56, 22, 'a', '22', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(23, 56, 23, 'a', '23', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(24, 56, 24, 'a', '24', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(25, 56, 25, 'a', '25', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(26, 56, 26, 'a', '26', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(27, 56, 1, 'a', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:18', '2026-04-03 13:53:18'),
+	(28, 56, 27, 'b', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(29, 56, 28, 'b', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(30, 56, 29, 'b', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(31, 56, 30, 'b', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(32, 56, 31, 'b', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(33, 56, 32, 'b', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(34, 56, 33, 'b', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(35, 56, 34, 'b', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(36, 56, 35, 'b', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(37, 56, 36, 'b', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(38, 56, 37, 'b', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(39, 56, 38, 'b', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(40, 56, 39, 'b', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(41, 56, 40, 'b', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(42, 56, 41, 'b', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(43, 56, 27, 'b', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:31', '2026-04-03 13:53:31'),
+	(44, 56, 42, 'c', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(45, 56, 43, 'c', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(46, 56, 44, 'c', '3', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(47, 56, 45, 'c', '4', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(48, 56, 46, 'c', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(49, 56, 47, 'c', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(50, 56, 48, 'c', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(51, 56, 49, 'c', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(52, 56, 50, 'c', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(53, 56, 51, 'c', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(54, 56, 52, 'c', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(55, 56, 42, 'c', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:43', '2026-04-03 13:53:43'),
+	(56, 56, 53, 'd', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(57, 56, 54, 'd', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(58, 56, 55, 'd', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(59, 56, 56, 'd', '4', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(60, 56, 57, 'd', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(61, 56, 53, 'd', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:50', '2026-04-03 13:53:50'),
+	(62, 56, 58, 'e', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:56', '2026-04-03 13:53:56'),
+	(63, 56, 59, 'e', '2', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:56', '2026-04-03 13:53:56'),
+	(64, 56, 60, 'e', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:56', '2026-04-03 13:53:56'),
+	(65, 56, 61, 'e', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:56', '2026-04-03 13:53:56'),
+	(66, 56, 58, 'e', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:53:56', '2026-04-03 13:53:56'),
+	(67, 56, 62, 'f', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(68, 56, 63, 'f', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(69, 56, 64, 'f', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(70, 56, 65, 'f', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(71, 56, 66, 'f', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(72, 56, 67, 'f', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(73, 56, 68, 'f', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(74, 56, 69, 'f', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(75, 56, 70, 'f', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(76, 56, 71, 'f', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(77, 56, 72, 'f', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(78, 56, 73, 'f', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(79, 56, 74, 'f', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(80, 56, 75, 'f', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(81, 56, 76, 'f', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(82, 56, 77, 'f', '16', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(83, 56, 78, 'f', '17', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(84, 56, 79, 'f', '18', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(85, 56, 80, 'f', '19', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(86, 56, 62, 'f', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:14', '2026-04-03 13:54:14'),
+	(87, 56, 81, 'g', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(88, 56, 82, 'g', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(89, 56, 83, 'g', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(90, 56, 84, 'g', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(91, 56, 85, 'g', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(92, 56, 86, 'g', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(93, 56, 87, 'g', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(94, 56, 81, 'g', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:26', '2026-04-03 13:54:26'),
+	(95, 56, 88, 'h', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(96, 56, 89, 'h', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(97, 56, 90, 'h', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(98, 56, 91, 'h', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(99, 56, 92, 'h', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(100, 56, 93, 'h', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(101, 56, 88, 'h', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:34', '2026-04-03 13:54:34'),
+	(102, 56, 94, 'i', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:41', '2026-04-03 13:54:41'),
+	(103, 56, 95, 'i', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:41', '2026-04-03 13:54:41'),
+	(104, 56, 96, 'i', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:41', '2026-04-03 13:54:41'),
+	(105, 56, 97, 'i', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:41', '2026-04-03 13:54:41'),
+	(106, 56, 94, 'i', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:41', '2026-04-03 13:54:41'),
+	(107, 56, 98, 'j', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(108, 56, 99, 'j', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(109, 56, 100, 'j', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(110, 56, 101, 'j', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(111, 56, 102, 'j', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(112, 56, 103, 'j', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(113, 56, 104, 'j', '7', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(114, 56, 105, 'j', '8', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(115, 56, 106, 'j', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(116, 56, 107, 'j', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(117, 56, 108, 'j', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(118, 56, 109, 'j', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(119, 56, 110, 'j', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(120, 56, 111, 'j', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(121, 56, 112, 'j', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(122, 56, 98, 'j', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:54:56', '2026-04-03 13:54:56'),
+	(123, 56, 113, 'k', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(124, 56, 114, 'k', '2', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(125, 56, 115, 'k', '3', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(126, 56, 116, 'k', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(127, 56, 117, 'k', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(128, 56, 118, 'k', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(129, 56, 119, 'k', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(130, 56, 120, 'k', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(131, 56, 121, 'k', '9', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(132, 56, 122, 'k', '10', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(133, 56, 123, 'k', '11', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(134, 56, 124, 'k', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(135, 56, 125, 'k', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(136, 56, 113, 'k', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:10', '2026-04-03 13:55:10'),
+	(137, 56, 126, 'l', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(138, 56, 127, 'l', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(139, 56, 128, 'l', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(140, 56, 129, 'l', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(141, 56, 130, 'l', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(142, 56, 131, 'l', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(143, 56, 132, 'l', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(144, 56, 133, 'l', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(145, 56, 134, 'l', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(146, 56, 135, 'l', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(147, 56, 136, 'l', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(148, 56, 137, 'l', '12', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(149, 56, 138, 'l', '13', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(150, 56, 139, 'l', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(151, 56, 140, 'l', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(152, 56, 141, 'l', '16', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(153, 56, 142, 'l', '17', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(154, 56, 143, 'l', '18', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(155, 56, 144, 'l', '19', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(156, 56, 145, 'l', '20', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(157, 56, 146, 'l', '21', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(158, 56, 147, 'l', '22', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(159, 56, 148, 'l', '23', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(160, 56, 149, 'l', '24', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(161, 56, 150, 'l', '25', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(162, 56, 126, 'l', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:32', '2026-04-03 13:55:32'),
+	(163, 56, 151, 'm', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(164, 56, 152, 'm', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(165, 56, 153, 'm', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(166, 56, 154, 'm', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(167, 56, 155, 'm', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(168, 56, 156, 'm', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(169, 56, 157, 'm', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(170, 56, 158, 'm', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(171, 56, 159, 'm', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(172, 56, 160, 'm', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(173, 56, 161, 'm', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(174, 56, 162, 'm', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(175, 56, 163, 'm', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(176, 56, 164, 'm', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(177, 56, 165, 'm', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(178, 56, 166, 'm', '16', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(179, 56, 151, 'm', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:55:46', '2026-04-03 13:55:46'),
+	(180, 56, 167, 'n', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(181, 56, 168, 'n', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(182, 56, 169, 'n', '3', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(183, 56, 170, 'n', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(184, 56, 171, 'n', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(185, 56, 172, 'n', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(186, 56, 173, 'n', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(187, 56, 174, 'n', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(188, 56, 175, 'n', '9', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(189, 56, 176, 'n', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(190, 56, 177, 'n', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(191, 56, 178, 'n', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(192, 56, 179, 'n', '13', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(193, 56, 180, 'n', '14', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(194, 56, 181, 'n', '15', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(195, 56, 182, 'n', '16', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(196, 56, 183, 'n', '17', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(197, 56, 184, 'n', '18', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(198, 56, 185, 'n', '19', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(199, 56, 186, 'n', '20', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(200, 56, 187, 'n', '21', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(201, 56, 188, 'n', '22', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(202, 56, 189, 'n', '23', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(203, 56, 190, 'n', '24', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(204, 56, 191, 'n', '25', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(205, 56, 167, 'n', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:08', '2026-04-03 13:56:08'),
+	(206, 56, 192, 'o', '1', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(207, 56, 193, 'o', '2', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(208, 56, 194, 'o', '3', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(209, 56, 195, 'o', '4', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(210, 56, 196, 'o', '5', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(211, 56, 197, 'o', '6', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(212, 56, 198, 'o', '7', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(213, 56, 199, 'o', '8', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(214, 56, 200, 'o', '9', 'no', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(215, 56, 201, 'o', '10', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(216, 56, 202, 'o', '11', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(217, 56, 203, 'o', '12', 'yes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21'),
+	(218, 56, 192, 'o', '_meta', NULL, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, 18, '2026-04-03 13:56:21', '2026-04-03 13:56:21');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_key_facility_personnels
 CREATE TABLE IF NOT EXISTS `pro_key_facility_personnels` (
@@ -1291,7 +3043,7 @@ CREATE TABLE IF NOT EXISTS `pro_key_facility_personnels` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_key_facility_personnels : ~4 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_key_facility_personnels : ~3 rows (environ)
 INSERT INTO `pro_key_facility_personnels` (`id`, `personnel_id`, `staff_role`, `start_date`, `end_date`, `active`, `created_at`, `updated_at`) VALUES
 	(1, 1, 'Facility Manager', NULL, NULL, 1, NULL, NULL),
 	(2, 23, 'Quality Assurance', NULL, NULL, 1, NULL, NULL),
@@ -1330,7 +3082,7 @@ CREATE TABLE IF NOT EXISTS `pro_other_basic_documents` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_other_basic_documents : ~4 rows (environ)
 INSERT INTO `pro_other_basic_documents` (`id`, `project_id`, `titre_document`, `description_document`, `document_file_path`, `upload_date`, `uploaded_by`, `document_type`, `active`, `created_at`, `updated_at`) VALUES
@@ -1339,7 +3091,8 @@ INSERT INTO `pro_other_basic_documents` (`id`, `project_id`, `titre_document`, `
 	(3, 32, 'Lettre attestant la mise en calibrage des equipements', 'fdfdfd', 'other_basic_documents/cYnt3FXpJNbEX40Rc5c7d62RfGL2M3fq6QDxhdln.pdf', '2025-09-03', '18', 'other basic', 1, '2025-09-03 18:00:11', '2025-09-03 18:00:11'),
 	(4, 30, 'Lettre attestant la mise en calibrage des equipements', 'ddd', 'other_basic_documents/y8d3N30u51hlrQtHH4PYIZJuoo0Iykq7MD07Ld5X.pdf', '2025-09-04', '18', 'other basic', 1, '2025-09-04 11:12:00', '2025-09-04 11:12:00'),
 	(5, 4, 'Lettre attestant la mise en calibrage des equipements', 'jhghgh', 'other_basic_documents/jEB4RyN1WSBY4yRSkXpQRINlT6Rtw0l1PTksMlGl.pdf', '2025-09-05', '18', 'other basic', 1, '2025-09-05 08:14:11', '2025-09-05 08:14:11'),
-	(6, 5, 'Lettre attestant la mise en calibrage des equipements', NULL, 'other_basic_documents/MTKjfDVdJRlkN4f5ZCrfXzi6eOKvUj74uiOEiOao.pdf', '2025-09-17', '23', 'other basic', 1, '2025-09-17 17:03:46', '2025-09-17 17:03:46');
+	(6, 5, 'Lettre attestant la mise en calibrage des equipements', NULL, 'other_basic_documents/MTKjfDVdJRlkN4f5ZCrfXzi6eOKvUj74uiOEiOao.pdf', '2025-09-17', '23', 'other basic', 1, '2025-09-17 17:03:46', '2025-09-17 17:03:46'),
+	(7, 39, 'Ethics', 'ddd', 'other_basic_documents/3c9MyJm68zrq4TKs8esGXCzKagiAMe48Qn0KkKLZ.pdf', '2026-04-02', '23', 'other basic', 1, '2026-04-02 08:17:29', '2026-04-02 08:17:29');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_products_types
 CREATE TABLE IF NOT EXISTS `pro_products_types` (
@@ -1387,15 +3140,15 @@ CREATE TABLE IF NOT EXISTS `pro_projects` (
   KEY `pro_projects_study_director_index` (`study_director`),
   KEY `pro_projects_archived_by_foreign` (`archived_by`),
   CONSTRAINT `pro_projects_archived_by_foreign` FOREIGN KEY (`archived_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_projects : ~37 rows (environ)
 INSERT INTO `pro_projects` (`id`, `project_code`, `is_glp`, `project_nature`, `test_system`, `project_title`, `protocol_code`, `study_director`, `project_manager`, `date_debut_previsionnelle`, `date_debut_effective`, `date_fin_previsionnelle`, `date_fin_effective`, `description_project`, `project_stage`, `created_at`, `updated_at`, `archived_at`, `phases_completed`, `archive_checklist`, `archived_by`, `archive_submission_date`, `archive_deposition_form_path`) VALUES
 	(1, '24-01', 1, 'Evaluation_Phase_1', 'lab_and_field_mosquitoes', '24-01', 'P/24-05', 1, 1, '2026-03-01', '2026-03-08', '2026-04-11', '2026-05-09', 'd', 'in progress', '2025-07-11 11:29:56', '2026-03-27 16:16:55', NULL, '["protocol_development", "protocol_details", "study_creation", "experimental", "reporting", "quality_assurance", "archiving", "planning"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', NULL, NULL, NULL),
-	(2, '24-02', 1, 'Evaluation_Phase_1_et_2', 'lab_mosquitoes', '24-02', NULL, 1, 10, NULL, NULL, NULL, NULL, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', 'in progress', '2025-07-11 11:29:56', '2025-09-09 14:27:11', NULL, NULL, NULL, NULL, NULL, NULL),
+	(2, '24-02', 1, 'Evaluation_Phase_1_et_2', 'lab_mosquitoes', '24-02', NULL, 1, 10, NULL, NULL, NULL, NULL, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', 'in progress', '2025-07-11 11:29:56', '2026-03-31 08:33:47', NULL, NULL, NULL, NULL, NULL, NULL),
 	(3, '24-03', 0, NULL, 'lab_mosquitoes', '24-03', NULL, 1, 1, NULL, NULL, NULL, NULL, 'kjkkj', 'completed', '2025-07-11 11:29:56', '2025-09-26 06:40:57', NULL, NULL, NULL, NULL, NULL, NULL),
 	(4, '24-04-A/GLP', 1, NULL, 'lab_mosquitoes', '24-04-A/GLP', NULL, 1, 1, NULL, NULL, NULL, NULL, NULL, 'in progress', '2025-07-11 11:29:56', '2025-09-26 15:32:21', NULL, NULL, NULL, NULL, NULL, NULL),
-	(5, '24-04-B/GLP', 1, 'Evaluation_Phase_2', 'lab_mosquitoes', '24-04-B/GLP', NULL, 1, 17, '2026-03-01', '2026-03-01', '2026-04-10', '2026-04-10', 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur', 'archived', '2025-07-11 11:29:56', '2026-03-30 07:51:44', '2026-03-24 13:21:05', '["study_creation", "protocol_details", "protocol_development", "planning", "experimental", "quality_assurance", "reporting", "archiving"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', 18, NULL, NULL),
+	(5, '24-04-B/GLP', 1, 'Evaluation_Phase_2', 'lab_mosquitoes', '24-04-B/GLP', NULL, 1, 17, '2026-03-01', '2026-03-01', '2026-04-10', '2026-04-10', 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur', 'archived', '2025-07-11 11:29:56', '2026-03-31 16:24:02', '2026-03-31 16:24:02', '["study_creation", "protocol_details", "protocol_development", "planning", "experimental", "quality_assurance", "reporting", "archiving"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', 18, NULL, NULL),
 	(6, '24-05', 1, NULL, 'lab_mosquitoes', '24-05', NULL, 1, 1, NULL, NULL, NULL, NULL, NULL, 'suspended', '2025-07-11 11:29:56', '2026-03-16 08:07:39', NULL, NULL, NULL, NULL, NULL, NULL),
 	(7, '24-06/GLP', 1, NULL, 'lab_mosquitoes', '24-06/GLP', NULL, 1, 1, NULL, NULL, NULL, NULL, NULL, 'in progress', '2025-07-11 11:29:56', '2026-03-23 10:45:42', NULL, NULL, NULL, NULL, NULL, NULL),
 	(8, '24-07', 1, 'Evaluation_Phase_1', 'lab_mosquitoes', '24-07', 'P/24-07', 1, NULL, '2025-07-11', '2025-07-11', '2025-07-11', '2025-07-11', NULL, 'in progress', '2025-07-11 11:29:56', '2025-07-11 11:29:56', NULL, NULL, NULL, NULL, NULL, NULL),
@@ -1415,19 +3168,21 @@ INSERT INTO `pro_projects` (`id`, `project_code`, `is_glp`, `project_nature`, `t
 	(22, '24-03sd', 1, 'Evaluation_Phase_1', 'lab_mosquitoes', '25-11/B', '25-11', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-07-14 11:22:56', '2025-07-14 11:22:56', NULL, NULL, NULL, NULL, NULL, NULL),
 	(23, '24-03-GD', 1, 'Evaluation_Phase_1', 'lab_mosquitoes', '24-03-GD', '24-03-GD', 9, 8, NULL, NULL, NULL, NULL, NULL, 'in progress', '2025-07-16 11:44:51', '2025-07-16 11:44:51', NULL, NULL, NULL, NULL, NULL, NULL),
 	(24, '24-03-GDD', 1, 'Evaluation_Phase_2', 'lab_mosquitoes', '24-03-GD', '24-03-GD', 9, 8, NULL, NULL, NULL, NULL, NULL, 'in progress', '2025-07-16 11:45:37', '2025-07-16 11:45:37', NULL, NULL, NULL, NULL, NULL, NULL),
-	(25, '24-03-BV', 1, 'Evaluation_Phase_1', 'field_mosquitoes', 'SDF', 'ezzz', 13, 16, '2026-03-01', '2026-03-01', '2026-03-26', '2026-03-26', NULL, 'in progress', '2025-08-21 13:23:09', '2026-03-27 16:16:08', NULL, '["study_creation", "protocol_details", "experimental", "planning", "quality_assurance", "protocol_development", "reporting", "archiving"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', NULL, '2026-03-27', 'archive_deposition_forms/2JLrjkw9zVRf2nEhgSJgJ0gUWTXAGRbnM1uSVR4n.pdf'),
+	(25, '24-03-BV', 1, 'Evaluation_Phase_1', 'field_mosquitoes', 'SDF', 'ezzz', 13, 16, '2026-03-01', '2026-03-01', '2026-03-26', '2026-03-26', NULL, 'archived', '2025-08-21 13:23:09', '2026-03-30 16:08:35', '2026-03-30 16:08:35', '["study_creation", "protocol_details", "experimental", "planning", "quality_assurance", "protocol_development", "reporting", "archiving"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', 18, '2026-03-27', 'archive_deposition_forms/2JLrjkw9zVRf2nEhgSJgJ0gUWTXAGRbnM1uSVR4n.pdf'),
 	(26, 'MD311', 1, NULL, NULL, 'ddd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-08-21 13:23:52', '2025-08-21 13:23:52', NULL, NULL, NULL, NULL, NULL, NULL),
 	(27, '364818', 0, NULL, NULL, 'dd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 14:28:15', '2025-09-01 14:28:15', NULL, NULL, NULL, NULL, NULL, NULL),
 	(28, '383120', 0, NULL, NULL, 'dd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 14:49:44', '2025-09-01 14:49:44', NULL, NULL, NULL, NULL, NULL, NULL),
 	(29, 'fd', 0, NULL, NULL, 'dd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 14:55:14', '2025-09-01 14:55:14', NULL, NULL, NULL, NULL, NULL, NULL),
 	(30, '25-89', 0, NULL, NULL, 'DDDD', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 15:06:07', '2025-09-01 15:06:07', NULL, NULL, NULL, NULL, NULL, NULL),
-	(31, '364818dd', 0, NULL, NULL, 'dd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 15:16:14', '2025-09-01 15:16:14', NULL, NULL, NULL, NULL, NULL, NULL),
+	(31, '26-02', 1, 'Evaluation_Phase_2', 'lab_mosquitoes', '26-02', NULL, NULL, NULL, '2026-03-30', '2026-03-30', '2026-05-02', '2026-07-11', NULL, 'archived', '2025-09-01 15:16:14', '2026-04-01 11:26:22', '2026-04-01 11:26:22', '["protocol_details", "protocol_development", "planning", "experimental", "quality_assurance", "archiving", "reporting", "study_creation"]', '["physical_docs_archived", "raw_data_secured", "electronic_backup", "samples_stored", "personnel_notified"]', 18, '2026-04-01', 'archive_deposition_forms/dcZlaoXpGpH70yKpocFwYFNAoKNzoQf4L5GQihMl.pdf'),
 	(32, '081270fff', 0, 'Evaluation_Phase_1', 'lab_mosquitoes', 'ddd', NULL, 13, 1, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 15:16:50', '2025-09-03 17:56:52', NULL, NULL, NULL, NULL, NULL, NULL),
 	(33, 'MD311 NEW', 0, NULL, NULL, 'dd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-01 15:20:32', '2025-09-01 15:20:32', NULL, NULL, NULL, NULL, NULL, NULL),
 	(34, '25-01A', 1, 'Evaluation_Phase_1', 'field_mosquitoes', '25-01A', NULL, 5, 8, '2026-03-27', '2026-03-27', '2026-03-27', '2026-03-27', NULL, 'suspended', '2025-09-10 17:18:51', '2026-03-27 08:33:33', NULL, NULL, NULL, NULL, NULL, NULL),
 	(35, 'MD311ddd', 1, NULL, NULL, 'ggddd', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2025-09-10 17:21:54', '2025-09-10 17:21:54', NULL, NULL, NULL, NULL, NULL, NULL),
 	(36, '364818ddd', 0, NULL, 'lab_mosquitoes', 'Bon projet', NULL, 1, 1, NULL, NULL, NULL, NULL, 'ça a bien démarré', 'in progress', '2025-09-10 17:26:27', '2025-09-10 21:41:41', NULL, NULL, NULL, NULL, NULL, NULL),
-	(37, '26-01', 0, NULL, NULL, '26-01', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2026-02-23 13:50:44', '2026-02-23 13:50:44', NULL, NULL, NULL, NULL, NULL, NULL);
+	(37, '26-01', 0, NULL, NULL, '26-01', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2026-02-23 13:50:44', '2026-02-23 13:50:44', NULL, NULL, NULL, NULL, NULL, NULL),
+	(38, 'TEST-X', 0, NULL, NULL, 'Test X', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not_started', '2026-04-02 07:51:55', '2026-04-02 07:51:55', NULL, NULL, NULL, NULL, NULL, NULL),
+	(39, '26-09', 1, 'Evaluation_Phase_1', 'lab_mosquitoes', 'Projet de tests', NULL, 23, NULL, '2026-04-02', '2026-04-02', '2026-04-30', '2026-04-30', NULL, 'in progress', '2026-04-02 08:15:24', '2026-04-02 12:35:28', NULL, '["study_creation", "protocol_details", "protocol_development", "planning", "experimental", "quality_assurance"]', NULL, NULL, NULL, NULL);
 
 -- Listage de la structure de la table crec_rh_system_db. pro_projects_phases_activities_owners
 CREATE TABLE IF NOT EXISTS `pro_projects_phases_activities_owners` (
@@ -1465,9 +3220,9 @@ CREATE TABLE IF NOT EXISTS `pro_projects_related_lab_tests` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_projects_related_lab_tests : ~35 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_projects_related_lab_tests : ~38 rows (environ)
 INSERT INTO `pro_projects_related_lab_tests` (`id`, `project_id`, `lab_test_id`, `created_at`, `updated_at`) VALUES
 	(17, 36, 1, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
 	(18, 36, 2, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
@@ -1503,7 +3258,12 @@ INSERT INTO `pro_projects_related_lab_tests` (`id`, `project_id`, `lab_test_id`,
 	(69, 16, 4, '2026-03-25 14:50:27', '2026-03-25 14:50:27'),
 	(72, 34, 1, '2026-03-27 08:33:33', '2026-03-27 08:33:33'),
 	(75, 25, 1, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
-	(76, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57');
+	(76, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
+	(84, 2, 1, '2026-03-31 08:33:47', '2026-03-31 08:33:47'),
+	(85, 2, 2, '2026-03-31 08:33:47', '2026-03-31 08:33:47'),
+	(86, 31, 4, '2026-04-01 10:46:52', '2026-04-01 10:46:52'),
+	(87, 39, 1, '2026-04-02 08:16:02', '2026-04-02 08:16:02'),
+	(88, 39, 2, '2026-04-02 08:16:02', '2026-04-02 08:16:02');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_projects_related_product_types
 CREATE TABLE IF NOT EXISTS `pro_projects_related_product_types` (
@@ -1513,9 +3273,9 @@ CREATE TABLE IF NOT EXISTS `pro_projects_related_product_types` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_projects_related_product_types : ~31 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_projects_related_product_types : ~36 rows (environ)
 INSERT INTO `pro_projects_related_product_types` (`id`, `project_id`, `product_type_id`, `created_at`, `updated_at`) VALUES
 	(15, 36, 2, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
 	(16, 36, 3, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
@@ -1547,7 +3307,13 @@ INSERT INTO `pro_projects_related_product_types` (`id`, `project_id`, `product_t
 	(60, 16, 2, '2026-03-25 14:50:27', '2026-03-25 14:50:27'),
 	(63, 34, 1, '2026-03-27 08:33:33', '2026-03-27 08:33:33'),
 	(66, 25, 1, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
-	(67, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57');
+	(67, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
+	(76, 2, 1, '2026-03-31 08:33:47', '2026-03-31 08:33:47'),
+	(77, 2, 2, '2026-03-31 08:33:47', '2026-03-31 08:33:47'),
+	(78, 31, 1, '2026-04-01 10:46:52', '2026-04-01 10:46:52'),
+	(79, 31, 2, '2026-04-01 10:46:52', '2026-04-01 10:46:52'),
+	(80, 39, 1, '2026-04-02 08:16:02', '2026-04-02 08:16:02'),
+	(81, 39, 2, '2026-04-02 08:16:02', '2026-04-02 08:16:02');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_projects_related_study_types
 CREATE TABLE IF NOT EXISTS `pro_projects_related_study_types` (
@@ -1557,9 +3323,9 @@ CREATE TABLE IF NOT EXISTS `pro_projects_related_study_types` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_projects_related_study_types : ~30 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_projects_related_study_types : ~33 rows (environ)
 INSERT INTO `pro_projects_related_study_types` (`id`, `project_id`, `study_type_id`, `created_at`, `updated_at`) VALUES
 	(15, 36, 1, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
 	(16, 36, 2, '2025-09-10 21:41:41', '2025-09-10 21:41:41'),
@@ -1590,7 +3356,12 @@ INSERT INTO `pro_projects_related_study_types` (`id`, `project_id`, `study_type_
 	(59, 16, 2, '2026-03-25 14:50:27', '2026-03-25 14:50:27'),
 	(62, 34, 1, '2026-03-27 08:33:33', '2026-03-27 08:33:33'),
 	(65, 25, 1, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
-	(66, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57');
+	(66, 25, 2, '2026-03-27 10:15:57', '2026-03-27 10:15:57'),
+	(72, 2, 1, '2026-03-31 08:33:47', '2026-03-31 08:33:47'),
+	(73, 31, 1, '2026-04-01 10:46:52', '2026-04-01 10:46:52'),
+	(74, 31, 2, '2026-04-01 10:46:52', '2026-04-01 10:46:52'),
+	(77, 39, 1, '2026-04-02 08:16:02', '2026-04-02 08:16:02'),
+	(78, 39, 2, '2026-04-02 08:16:02', '2026-04-02 08:16:02');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_projects_study_phases_completed
 CREATE TABLE IF NOT EXISTS `pro_projects_study_phases_completed` (
@@ -1628,9 +3399,9 @@ CREATE TABLE IF NOT EXISTS `pro_projects_team` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_projects_team : ~8 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_projects_team : ~14 rows (environ)
 INSERT INTO `pro_projects_team` (`id`, `project_id`, `staff_id`, `role`, `date_joined`, `date_end`, `created_at`, `updated_at`) VALUES
 	(1, 24, 8, '', NULL, NULL, '2025-07-16 11:45:37', '2025-07-16 11:45:37'),
 	(2, 24, 10, '', NULL, NULL, '2025-07-16 11:45:37', '2025-07-16 11:45:37'),
@@ -1639,7 +3410,13 @@ INSERT INTO `pro_projects_team` (`id`, `project_id`, `staff_id`, `role`, `date_j
 	(11, 19, 8, '', NULL, NULL, '2025-07-16 12:07:48', '2025-07-16 12:07:48'),
 	(12, 19, 10, '', NULL, NULL, '2025-07-16 12:07:48', '2025-07-16 12:07:48'),
 	(13, 25, 5, '', NULL, NULL, '2026-03-27 10:05:53', '2026-03-27 10:05:53'),
-	(14, 25, 101, '', NULL, NULL, '2026-03-27 10:05:53', '2026-03-27 10:05:53');
+	(14, 25, 101, '', NULL, NULL, '2026-03-27 10:05:53', '2026-03-27 10:05:53'),
+	(16, 31, 5, '', NULL, NULL, '2026-04-01 11:11:59', '2026-04-01 11:11:59'),
+	(17, 31, 13, '', NULL, NULL, '2026-04-01 11:11:59', '2026-04-01 11:11:59'),
+	(18, 31, 36, '', NULL, NULL, '2026-04-01 11:11:59', '2026-04-01 11:11:59'),
+	(19, 39, 101, '', NULL, NULL, '2026-04-02 08:16:57', '2026-04-02 08:16:57'),
+	(20, 39, 13, '', NULL, NULL, '2026-04-02 08:17:03', '2026-04-02 08:17:03'),
+	(21, 39, 31, '', NULL, NULL, '2026-04-02 08:17:06', '2026-04-02 08:17:06');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_project_critical_phases_identified
 CREATE TABLE IF NOT EXISTS `pro_project_critical_phases_identified` (
@@ -1698,16 +3475,16 @@ CREATE TABLE IF NOT EXISTS `pro_protocols_devs_activities_projects` (
   PRIMARY KEY (`id`),
   KEY `pro_protocols_devs_activities_projects_qa_inspection_id_foreign` (`qa_inspection_id`),
   CONSTRAINT `pro_protocols_devs_activities_projects_qa_inspection_id_foreign` FOREIGN KEY (`qa_inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_protocols_devs_activities_projects : ~65 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_protocols_devs_activities_projects : ~74 rows (environ)
 INSERT INTO `pro_protocols_devs_activities_projects` (`id`, `project_id`, `protocol_dev_activity_id`, `date_performed`, `real_date_performed`, `date_upload`, `qa_inspection_id`, `due_date_performed`, `staff_id_performed`, `staff_id_assigned`, `staff_role`, `document_file_path`, `applicable`, `level_activite`, `complete`, `created_at`, `updated_at`) VALUES
 	(6, 4, 1, '2025-09-09', '2025-09-09', NULL, NULL, NULL, 23, 1, 'Study Director', 'protocol_dev/VDUCsIPONDNDxx0ZKmKD5NcjKljDbUA2m6JDjjqX.pdf', 1, 1, 1, '2025-09-08 16:18:45', '2025-09-09 12:42:12'),
 	(7, 4, 2, '2025-09-09', '2025-09-09', NULL, NULL, NULL, 23, 23, 'Quality Assurance', 'protocol_dev/siNfJQyQ1QitYu6IK2wJGHh0OF6qBYoRdefj96Ad.pdf', 1, 2, 1, '2025-09-08 16:18:45', '2025-09-09 12:42:12'),
 	(8, 4, 3, '2025-09-09', '2025-09-09', NULL, NULL, NULL, 23, 1, 'Facility Manager', 'protocol_dev/M9J22Sy1ERiqtHh5OJakb35gQCXPBJChSki4lAQ6.pdf', 1, 3, 1, '2025-09-08 16:18:45', '2025-09-09 12:42:12'),
 	(9, 4, 4, '2025-09-09', '2025-09-09', NULL, NULL, NULL, 23, 23, 'Quality Assurance', 'protocol_dev/V6VendjSHtjS3LWNND6dO5uIXrdzJJ7vPyMkKOcx.pdf', 1, 4, 1, '2025-09-08 16:18:45', '2025-09-09 12:42:32'),
 	(10, 4, 5, NULL, NULL, NULL, NULL, NULL, 1, 1, 'Study Director', NULL, 1, 5, 0, '2025-09-08 16:18:45', '2025-09-09 12:42:12'),
-	(11, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'Study Director', NULL, 1, 1, 0, '2025-09-09 14:37:46', '2025-09-09 14:37:46'),
+	(11, 2, 1, '2026-03-31', '2026-03-31', NULL, NULL, NULL, 23, 1, 'Study Director', NULL, 1, 1, 1, '2025-09-09 14:37:46', '2026-03-31 07:07:58'),
 	(12, 2, 2, NULL, NULL, NULL, NULL, NULL, NULL, 23, 'Quality Assurance', NULL, 1, 2, 0, '2025-09-09 14:37:46', '2025-09-09 14:37:46'),
 	(13, 2, 3, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'Facility Manager', NULL, 1, 3, 0, '2025-09-09 14:37:46', '2025-09-09 14:37:46'),
 	(14, 2, 4, NULL, NULL, NULL, NULL, NULL, NULL, 23, 'Quality Assurance', NULL, 1, 4, 0, '2025-09-09 14:37:46', '2025-09-09 14:37:46'),
@@ -1766,7 +3543,17 @@ INSERT INTO `pro_protocols_devs_activities_projects` (`id`, `project_id`, `proto
 	(67, 25, 2, '2026-03-27', '2026-03-27', '2026-03-27', NULL, NULL, 23, 23, 'Quality Assurance', 'protocol_dev/jQR3RQRy8sAEpKDmzFnMYkFLf5Qs4vhmt6bawDTH.pdf', 1, 2, 1, '2026-03-27 08:51:14', '2026-03-27 12:58:01'),
 	(68, 25, 3, '2026-03-27', '2026-03-27', '2026-03-27', NULL, NULL, 23, 1, 'Facility Manager', 'protocol_dev/5eNtQL7ddjvLfNEKYJS4kC8fTmIrH8Z88t1McL8I.pdf', 1, 3, 1, '2026-03-27 08:51:14', '2026-03-27 12:58:33'),
 	(69, 25, 4, '2026-03-27', '2026-03-27', '2026-03-27', NULL, NULL, 23, 23, 'Quality Assurance', 'protocol_dev/rv31IisvxWNpLVUwNjZFLKZpC1nEoCsmc03nbaVQ.pdf', 1, 4, 1, '2026-03-27 08:51:14', '2026-03-27 12:58:58'),
-	(70, 25, 5, '2026-03-27', '2026-03-27', NULL, NULL, NULL, 23, 5, 'Study Director', NULL, 1, 5, 1, '2026-03-27 08:51:14', '2026-03-27 14:11:37');
+	(70, 25, 5, '2026-03-27', '2026-03-27', NULL, NULL, NULL, 23, 5, 'Study Director', NULL, 1, 5, 1, '2026-03-27 08:51:14', '2026-03-27 14:11:37'),
+	(71, 31, 1, '2026-04-01', '2026-04-01', NULL, NULL, NULL, 23, NULL, 'Study Director', NULL, 1, 1, 1, '2026-04-01 10:57:26', '2026-04-01 10:57:40'),
+	(72, 31, 2, '2026-04-01', '2026-04-01', NULL, NULL, NULL, 23, 23, 'Quality Assurance', NULL, 1, 2, 1, '2026-04-01 10:57:26', '2026-04-01 11:01:44'),
+	(73, 31, 3, '2026-04-01', '2026-04-01', NULL, NULL, NULL, 23, 1, 'Facility Manager', NULL, 1, 3, 1, '2026-04-01 10:57:26', '2026-04-01 11:02:03'),
+	(74, 31, 4, '2026-04-01', '2026-04-01', NULL, NULL, NULL, 23, 23, 'Quality Assurance', NULL, 1, 4, 1, '2026-04-01 10:57:26', '2026-04-01 11:02:17'),
+	(75, 31, 5, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Study Director', NULL, 1, 5, 0, '2026-04-01 10:57:26', '2026-04-01 10:57:26'),
+	(76, 39, 1, '2026-04-02', '2026-04-02', NULL, NULL, NULL, 23, 23, 'Study Director', NULL, 1, 1, 1, '2026-04-02 08:18:03', '2026-04-02 08:18:22'),
+	(77, 39, 2, '2026-04-02', '2026-04-02', NULL, NULL, NULL, 23, 23, 'Quality Assurance', NULL, 1, 2, 1, '2026-04-02 08:18:03', '2026-04-02 08:18:38'),
+	(78, 39, 3, '2026-04-02', '2026-04-02', NULL, NULL, NULL, 23, 1, 'Facility Manager', NULL, 1, 3, 1, '2026-04-02 08:18:03', '2026-04-02 08:18:59'),
+	(79, 39, 4, '2026-04-02', '2026-04-02', NULL, NULL, NULL, 23, 23, 'Quality Assurance', NULL, 1, 4, 1, '2026-04-02 08:18:03', '2026-04-02 08:19:14'),
+	(80, 39, 5, NULL, NULL, NULL, NULL, NULL, NULL, 23, 'Study Director', NULL, 1, 5, 0, '2026-04-02 08:18:03', '2026-04-02 08:18:03');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_protocol_dev_documents
 CREATE TABLE IF NOT EXISTS `pro_protocol_dev_documents` (
@@ -1785,16 +3572,84 @@ CREATE TABLE IF NOT EXISTS `pro_protocol_dev_documents` (
   KEY `pro_protocol_dev_documents_qa_inspection_id_foreign` (`qa_inspection_id`),
   CONSTRAINT `pro_protocol_dev_documents_activity_project_id_foreign` FOREIGN KEY (`activity_project_id`) REFERENCES `pro_protocols_devs_activities_projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pro_protocol_dev_documents_qa_inspection_id_foreign` FOREIGN KEY (`qa_inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_protocol_dev_documents : ~5 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_protocol_dev_documents : ~14 rows (environ)
 INSERT INTO `pro_protocol_dev_documents` (`id`, `activity_project_id`, `project_id`, `document_file_path`, `date_performed`, `date_upload`, `staff_id_performed`, `qa_inspection_id`, `created_at`, `updated_at`) VALUES
 	(1, 66, 25, 'protocol_dev/99i0uvzZa9tbpATbzwzjW2QKBUQkuLLG1dOpkEqu.pdf', '2026-03-27', '2026-03-27', 23, 42, '2026-03-27 12:57:15', '2026-03-27 12:57:15'),
 	(2, 67, 25, 'protocol_dev/oC8d2fb2QmPdc7x1an3n2vnfwkOEYRjAkwoaQTMq.pdf', '2026-03-27', '2026-03-27', 23, NULL, '2026-03-27 12:58:01', '2026-03-27 12:58:01'),
 	(3, 68, 25, 'protocol_dev/ZICZNkCqDuyqr7uS9G6DeCxtMOK5U9MdUpkHG5GO.pdf', '2026-03-27', '2026-03-27', 23, 43, '2026-03-27 12:58:33', '2026-03-27 12:58:33'),
 	(4, 69, 25, 'protocol_dev/xIMcpE6yETWBKn1WZh0ysdRf0C4AYnyB1vRZK9Nk.pdf', '2026-03-27', '2026-03-27', 23, NULL, '2026-03-27 12:58:58', '2026-03-27 12:58:58'),
 	(5, 70, 25, 'protocol_dev/wP6bqnUb6tUguwKJqP6hZvWRC5bNCc1aaSPy68AW.pdf', '2026-03-27', '2026-03-27', 23, 47, '2026-03-27 12:59:13', '2026-03-27 14:11:37'),
-	(6, 70, 25, 'protocol_dev/NwSCxtvkyI7pw6PhXG22Ez4IEF17Wt361DPrJik4.pdf', '2026-03-27', '2026-03-27', 23, 46, '2026-03-27 13:31:11', '2026-03-27 13:31:11');
+	(6, 70, 25, 'protocol_dev/NwSCxtvkyI7pw6PhXG22Ez4IEF17Wt361DPrJik4.pdf', '2026-03-27', '2026-03-27', 23, 46, '2026-03-27 13:31:11', '2026-03-27 13:31:11'),
+	(7, 11, 2, 'protocol_dev/W5bvc4ArqXaYz9sSqtRzhpxibSAPI2Hqzo7q7drt.pdf', '2026-03-31', '2026-03-31', 23, NULL, '2026-03-31 07:07:58', '2026-03-31 07:07:58'),
+	(8, 71, 31, 'protocol_dev/l8UrnLtr8jARQ3ph1Z7ZDYE0YzypxeCJfZNU1TyM.pdf', '2026-04-01', '2026-04-01', 23, 48, '2026-04-01 10:57:40', '2026-04-01 10:57:40'),
+	(9, 72, 31, 'protocol_dev/CJnzw29DZRTPSKoPKoYxUKe6uPDuFWeL1bjqtyBz.pdf', '2026-04-01', '2026-04-01', 23, NULL, '2026-04-01 11:01:44', '2026-04-01 11:01:44'),
+	(10, 73, 31, 'protocol_dev/GLc6PkilggDfwHU6i6V6BCzefCl8Oil6BjmjOGeN.pdf', '2026-04-01', '2026-04-01', 23, 49, '2026-04-01 11:02:03', '2026-04-01 11:02:03'),
+	(11, 74, 31, 'protocol_dev/72F2QIabgMSouzc3i4itWCPMU152OvboNY40BMLa.pdf', '2026-04-01', '2026-04-01', 23, NULL, '2026-04-01 11:02:17', '2026-04-01 11:02:17'),
+	(12, 76, 39, 'protocol_dev/W6dBi7EQMpPWaeCUSciyWJGcN4O2IBBVAtIaefkn.pdf', '2026-04-02', '2026-04-02', 23, 53, '2026-04-02 08:18:22', '2026-04-02 08:18:22'),
+	(13, 77, 39, 'protocol_dev/FmLzWVEWWnWaaNV27W7pyRP5Gt0udXSasGHzBJ5q.pdf', '2026-04-02', '2026-04-02', 23, NULL, '2026-04-02 08:18:38', '2026-04-02 08:18:38'),
+	(14, 78, 39, 'protocol_dev/Q0fbEjQyKWWJg9F7lGbACt1dRUGaGaUow07J4aKa.pdf', '2026-04-02', '2026-04-02', 23, 54, '2026-04-02 08:18:59', '2026-04-02 08:18:59'),
+	(15, 79, 39, 'protocol_dev/aNfwM6Ku8CTOUvDzWdCCEAXPFRi9pNL17tV1HVWE.pdf', '2026-04-02', '2026-04-02', 23, NULL, '2026-04-02 08:19:14', '2026-04-02 08:19:14');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_qa_activities_checklists
+CREATE TABLE IF NOT EXISTS `pro_qa_activities_checklists` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` bigint unsigned NOT NULL,
+  `item_number` tinyint unsigned NOT NULL,
+  `date_performed` date DEFAULT NULL,
+  `means_of_verification` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_checked` tinyint(1) NOT NULL DEFAULT '0',
+  `updated_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pro_qa_activities_checklists_project_id_item_number_unique` (`project_id`,`item_number`),
+  CONSTRAINT `pro_qa_activities_checklists_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `pro_projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_qa_activities_checklists : ~40 rows (environ)
+INSERT INTO `pro_qa_activities_checklists` (`id`, `project_id`, `item_number`, `date_performed`, `means_of_verification`, `is_checked`, `updated_by`, `created_at`, `updated_at`) VALUES
+	(1, 2, 1, '2026-03-31', 'Protocol development document', 1, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(2, 2, 2, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(3, 2, 3, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(4, 2, 4, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(5, 2, 5, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(6, 2, 6, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(7, 2, 7, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(8, 2, 8, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(9, 2, 9, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(10, 2, 10, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(11, 2, 11, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(12, 2, 12, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(13, 2, 13, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(14, 2, 14, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(15, 2, 15, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(16, 2, 16, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(17, 2, 17, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(18, 2, 18, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(19, 2, 19, NULL, NULL, 0, 18, '2026-03-31 08:47:23', '2026-03-31 08:47:23'),
+	(20, 2, 20, '2026-03-31', 'dd', 1, 18, '2026-03-31 08:47:23', '2026-03-31 08:53:55'),
+	(21, 5, 1, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(22, 5, 2, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(23, 5, 3, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(24, 5, 4, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(25, 5, 5, '2026-03-24', 'Signed protocol (level 3)', 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(26, 5, 6, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(27, 5, 7, '2026-03-17', 'First QA inspection scheduled', 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(28, 5, 8, '2026-03-17', 'Critical Phase Inspection completed', 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(29, 5, 9, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(30, 5, 10, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(31, 5, 11, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(32, 5, 12, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(33, 5, 13, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(34, 5, 14, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(35, 5, 15, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(36, 5, 16, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(37, 5, 17, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(38, 5, 18, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(39, 5, 19, '2026-03-31', 'QA Statement – 24-04-B/GLP', 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48'),
+	(40, 5, 20, NULL, NULL, 0, 18, '2026-03-31 16:23:48', '2026-03-31 16:23:48');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_qa_inspections
 CREATE TABLE IF NOT EXISTS `pro_qa_inspections` (
@@ -1816,9 +3671,9 @@ CREATE TABLE IF NOT EXISTS `pro_qa_inspections` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_qa_inspections : ~40 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_qa_inspections : ~47 rows (environ)
 INSERT INTO `pro_qa_inspections` (`id`, `inspection_name`, `facility_location`, `qa_inspector_id`, `project_id`, `activity_id`, `checklist_slug`, `date_scheduled`, `date_start`, `date_end`, `date_report_fm`, `date_report_sd`, `date_performed`, `completed_at`, `type_inspection`, `created_at`, `updated_at`) VALUES
 	(5, 'Critical Phase Inspection #1', NULL, 17, 3, 7, NULL, '2026-02-25', NULL, NULL, NULL, NULL, '2026-03-19', NULL, 'Critical Phase Inspection', '2026-02-25 15:16:31', '2026-03-19 14:15:06'),
 	(6, 'Critical Phase Inspection #2', NULL, 79, 3, 24, 'llin-exp-huts', '2026-02-25', NULL, NULL, NULL, NULL, '2026-03-23', NULL, 'Critical Phase Inspection', '2026-02-25 15:41:00', '2026-03-23 10:52:02'),
@@ -1859,7 +3714,16 @@ INSERT INTO `pro_qa_inspections` (`id`, `inspection_name`, `facility_location`, 
 	(43, 'Final Approved Protocol (signed) – QA Inspection', NULL, 23, 25, NULL, NULL, '2026-03-27', NULL, NULL, NULL, NULL, '2026-03-27', NULL, 'Study Protocol Inspection', '2026-03-27 12:58:33', '2026-03-27 14:18:09'),
 	(45, 'Study Protocol Amendment/Deviation Inspection #8', NULL, 23, 25, NULL, NULL, '2026-03-27', NULL, NULL, NULL, NULL, '2026-03-27', NULL, 'Study Protocol Amendment/Deviation Inspection', '2026-03-27 13:01:37', '2026-03-27 14:16:34'),
 	(46, 'Protocol Amendment / Deviation – QA Inspection', NULL, 23, 25, NULL, NULL, '2026-03-27', NULL, NULL, NULL, NULL, '2026-03-27', NULL, 'Study Protocol Amendment/Deviation Inspection', '2026-03-27 13:31:11', '2026-03-27 13:31:52'),
-	(47, 'Protocol Amendment / Deviation – QA Inspection', NULL, 23, 25, NULL, NULL, '2026-03-27', NULL, NULL, NULL, NULL, '2026-03-27', NULL, 'Study Protocol Amendment/Deviation Inspection', '2026-03-27 14:11:37', '2026-03-27 14:16:53');
+	(47, 'Protocol Amendment / Deviation – QA Inspection', NULL, 23, 25, NULL, NULL, '2026-03-27', NULL, NULL, NULL, NULL, '2026-03-27', NULL, 'Study Protocol Amendment/Deviation Inspection', '2026-03-27 14:11:37', '2026-03-27 14:16:53'),
+	(48, 'SD uploads Draft Protocol – QA Inspection', NULL, 23, 31, NULL, NULL, '2026-04-01', '2026-04-01', NULL, NULL, NULL, '2026-04-01', NULL, 'Study Protocol Inspection', '2026-04-01 10:57:40', '2026-04-01 11:13:37'),
+	(49, 'Final Approved Protocol (signed) – QA Inspection', NULL, 23, 31, NULL, NULL, '2026-04-01', '2026-04-01', NULL, NULL, NULL, '2026-04-01', NULL, 'Study Protocol Inspection', '2026-04-01 11:02:03', '2026-04-01 11:17:31'),
+	(50, 'Critical Phase: Test Cone', NULL, 23, 31, 36, 'cone-llin', '2026-04-01', '2026-04-01', NULL, NULL, NULL, '2026-04-01', NULL, 'Critical Phase Inspection', '2026-04-01 11:09:29', '2026-04-01 11:19:16'),
+	(51, 'Critical Phase: Test Tunnel', NULL, 23, 31, 37, 'tunnel-test', '2026-04-01', '2026-04-01', NULL, NULL, NULL, '2026-04-01', NULL, 'Critical Phase Inspection', '2026-04-01 11:09:32', '2026-04-01 11:19:42'),
+	(52, 'Rapport de l\'étude – QA Inspection', NULL, 23, 31, NULL, NULL, '2026-04-01', '2026-04-01', '2026-04-01', '2026-04-01', '2026-04-01', '2026-04-01', NULL, 'Study Report Inspection', '2026-04-01 11:22:00', '2026-04-01 11:25:43'),
+	(53, 'SD uploads Draft Protocol – QA Inspection', NULL, 23, 39, NULL, NULL, '2026-04-02', '2026-04-02', '2026-04-02', '2026-04-02', '2026-04-02', '2026-04-02', NULL, 'Study Protocol Inspection', '2026-04-02 08:18:22', '2026-04-02 12:34:29'),
+	(54, 'Final Approved Protocol (signed) – QA Inspection', NULL, 23, 39, NULL, NULL, '2026-04-02', '2026-04-02', NULL, NULL, NULL, '2026-04-02', NULL, 'Study Protocol Inspection', '2026-04-02 08:18:59', '2026-04-02 12:33:28'),
+	(55, 'Critical Phase: Test Cone', NULL, 23, 39, 38, NULL, '2026-04-02', NULL, NULL, NULL, NULL, '2026-04-02', NULL, 'Critical Phase Inspection', '2026-04-02 08:21:57', '2026-04-02 12:26:45'),
+	(56, 'Inspection du Facility 2026', 'cotonou', 23, NULL, NULL, NULL, '2026-04-03', NULL, NULL, NULL, NULL, '2026-04-03', NULL, 'Facility Inspection', '2026-04-03 13:28:19', '2026-04-03 13:56:21');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_qa_inspections_findings
 CREATE TABLE IF NOT EXISTS `pro_qa_inspections_findings` (
@@ -1881,7 +3745,7 @@ CREATE TABLE IF NOT EXISTS `pro_qa_inspections_findings` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_qa_inspections_findings : ~44 rows (environ)
 INSERT INTO `pro_qa_inspections_findings` (`id`, `inspection_id`, `facility_section`, `project_id`, `finding_text`, `is_conformity`, `action_point`, `means_of_verification`, `resolved_by_name`, `deadline_date`, `deadline_text`, `meeting_date`, `assigned_to`, `status`, `parent_finding_id`, `created_at`, `updated_at`) VALUES
@@ -1928,7 +3792,76 @@ INSERT INTO `pro_qa_inspections_findings` (`id`, `inspection_id`, `facility_sect
 	(46, 39, NULL, 25, 'ddd', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-03-27 10:34:34', '2026-03-27 10:34:34'),
 	(47, 38, 'sp-a', 25, 'ddd', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-03-27 10:34:44', '2026-03-27 10:34:44'),
 	(48, 40, 'sr-a', 25, 'Super', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-03-27 10:51:01', '2026-03-27 10:51:01'),
-	(49, 41, NULL, 25, 'EEEE', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-03-27 10:53:52', '2026-03-27 10:53:52');
+	(49, 41, NULL, 25, 'EEEE', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-03-27 10:53:52', '2026-03-27 10:53:52'),
+	(50, 35, 'process-a', NULL, 'Bn', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2026-04-03 13:57:07', '2026-04-03 13:57:07');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_qa_review_custom_items
+CREATE TABLE IF NOT EXISTS `pro_qa_review_custom_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inspection_id` bigint unsigned NOT NULL,
+  `sort_order` tinyint unsigned NOT NULL DEFAULT '1',
+  `question` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `yes_no` enum('yes','no') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `comments` text COLLATE utf8mb4_unicode_ci,
+  `corrective_actions` text COLLATE utf8mb4_unicode_ci,
+  `ca_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `qa_review_custom_items_inspection_id_foreign` (`inspection_id`),
+  CONSTRAINT `qa_review_custom_items_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_review_inspections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_qa_review_custom_items : ~0 rows (environ)
+
+-- Listage de la structure de la table crec_rh_system_db. pro_qa_review_inspections
+CREATE TABLE IF NOT EXISTS `pro_qa_review_inspections` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `scheduled_date` date DEFAULT NULL,
+  `review_date` date DEFAULT NULL,
+  `status` enum('scheduled','in_progress','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'scheduled',
+  `reviewer_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `date_signed` date DEFAULT NULL,
+  `meeting_date` date DEFAULT NULL,
+  `meeting_participants` text COLLATE utf8mb4_unicode_ci,
+  `meeting_notes` text COLLATE utf8mb4_unicode_ci,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `qa_review_inspections_created_by_foreign` (`created_by`),
+  CONSTRAINT `qa_review_inspections_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_qa_review_inspections : ~0 rows (environ)
+INSERT INTO `pro_qa_review_inspections` (`id`, `scheduled_date`, `review_date`, `status`, `reviewer_name`, `date_signed`, `meeting_date`, `meeting_participants`, `meeting_notes`, `created_by`, `created_at`, `updated_at`) VALUES
+	(1, '2026-03-31', '2026-03-31', 'scheduled', 'Corine Ngufor', '2026-03-31', NULL, NULL, NULL, 18, '2026-03-31 15:26:26', '2026-03-31 15:56:53');
+
+-- Listage de la structure de la table crec_rh_system_db. pro_qa_review_responses
+CREATE TABLE IF NOT EXISTS `pro_qa_review_responses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inspection_id` bigint unsigned NOT NULL,
+  `section_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_number` tinyint unsigned NOT NULL,
+  `yes_no` enum('yes','no') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `comments` text COLLATE utf8mb4_unicode_ci,
+  `corrective_actions` text COLLATE utf8mb4_unicode_ci,
+  `ca_completed` tinyint(1) NOT NULL DEFAULT '0',
+  `ca_date` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `qa_rev_resp_unique` (`inspection_id`,`section_code`,`item_number`),
+  CONSTRAINT `qa_review_responses_inspection_id_foreign` FOREIGN KEY (`inspection_id`) REFERENCES `pro_qa_review_inspections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table crec_rh_system_db.pro_qa_review_responses : ~5 rows (environ)
+INSERT INTO `pro_qa_review_responses` (`id`, `inspection_id`, `section_code`, `item_number`, `yes_no`, `comments`, `corrective_actions`, `ca_completed`, `ca_date`, `created_at`, `updated_at`) VALUES
+	(1, 1, 'I', 1, NULL, NULL, NULL, 0, NULL, '2026-03-31 15:58:06', '2026-03-31 15:58:06'),
+	(2, 1, 'I', 2, NULL, NULL, NULL, 0, NULL, '2026-03-31 15:58:06', '2026-03-31 15:58:06'),
+	(3, 1, 'I', 3, NULL, NULL, NULL, 0, NULL, '2026-03-31 15:58:06', '2026-03-31 15:58:06'),
+	(4, 1, 'I', 4, NULL, NULL, NULL, 0, NULL, '2026-03-31 15:58:06', '2026-03-31 15:58:06'),
+	(5, 1, 'I', 5, NULL, NULL, NULL, 0, NULL, '2026-03-31 15:58:06', '2026-03-31 15:58:06');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_qa_statements
 CREATE TABLE IF NOT EXISTS `pro_qa_statements` (
@@ -1947,12 +3880,13 @@ CREATE TABLE IF NOT EXISTS `pro_qa_statements` (
   PRIMARY KEY (`id`),
   KEY `pro_qa_statements_project_id_foreign` (`project_id`),
   CONSTRAINT `pro_qa_statements_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `pro_projects` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_qa_statements : ~2 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_qa_statements : ~1 rows (environ)
 INSERT INTO `pro_qa_statements` (`id`, `project_id`, `status`, `date_signed`, `qa_manager_id`, `intro_text`, `report_number`, `doc_ref`, `doc_issue_date`, `doc_next_review`, `created_at`, `updated_at`) VALUES
 	(1, 25, 'final', '2026-03-27', 23, 'Quality Assurance Inspections of the above referenced study were conducted according to the procedures described in the Standard Operating Procedures of the Quality Assurance unit and according to general requirements of the OECD Principles of Good Laboratory Practice on the dates given in the table below. The report has been audited to ensure that it accurately describes the methods used and that the reported results accurately reflect the raw data of the study. Findings from the inspections were reported to the Facility Manager and the Study Director as also given below. In addition, facility audits are conducted twice per year and the date of the last audit is included in the statement below.\r\n\r\nJe suis d\'accord', '24-03-BV', 'QA-PR-L-001/09', '2025-01-08', '2027-03-10', '2026-03-27 14:48:03', '2026-03-27 14:55:43'),
-	(2, 1, 'draft', '2026-03-27', 23, 'Quality Assurance Inspections of the above referenced study were conducted according to the procedures described in the Standard Operating Procedures of the Quality Assurance unit and according to general requirements of the OECD Principles of Good Laboratory Practice on the dates given in the table below. The report has been audited to ensure that it accurately describes the methods used and that the reported results accurately reflect the raw data of the study. Findings from the inspections were reported to the Facility Manager and the Study Director as also given below. In addition, facility audits are conducted twice per year and the date of the last audit is included in the statement below.', '24-01', 'QA-PR-L-001/09', '2025-08-01', '2027-07-31', '2026-03-27 16:17:53', '2026-03-27 16:17:53');
+	(2, 1, 'draft', '2026-03-27', 23, 'Quality Assurance Inspections of the above referenced study were conducted according to the procedures described in the Standard Operating Procedures of the Quality Assurance unit and according to general requirements of the OECD Principles of Good Laboratory Practice on the dates given in the table below. The report has been audited to ensure that it accurately describes the methods used and that the reported results accurately reflect the raw data of the study. Findings from the inspections were reported to the Facility Manager and the Study Director as also given below. In addition, facility audits are conducted twice per year and the date of the last audit is included in the statement below.', '24-01', 'QA-PR-L-001/09', '2025-08-01', '2027-07-31', '2026-03-27 16:17:53', '2026-03-27 16:17:53'),
+	(3, 5, 'final', '2026-03-31', 23, 'Quality Assurance Inspections of the above referenced study were conducted according to the procedures described in the Standard Operating Procedures of the Quality Assurance unit and according to general requirements of the OECD Principles of Good Laboratory Practice on the dates given in the table below. The report has been audited to ensure that it accurately describes the methods used and that the reported results accurately reflect the raw data of the study. Findings from the inspections were reported to the Facility Manager and the Study Director as also given below. In addition, facility audits are conducted twice per year and the date of the last audit is included in the statement below.', '24-04-B/GLP', 'QA-PR-L-001/09', '2025-08-01', '2027-07-31', '2026-03-31 16:12:20', '2026-03-31 16:12:43');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_report_phase_documents
 CREATE TABLE IF NOT EXISTS `pro_report_phase_documents` (
@@ -1978,7 +3912,7 @@ CREATE TABLE IF NOT EXISTS `pro_report_phase_documents` (
   CONSTRAINT `pro_report_phase_documents_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `pro_projects` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pro_report_phase_documents_qa_inspection_id_foreign` FOREIGN KEY (`qa_inspection_id`) REFERENCES `pro_qa_inspections` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pro_report_phase_documents_submitted_by_foreign` FOREIGN KEY (`submitted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_report_phase_documents : ~12 rows (environ)
 INSERT INTO `pro_report_phase_documents` (`id`, `project_id`, `document_type`, `title`, `description`, `file_path`, `url`, `doi`, `submission_date`, `signature_date`, `qa_inspection_id`, `status`, `submitted_by`, `created_at`, `updated_at`) VALUES
@@ -1994,7 +3928,8 @@ INSERT INTO `pro_report_phase_documents` (`id`, `project_id`, `document_type`, `
 	(11, 16, 'final_report', 'Rapport de l\'étude', NULL, 'report_phase_documents/8v6pExV00HldrfHJjrcb1ciayNPYXO828uaDWY5Q.pdf', NULL, NULL, '2026-03-25', NULL, NULL, 'draft', 18, '2026-03-25 15:01:12', '2026-03-25 15:01:12'),
 	(12, 25, 'final_report', 'Rapport de l\'étude (Draft)', NULL, 'report_phase_documents/8wbZ0LdcqY25QC5sUUST2Z38a5oQJZ42aHMoWP9H.pdf', NULL, NULL, '2026-03-27', '2026-03-27', 40, 'draft', 18, '2026-03-27 10:36:31', '2026-03-27 10:49:16'),
 	(13, 25, 'report_amendment', 'Amendement de rapport', 'Amendement de rapport', 'report_phase_documents/nhj9zp21hg6r4wxhKzsTn7a5WOCDZxffYhnMlDn2.pdf', NULL, NULL, '2026-03-27', '2026-03-27', 41, 'submitted', 18, '2026-03-27 10:52:58', '2026-03-27 10:52:58'),
-	(14, 25, 'shared_data', 'donnees', NULL, 'report_phase_documents/Nmc0CfupRmjbfgglyaJGI0HNQgqMWYbNOn74ELGE.pdf', NULL, NULL, '2026-03-27', NULL, NULL, 'draft', 18, '2026-03-27 15:32:45', '2026-03-27 15:32:45');
+	(14, 25, 'shared_data', 'donnees', NULL, 'report_phase_documents/Nmc0CfupRmjbfgglyaJGI0HNQgqMWYbNOn74ELGE.pdf', NULL, NULL, '2026-03-27', NULL, NULL, 'draft', 18, '2026-03-27 15:32:45', '2026-03-27 15:32:45'),
+	(15, 31, 'final_report', 'Rapport de l\'étude', NULL, 'report_phase_documents/qPROrRAjLK1L9bQweDoeiseMVeS1uJ4onhFb1UhH.pdf', NULL, NULL, '2026-04-01', '2026-04-01', 52, 'submitted', 18, '2026-04-01 11:22:00', '2026-04-01 11:22:00');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_studies_activities
 CREATE TABLE IF NOT EXISTS `pro_studies_activities` (
@@ -2003,7 +3938,7 @@ CREATE TABLE IF NOT EXISTS `pro_studies_activities` (
   `parent_activity_id` int DEFAULT NULL,
   `study_type_id` int DEFAULT NULL,
   `activity_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `study_sub_category_id` bigint unsigned NOT NULL,
+  `study_sub_category_id` bigint unsigned DEFAULT NULL,
   `project_id` bigint unsigned NOT NULL,
   `estimated_activity_date` date DEFAULT NULL,
   `estimated_activity_end_date` date DEFAULT NULL,
@@ -2018,7 +3953,7 @@ CREATE TABLE IF NOT EXISTS `pro_studies_activities` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table crec_rh_system_db.pro_studies_activities : ~32 rows (environ)
 INSERT INTO `pro_studies_activities` (`id`, `study_activity_name`, `parent_activity_id`, `study_type_id`, `activity_description`, `study_sub_category_id`, `project_id`, `estimated_activity_date`, `estimated_activity_end_date`, `actual_activity_date`, `created_by`, `should_be_performed_by`, `performed_by`, `status`, `commentaire`, `phase_critique`, `meeting_id`, `created_at`, `updated_at`) VALUES
@@ -2053,7 +3988,10 @@ INSERT INTO `pro_studies_activities` (`id`, `study_activity_name`, `parent_activ
 	(32, 'Lavage', NULL, 1, 's', 1, 19, '2026-03-24', '2026-03-24', '2026-03-24', 23, 34, 13, 'completed', 'dd', 1, 25, '2026-03-24 14:29:36', '2026-03-24 14:30:40'),
 	(33, 'Lavage', NULL, 1, 'gf', 1, 16, '2026-03-25', '2026-03-25', '2026-03-25', 23, 66, 13, 'completed', NULL, 1, 26, '2026-03-25 14:52:08', '2026-03-25 14:56:55'),
 	(34, 'Experimental Huts', NULL, 2, 'e', 6, 16, '2026-03-25', '2026-03-25', '2026-03-25', 23, 50, 12, 'completed', NULL, 1, 26, '2026-03-25 14:52:46', '2026-03-25 14:57:10'),
-	(35, 'Lavage', NULL, 1, 'dd', 2, 25, '2026-03-27', '2026-03-27', '2026-03-27', 23, 50, 13, 'completed', 'dd', 1, 27, '2026-03-27 08:59:11', '2026-03-27 10:16:37');
+	(35, 'Lavage', NULL, 1, 'dd', 2, 25, '2026-03-27', '2026-03-27', '2026-03-27', 23, 50, 13, 'completed', 'dd', 1, 27, '2026-03-27 08:59:11', '2026-03-27 10:16:37'),
+	(36, 'Test Cone', NULL, 1, NULL, NULL, 31, '2026-04-01', '2026-04-01', '2026-04-01', 23, 42, 13, 'completed', 'dd', 1, 28, '2026-04-01 10:52:39', '2026-04-01 11:09:51'),
+	(37, 'Test Tunnel', NULL, 1, NULL, NULL, 31, '2026-04-01', '2026-04-01', '2026-04-01', 23, 96, 13, 'completed', 'd', 1, 28, '2026-04-01 10:57:18', '2026-04-01 11:10:02'),
+	(38, 'Test Cone', NULL, 1, NULL, NULL, 39, '2026-04-02', '2026-04-02', '2026-04-02', 23, NULL, 15, 'completed', NULL, 1, 29, '2026-04-02 08:17:51', '2026-04-02 09:21:25');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_studies_initiation_meetings
 CREATE TABLE IF NOT EXISTS `pro_studies_initiation_meetings` (
@@ -2072,9 +4010,9 @@ CREATE TABLE IF NOT EXISTS `pro_studies_initiation_meetings` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_studies_initiation_meetings : ~14 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_studies_initiation_meetings : ~12 rows (environ)
 INSERT INTO `pro_studies_initiation_meetings` (`id`, `project_id`, `organizer_id`, `date_scheduled`, `time_scheduled`, `date_performed`, `status`, `meeting_type`, `study_initiation_meeting_report`, `meeting_link`, `breve_description`, `meeting_file`, `created_at`, `updated_at`) VALUES
 	(11, 5, 23, '2025-09-10', '18:32:00', NULL, 'pending', 'study_initiation_meeting', NULL, 'https://lshtm.zoom.us/j/87871297333?pwd=0Rt9WdV4rBi4r8pcM9wb3XGpGEp03T.1&from=addon', 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur', 'qa_meetings/AkZDvnfGuWWrp5ZkR6avezYAee05SdSOwFF7loG6.pdf', '2025-09-17 16:30:57', '2025-09-17 16:30:57'),
 	(12, 4, 23, '2025-09-27', '09:24:00', NULL, 'pending', 'study_initiation_meeting', NULL, 'https://lshtm.zoom.us/j/87871297333?pwd=0Rt9WdV4rBi4r8pcM9wb3XGpGEp03T.1&from=addon', 'gffgfg', NULL, '2025-09-19 07:23:04', '2025-09-19 07:23:04'),
@@ -2089,7 +4027,9 @@ INSERT INTO `pro_studies_initiation_meetings` (`id`, `project_id`, `organizer_id
 	(24, 1, 23, '2026-03-23', '14:16:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, 'fff', NULL, '2026-03-23 12:16:52', '2026-03-23 12:16:52'),
 	(25, 19, 23, '2026-03-24', '16:29:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, 'hggh', 'qa_meetings/nAKiomybPq9M2lgdnpoaDv0EtNzkNxyXEpOHYgg1.pdf', '2026-03-24 14:30:02', '2026-03-24 14:30:02'),
 	(26, 16, 23, '2026-03-25', '16:54:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, NULL, 'qa_meetings/yIKPpBvNW5mJr9buS3pvym5SDve6y17hMsi1beC6.pdf', '2026-03-25 14:55:20', '2026-03-25 14:55:20'),
-	(27, 25, 23, '2026-03-27', '10:03:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, 'hh', NULL, '2026-03-27 08:59:34', '2026-03-27 08:59:34');
+	(27, 25, 23, '2026-03-27', '10:03:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, 'hh', NULL, '2026-03-27 08:59:34', '2026-03-27 08:59:34'),
+	(28, 31, 23, '2026-04-01', '13:09:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, NULL, 'qa_meetings/F6sDsp5784q7ehVj4lKMMoKr5R2M66nsBeS58fAn.pdf', '2026-04-01 11:09:24', '2026-04-01 11:09:24'),
+	(29, 39, 23, '2026-04-02', '10:19:00', NULL, 'pending', 'study_initiation_meeting', NULL, NULL, 'ddd', 'qa_meetings/9XYzSP0ZSIMMPcYHmLGeteUJ73Q90bpOkyIsFnBG.pdf', '2026-04-02 08:21:50', '2026-04-02 08:21:50');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_studies_initiation_meetings_participants
 CREATE TABLE IF NOT EXISTS `pro_studies_initiation_meetings_participants` (
@@ -2099,9 +4039,9 @@ CREATE TABLE IF NOT EXISTS `pro_studies_initiation_meetings_participants` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_studies_initiation_meetings_participants : ~34 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_studies_initiation_meetings_participants : ~39 rows (environ)
 INSERT INTO `pro_studies_initiation_meetings_participants` (`id`, `initiation_meeting_id`, `participant_id`, `created_at`, `updated_at`) VALUES
 	(54, 18, 5, '2025-09-19 08:53:45', '2025-09-19 08:53:45'),
 	(55, 18, 6, '2025-09-19 08:53:45', '2025-09-19 08:53:45'),
@@ -2136,7 +4076,14 @@ INSERT INTO `pro_studies_initiation_meetings_participants` (`id`, `initiation_me
 	(84, 26, 23, '2026-03-25 14:55:20', '2026-03-25 14:55:20'),
 	(85, 27, 3, '2026-03-27 08:59:34', '2026-03-27 08:59:34'),
 	(86, 27, 4, '2026-03-27 08:59:34', '2026-03-27 08:59:34'),
-	(87, 27, 23, '2026-03-27 08:59:34', '2026-03-27 08:59:34');
+	(87, 27, 23, '2026-03-27 08:59:34', '2026-03-27 08:59:34'),
+	(88, 28, 4, '2026-04-01 11:09:24', '2026-04-01 11:09:24'),
+	(89, 28, 5, '2026-04-01 11:09:24', '2026-04-01 11:09:24'),
+	(90, 28, 23, '2026-04-01 11:09:24', '2026-04-01 11:09:24'),
+	(91, 29, 5, '2026-04-02 08:21:50', '2026-04-02 08:21:50'),
+	(92, 29, 6, '2026-04-02 08:21:50', '2026-04-02 08:21:50'),
+	(93, 29, 7, '2026-04-02 08:21:50', '2026-04-02 08:21:50'),
+	(94, 29, 23, '2026-04-02 08:21:50', '2026-04-02 08:21:50');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_studies_types
 CREATE TABLE IF NOT EXISTS `pro_studies_types` (
@@ -2252,9 +4199,9 @@ CREATE TABLE IF NOT EXISTS `pro_study_director_appointment_forms` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table crec_rh_system_db.pro_study_director_appointment_forms : ~14 rows (environ)
+-- Listage des données de la table crec_rh_system_db.pro_study_director_appointment_forms : ~13 rows (environ)
 INSERT INTO `pro_study_director_appointment_forms` (`id`, `project_id`, `study_director`, `project_manager`, `sd_appointment_date`, `estimated_start_date`, `estimated_end_date`, `study_director_signature`, `quality_assurance_signature`, `fm_signature`, `comments`, `sd_appointment_file`, `replacement_date`, `replacement_reason`, `active`, `created_at`, `updated_at`) VALUES
 	(1, 2, 1, '10', '2025-09-01', '2025-09-11', '2025-09-17', NULL, NULL, NULL, NULL, 'uploads/0MvjNIh6pq6uQj0323x6xS24rVnAXxd90f0x1BIm.pdf', NULL, NULL, 1, '2025-09-02 13:47:28', '2025-09-02 14:07:33'),
 	(6, 3, 1, '1', '2025-09-01', '2025-09-11', '2025-09-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '2025-09-02 16:32:43', '2025-09-02 16:32:43'),
@@ -2269,7 +4216,9 @@ INSERT INTO `pro_study_director_appointment_forms` (`id`, `project_id`, `study_d
 	(15, 10, 1, '5', '2026-03-25', '2026-03-25', '2026-03-31', NULL, NULL, NULL, NULL, 'uploads/kKy5YjtvnQNR1qe74gnTpA5pXUKnVvcoS307T1Ye.pdf', NULL, NULL, 1, '2026-03-25 07:09:50', '2026-03-25 07:09:50'),
 	(16, 16, 13, '14', '2025-08-31', '2025-08-30', '2026-09-30', NULL, NULL, NULL, NULL, 'uploads/3Fl3ezGZAdCaUJn3tovpCpfR8s9dI2DHM51kt5qo.pdf', NULL, NULL, 1, '2026-03-25 14:51:09', '2026-03-25 14:51:09'),
 	(17, 25, 5, '2', '2026-03-02', '2026-03-03', '2026-03-19', NULL, NULL, NULL, NULL, 'uploads/hPHvCf3TizalsmOCWxG6xhMlkvhQX3xEmSxQOQFV.pdf', NULL, NULL, 1, '2026-03-26 15:59:41', '2026-03-26 15:59:41'),
-	(18, 34, 5, '4', '2026-03-27', '2026-03-27', '2026-05-29', NULL, NULL, NULL, NULL, 'uploads/vxyAsju6CQiuCUdaNaAyrqZoZI1bvWeGq8BcOhN8.pdf', NULL, NULL, 1, '2026-03-27 08:17:24', '2026-03-27 08:17:24');
+	(18, 34, 5, '4', '2026-03-27', '2026-03-27', '2026-05-29', NULL, NULL, NULL, NULL, 'uploads/vxyAsju6CQiuCUdaNaAyrqZoZI1bvWeGq8BcOhN8.pdf', NULL, NULL, 1, '2026-03-27 08:17:24', '2026-03-27 08:17:24'),
+	(19, 31, 23, '5', '2026-04-01', '2026-04-01', '2026-04-30', NULL, NULL, NULL, NULL, 'uploads/4fYhcSdKvqHC6vTgi1cygbmt8proshmKWaa3gJp5.pdf', NULL, NULL, 1, '2026-04-01 11:24:12', '2026-04-01 11:24:12'),
+	(20, 39, 23, '1', '2026-04-01', '2026-04-02', '2026-04-30', NULL, NULL, NULL, NULL, 'uploads/DkJcvVDb7ncEm2gOuZt5nLfRn7Vh2CzW74iIkZQK.pdf', NULL, NULL, 1, '2026-04-02 08:16:41', '2026-04-02 08:16:41');
 
 -- Listage de la structure de la table crec_rh_system_db. pro_study_phases
 CREATE TABLE IF NOT EXISTS `pro_study_phases` (

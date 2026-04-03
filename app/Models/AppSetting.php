@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class AppSetting extends Model
 {
-    protected $table = 'app_settings';
+    protected $table = 'pro_app_settings';
 
     protected $fillable = ['key', 'value', 'label', 'description', 'type', 'group', 'sort_order'];
 
@@ -74,7 +74,7 @@ class AppSetting extends Model
             // Organisation
             [
                 'key'         => 'org_name',
-                'value'       => 'CREC-LSHTM',
+                'value'       => 'AIRID',
                 'label'       => 'Nom de l\'organisation',
                 'description' => null,
                 'type'        => 'text',

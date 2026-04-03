@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cpia_assessments', function (Blueprint $table) {
+        Schema::create('pro_cpia_assessments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('pro_projects')->cascadeOnDelete();
             $table->string('project_code', 100)->nullable();

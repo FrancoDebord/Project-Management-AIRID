@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CpiaAssessment extends Model
 {
-    protected $table = 'cpia_assessments';
+    protected $table = 'pro_cpia_assessments';
 
     protected $fillable = [
         'project_id', 'project_code', 'study_director_name', 'study_title',

@@ -15,11 +15,19 @@ class NotificationController extends Controller
     /** Notifications page */
     public function index()
     {
-        $notifications = AppNotification::where('user_id', auth()->id())
-            ->orderByDesc('created_at')
-            ->paginate(30);
+        $base = AppNotification::where('user_id', auth()->id());
 
-        return view('notifications.index', compact('notifications'));
+        $unread = (clone $base)->whereNull('read_at')
+            ->orderByDesc('created_at')
+            ->paginate(10, ['*'], 'unread_page')
+            ->withQueryString();
+
+        $read = (clone $base)->whereNotNull('read_at')
+            ->orderByDesc('created_at')
+            ->paginate(20, ['*'], 'read_page')
+            ->withQueryString();
+
+        return view('notifications.index', compact('unread', 'read'));
     }
 
     /** Unread count (JSON) */

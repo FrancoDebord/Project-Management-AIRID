@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planning &amp; Master Schedule — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html" class="active"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Planning &amp; Master Schedule
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">📅</div>
+        <div>
+          <h1>Planning &amp; Master Schedule</h1>
+          <p>Outils de visualisation et de suivi des activités à l'échelle d'un projet ou de tous les projets simultanément, avec exports PDF.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">👥</span>
+        <div>Le <strong>Master Schedule</strong> est accessible à <span class="badge badge-all">tous les utilisateurs connectés</span>. Le <strong>Project Tracking Sheet</strong> est également ouvert à tous.</div>
+      </div>
+
+      <!-- MASTER SCHEDULE -->
+      <h2 class="section-title" id="master-schedule">🗓️ Master Schedule</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le <strong>Master Schedule</strong> (<code>/master-schedule</code>) offre une vue consolidée de tous les projets et de leurs activités dans le temps.</p>
+
+        <h3 class="subsection-title">Contenu affiché</h3>
+        <ul class="doc-list">
+          <li>Tous les projets actifs avec leur timeline</li>
+          <li>Activités planifiées avec dates estimées et réelles</li>
+          <li>Statut de chaque activité par code couleur</li>
+          <li>Phases critiques mises en évidence</li>
+          <li>Jalons importants (réunions, inspections)</li>
+        </ul>
+
+        <h3 class="subsection-title">Export PDF</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Le bouton <strong>Télécharger PDF</strong> génère une version imprimable du Master Schedule via <code>/master-schedule/pdf</code>.</p>
+        <ul class="doc-list">
+          <li>Format paysage pour une meilleure lisibilité</li>
+          <li>En-tête avec date de génération</li>
+          <li>Tous les projets et activités inclus</li>
+        </ul>
+      </div>
+
+      <!-- PROJECT TRACKING SHEET -->
+      <h2 class="section-title" id="tracking-sheet">📋 Project Tracking Sheet</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le <strong>Project Tracking Sheet</strong> (<code>/project-activity-schedule</code>) permet de suivre les activités d'un projet spécifique.</p>
+
+        <h3 class="subsection-title">Filtrer par projet</h3>
+        <ol class="step-list">
+          <li>Accédez au Project Tracking Sheet depuis la navigation</li>
+          <li>Sélectionnez un projet dans le menu déroulant</li>
+          <li>La page se recharge avec les activités du projet sélectionné</li>
+        </ol>
+
+        <h3 class="subsection-title">Données affichées</h3>
+        <ul class="doc-list">
+          <li>Liste complète des activités du projet avec leurs catégories</li>
+          <li>Responsable de chaque activité</li>
+          <li>Date estimée vs date réelle</li>
+          <li>Statut : <code>pending</code> / <code>in_progress</code> / <code>completed</code> / <code>delayed</code></li>
+          <li>Indicateur de phase critique</li>
+        </ul>
+
+        <h3 class="subsection-title">Modifier le suivi</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Le formulaire de suivi permet de mettre à jour les informations d'avancement :</p>
+        <ol class="step-list">
+          <li>Modifiez les dates ou statuts dans le tableau</li>
+          <li>Cliquez sur <strong>Enregistrer</strong> pour sauvegarder via <code>saveProjectTrackingSheet</code></li>
+        </ol>
+
+        <h3 class="subsection-title">Export PDF du projet</h3>
+        <p style="font-size:.88rem;">Le bouton <strong>Exporter PDF</strong> génère via <code>/project/{id}/activities/pdf</code> un document comprenant :</p>
+        <ul class="doc-list">
+          <li>En-tête avec code et titre du projet</li>
+          <li>Toutes les activités avec statuts et dates</li>
+          <li>Phases critiques identifiées</li>
+        </ul>
+      </div>
+
+      <!-- ACTIVITES STATUTS -->
+      <h2 class="section-title" id="statuses">🎨 Codes de statut des activités</h2>
+      <div class="card" style="overflow-x:auto;">
+        <table class="feature-table">
+          <thead>
+            <tr><th>Statut</th><th>Signification</th><th>Couleur</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>pending</code></td>
+              <td>En attente — pas encore démarrée</td>
+              <td><span style="background:#6c757d;color:#fff;padding:2px 10px;border-radius:20px;font-size:.8rem;">Gris</span></td>
+            </tr>
+            <tr>
+              <td><code>in_progress</code></td>
+              <td>En cours d'exécution</td>
+              <td><span style="background:#0d6efd;color:#fff;padding:2px 10px;border-radius:20px;font-size:.8rem;">Bleu</span></td>
+            </tr>
+            <tr>
+              <td><code>completed</code></td>
+              <td>Complétée avec succès</td>
+              <td><span style="background:#198754;color:#fff;padding:2px 10px;border-radius:20px;font-size:.8rem;">Vert</span></td>
+            </tr>
+            <tr>
+              <td><code>delayed</code></td>
+              <td>En retard par rapport à la date estimée</td>
+              <td><span style="background:#dc3545;color:#fff;padding:2px 10px;border-radius:20px;font-size:.8rem;">Rouge</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RÉUNIONS -->
+      <h2 class="section-title" id="meetings">📅 Réunions</h2>
+      <div class="card">
+        <h3 class="subsection-title">Réunion d'initiation de l'étude</h3>
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Planifiée depuis la <strong>Phase 4 (Planning)</strong> :</p>
+        <ol class="step-list">
+          <li>Cliquez sur <strong>Planifier la réunion d'initiation</strong></li>
+          <li>Renseignez date, heure, lieu et participants</li>
+          <li>Cliquez sur <strong>Enregistrer</strong></li>
+          <li>Un e-mail de notification est envoyé automatiquement aux participants</li>
+        </ol>
+
+        <h3 class="subsection-title">Réunion de phase critique</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Planifiable pour chaque activité marquée comme phase critique :</p>
+        <ul class="doc-list">
+          <li>Accéder au modal via le bouton <strong>Planifier réunion critique</strong> sur l'activité</li>
+          <li>Renseigner les informations de la réunion</li>
+          <li>Supprimer une réunion si annulée</li>
+        </ul>
+
+        <h3 class="subsection-title">Consulter les informations d'une réunion</h3>
+        <p style="font-size:.88rem;">Cliquer sur le titre de la réunion affiche les détails via l'endpoint AJAX <code>/ajax/get-meeting-info</code>.</p>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

@@ -26,28 +26,67 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 position: relative;
             }
+            /* On screen: table is transparent — padding comes from .page */
+            .page-table { width: 100%; border-collapse: collapse; }
+            .page-head-cell, .page-body-cell { padding: 0; vertical-align: top; }
         }
         @media print {
             body { background: #fff; margin: 0; padding: 0; }
+            /* No padding on .page — the table cells provide it so it repeats on every overflow page */
             .page {
                 width: 210mm;
-                min-height: 297mm;
-                padding: 10mm 15mm 15mm 15mm;
                 page-break-after: always;
                 position: relative;
             }
             .page:last-child { page-break-after: avoid; }
             .no-print { display: none !important; }
+            /* thead repeats on every physical page automatically */
+            .page-table { width: 100%; border-collapse: collapse; }
+            .page-head-cell {
+                padding: 8mm 15mm 4mm 15mm;
+                background: #fff;
+            }
+            .page-body-cell {
+                padding: 0 15mm 15mm 15mm;
+                vertical-align: top;
+            }
         }
 
         /* ── Header ── */
         .report-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            border-bottom: 1.5px solid #333;
-            padding-bottom: 5px;
+            gap: 14px;
+            border-bottom: 2px solid #1a3a6b;
+            padding-bottom: 6px;
             margin-bottom: 12px;
+        }
+        .report-header img.logo {
+            height: 52px;
+            width: auto;
+            flex-shrink: 0;
+        }
+        .report-header .org-info {
+            flex-grow: 1;
+            border-left: 3px solid #c41230;
+            padding-left: 10px;
+        }
+        .report-header .org-name {
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: #1a3a6b;
+            line-height: 1.2;
+        }
+        .report-header .org-sub {
+            font-size: 8.5pt;
+            color: #555;
+            margin-top: 2px;
+        }
+        .report-header .doc-ref {
+            text-align: right;
+            font-size: 8pt;
+            color: #777;
+            flex-shrink: 0;
         }/* ── Report title ── */
         .report-title {
             text-align: center;
@@ -170,6 +209,13 @@
         .signature-box .sig-space {
             height: 40px;
         }
+        .signature-box .sig-img {
+            display: block;
+            height: 50px;
+            max-width: 180px;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
 
         /* ── Minutes table ── */
         .minutes-table {
@@ -243,6 +289,8 @@
 
 <div class="no-print print-btn-area">
     <button onclick="window.print()">&#128438; Imprimer / Enregistrer en PDF</button>
+    <a href="{{ route('sign.document', ['qa_unit_report', $inspection->id]) }}"
+       style="margin-left:15px;font-size:11pt;color:#c41230;font-weight:600;">&#9998; Sign Document</a>
     <a href="{{ route('checklist.followup', $inspection->id) }}"
        style="margin-left:15px;font-size:11pt;color:#1a3a6b;">&#128196; Follow-Up Report</a>
     @if($inspection->project_id)
@@ -276,17 +324,31 @@
         return trim(($person->titre_personnel ? $person->titre_personnel . ' ' : '') . $person->prenom . ' ' . $person->nom);
     };
     $inspectorIsManager = $inspector && $qaManager && $inspector->id === $qaManager->id;
+    $signatures         = $signatures ?? collect();
 @endphp
 
 {{-- ══════════════════════════════════════════════════════════════
      PAGE 1 — Inspection details & Findings
 ═══════════════════════════════════════════════════════════════ --}}
 <div class="page">
-
-    {{-- Header --}}<div class="report-header">
-        <img src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
-    </div>
-        
+<table class="page-table">
+<thead>
+    <tr>
+        <td class="page-head-cell">
+            <div class="report-header">
+                <img src="{{ asset('storage/assets/logo/airid.png') }}" alt="AIRID" class="logo">
+                <div class="org-info">
+                    <div class="org-name">AIRID — African Institute for Research in Infectious Diseases</div>
+                    <div class="org-sub">Quality Assurance Unit &nbsp;·&nbsp; GLP Compliance</div>
+                </div>
+                <div class="doc-ref">QA-UNIT-REPORT<br>{{ now()->format('Y') }}</div>
+            </div>
+        </td>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td class="page-body-cell">
 
     {{-- Title --}}
     <div class="report-title">
@@ -518,6 +580,26 @@
         @endif
     @endif
 
+    {{-- Signature status strip --}}
+    @php
+        $sigRoles = ['study_director' => 'Study Director', 'qa_inspector' => 'QA Inspector', 'qa_manager' => 'QA Manager', 'facility_manager' => 'Facility Manager'];
+    @endphp
+    <div class="section-heading">Signature Status</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        @foreach($sigRoles as $rKey => $rLabel)
+            @php $hasSig = $signatures->has($rKey); @endphp
+            <div style="flex:1;min-width:120px;border:1px solid {{ $hasSig ? '#198754' : '#dee2e6' }};border-radius:6px;padding:6px 10px;background:{{ $hasSig ? '#f0fff4' : '#f8f9fa' }};">
+                <div style="font-size:8pt;font-weight:bold;color:{{ $hasSig ? '#198754' : '#888' }};margin-bottom:3px;">{{ $rLabel }}</div>
+                @if($hasSig)
+                    <img src="{{ $signatures[$rKey]->signature_data }}" style="height:32px;max-width:130px;display:block;margin-bottom:2px;">
+                    <div style="font-size:7.5pt;color:#555;">{{ $signatures[$rKey]->signer_name }}<br>{{ $signatures[$rKey]->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div style="font-size:8pt;color:#aaa;font-style:italic;">Pending…</div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+
     {{-- Distributed to --}}
     <div class="section-heading">Distributed To</div>
     <div class="distributed-to">
@@ -530,6 +612,10 @@
         <strong>Distribution Date :</strong>&nbsp; {{ $reportDate }}
     </div>
 
+        </td>
+    </tr>
+</tbody>
+</table>
     <div class="page-number doc-page-num"></div>
 </div>
 
@@ -538,11 +624,24 @@
      PAGE 2 — Minutes of Meeting
 ═══════════════════════════════════════════════════════════════ --}}
 <div class="page">
-
-    <div class="report-header">
-        <img src="{{ asset('storage/assets/header/entete_airid.png') }}" alt="AIRID — African Institute for Research in Infectious Diseases">
-    </div>
-        
+<table class="page-table">
+<thead>
+    <tr>
+        <td class="page-head-cell">
+            <div class="report-header">
+                <img src="{{ asset('storage/assets/logo/airid.png') }}" alt="AIRID" class="logo">
+                <div class="org-info">
+                    <div class="org-name">AIRID — African Institute for Research in Infectious Diseases</div>
+                    <div class="org-sub">Quality Assurance Unit &nbsp;·&nbsp; GLP Compliance</div>
+                </div>
+                <div class="doc-ref">QA-UNIT-REPORT<br>{{ now()->format('Y') }}</div>
+            </div>
+        </td>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td class="page-body-cell">
 
     <div class="report-title">
         <h1>Quality Assurance Unit Report</h1>
@@ -591,7 +690,13 @@
                 <td style="text-align:center;">1</td>
                 <td>{{ $fullName($studyDirector) }}</td>
                 <td>Study Director</td>
-                <td>&nbsp;</td>
+                <td>
+                    @if(isset($signatures['study_director']))
+                        <img src="{{ $signatures['study_director']->signature_data }}" style="height:36px;max-width:160px;">
+                    @else
+                        &nbsp;
+                    @endif
+                </td>
             </tr>
             @endif
             @php $distRow = $studyDirector ? 2 : 1; @endphp
@@ -601,7 +706,13 @@
                 <td style="text-align:center;">{{ $distRow++ }}</td>
                 <td>{{ $fullName($inspector) }}</td>
                 <td>QA Inspector</td>
-                <td>&nbsp;</td>
+                <td>
+                    @if(isset($signatures['qa_inspector']))
+                        <img src="{{ $signatures['qa_inspector']->signature_data }}" style="height:36px;max-width:160px;">
+                    @else
+                        &nbsp;
+                    @endif
+                </td>
             </tr>
             @endif
             {{-- QA Manager --}}
@@ -609,14 +720,26 @@
                 <td style="text-align:center;">{{ $distRow++ }}</td>
                 <td>{{ $fullName($qaManager) }}</td>
                 <td>QA Manager</td>
-                <td>&nbsp;</td>
+                <td>
+                    @if(isset($signatures['qa_manager']))
+                        <img src="{{ $signatures['qa_manager']->signature_data }}" style="height:36px;max-width:160px;">
+                    @else
+                        &nbsp;
+                    @endif
+                </td>
             </tr>
             {{-- Facility Manager --}}
             <tr>
                 <td style="text-align:center;">{{ $distRow++ }}</td>
                 <td>{{ $fullName($facilityManager) }}</td>
                 <td>Facility Manager</td>
-                <td>&nbsp;</td>
+                <td>
+                    @if(isset($signatures['facility_manager']))
+                        <img src="{{ $signatures['facility_manager']->signature_data }}" style="height:36px;max-width:160px;">
+                    @else
+                        &nbsp;
+                    @endif
+                </td>
             </tr>
             @php $extra = $distRow; @endphp
             @for($r = $extra; $r <= $extra + 3; $r++)
@@ -647,37 +770,61 @@
             <div class="signature-box">
                 <div class="sig-label">Study Director</div>
                 <div class="sig-name">{{ $fullName($studyDirector) }}</div>
-                <div class="sig-space"></div>
-                <div class="sig-date">Signature : _________________________</div>
-                <div class="sig-date-line">Date : ___________</div>
+                @if(isset($signatures['study_director']))
+                    <img src="{{ $signatures['study_director']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-date-line">{{ $signatures['study_director']->signer_name }} — {{ $signatures['study_director']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-space"></div>
+                    <div class="sig-date">Signature : _________________________</div>
+                    <div class="sig-date-line">Date : ___________</div>
+                @endif
             </div>
             @endif
             @if(!$inspectorIsManager)
             <div class="signature-box">
                 <div class="sig-label">QA Inspector</div>
                 <div class="sig-name">{{ $fullName($inspector) }}</div>
-                <div class="sig-space"></div>
-                <div class="sig-date">Signature : _________________________</div>
-                <div class="sig-date-line">Date : ___________</div>
+                @if(isset($signatures['qa_inspector']))
+                    <img src="{{ $signatures['qa_inspector']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-date-line">{{ $signatures['qa_inspector']->signer_name }} — {{ $signatures['qa_inspector']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-space"></div>
+                    <div class="sig-date">Signature : _________________________</div>
+                    <div class="sig-date-line">Date : ___________</div>
+                @endif
             </div>
             @endif
             <div class="signature-box">
                 <div class="sig-label">QA Manager</div>
                 <div class="sig-name">{{ $fullName($qaManager) }}</div>
-                <div class="sig-space"></div>
-                <div class="sig-date">Signature : _________________________</div>
-                <div class="sig-date-line">Date : ___________</div>
+                @if(isset($signatures['qa_manager']))
+                    <img src="{{ $signatures['qa_manager']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-date-line">{{ $signatures['qa_manager']->signer_name }} — {{ $signatures['qa_manager']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-space"></div>
+                    <div class="sig-date">Signature : _________________________</div>
+                    <div class="sig-date-line">Date : ___________</div>
+                @endif
             </div>
             <div class="signature-box">
                 <div class="sig-label">Facility Manager</div>
                 <div class="sig-name">{{ $fullName($facilityManager) }}</div>
-                <div class="sig-space"></div>
-                <div class="sig-date">Signature : _________________________</div>
-                <div class="sig-date-line">Date : ___________</div>
+                @if(isset($signatures['facility_manager']))
+                    <img src="{{ $signatures['facility_manager']->signature_data }}" class="sig-img" alt="signature">
+                    <div class="sig-date-line">{{ $signatures['facility_manager']->signer_name }} — {{ $signatures['facility_manager']->signed_at?->format('d/m/Y') }}</div>
+                @else
+                    <div class="sig-space"></div>
+                    <div class="sig-date">Signature : _________________________</div>
+                    <div class="sig-date-line">Date : ___________</div>
+                @endif
             </div>
         </div>
     </div>
 
+        </td>
+    </tr>
+</tbody>
+</table>
     <div class="page-number doc-page-num"></div>
 </div>
 

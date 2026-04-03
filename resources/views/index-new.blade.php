@@ -239,6 +239,12 @@
                             </li>
                         @endif
                         <li>
+                            <a class="dropdown-item" href="{{ asset('docs/index.html') }}" target="_blank">
+                                <i class="bi bi-question-circle me-2"></i>Aide &amp; Documentation
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
                             <a class="dropdown-item text-danger" href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                 <i class="bi bi-box-arrow-right me-2"></i>Déconnexion

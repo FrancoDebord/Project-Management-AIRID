@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestion des projets — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html" class="active"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Créer / Gérer un projet
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">🗂️</div>
+        <div>
+          <h1>Créer &amp; Gérer un projet</h1>
+          <p>L'assistant de gestion de projet (Study Management Wizard) guide l'utilisateur à travers jusqu'à 8 phases pour les projets GLP, et 6 phases pour les projets non-GLP.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">🔐</span>
+        <div><strong>Qui peut créer un projet ?</strong> Uniquement les rôles <span class="badge badge-super_admin">super_admin</span> et <span class="badge badge-facility_manager">facility_manager</span>.</div>
+      </div>
+
+      <!-- CRÉATION -->
+      <h2 class="section-title" id="create">➕ Créer un nouveau projet</h2>
+      <p style="font-size:.88rem;margin-bottom:.8rem;">Depuis le tableau de bord, cliquez sur <strong>Study Management</strong> dans la navigation, puis sur le bouton <em>Nouveau projet</em>. Une boîte de dialogue s'ouvre :</p>
+      <ul class="doc-list">
+        <li>Entrez le <strong>code du projet</strong> (ex. : <code>BEN-2025-001</code>)</li>
+        <li>Entrez le <strong>titre du projet</strong></li>
+        <li>Sélectionnez si le projet est <strong>GLP</strong> ou non (détermine le nombre de phases)</li>
+        <li>Cliquez sur <strong>Créer</strong> pour initialiser le projet</li>
+      </ul>
+      <p style="font-size:.88rem;">Le projet est créé et vous êtes redirigé vers l'assistant de gestion (wizard).</p>
+
+      <!-- PHASES OVERVIEW -->
+      <h2 class="section-title" id="phases">📋 Vue d'ensemble des phases</h2>
+      <p style="font-size:.88rem;margin-bottom:1rem;">Le wizard affiche toutes les phases sous forme d'onglets. Chaque phase indique son état d'avancement. Les phases marquées <span style="background:#6f42c122;color:#59359a;font-size:.75rem;padding:2px 8px;border-radius:20px;font-weight:600;">GLP uniquement</span> ne s'affichent que pour les projets GLP.</p>
+
+      <div class="phase-list">
+        <div class="phase-item">
+          <div class="phase-num">1</div>
+          <div class="phase-body">
+            <h4>Study Creation — Création de l'étude</h4>
+            <p>Informations de base du projet, nomination du Study Director, formulaires d'appointment/remplacement, personnel clé.</p>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">2</div>
+          <div class="phase-body">
+            <h4>Protocol Details — Détails du protocole</h4>
+            <p>Code protocole, types d'étude, types de produits évalués, tests de laboratoire concernés.</p>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">3</div>
+          <div class="phase-body">
+            <h4>Protocol Development — Développement du protocole</h4>
+            <p>5 niveaux de documents à compléter : Protocol Draft (L1), Final Protocol (L2), Study Plan (L3), Monitoring Plan (L4), Amendment/Deviation (L5 — optionnel).</p>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num glp-only">4</div>
+          <div class="phase-body">
+            <h4>Planning — Planification</h4>
+            <p>Organisation de la réunion d'initiation de l'étude, identification des phases critiques, évaluation CPIA.</p>
+          </div>
+          <span class="phase-tag">GLP uniquement</span>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">5</div>
+          <div class="phase-body">
+            <h4>Experimental — Phase expérimentale</h4>
+            <p>Planification et exécution des activités, suivi des statuts (pending / in_progress / completed / delayed), historique d'exécution.</p>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num glp-only">6</div>
+          <div class="phase-body">
+            <h4>Quality Assurance — Assurance Qualité</h4>
+            <p>Planification des inspections QA, suivi des constatations et non-conformités, déclaration QA finale, checklist d'activités QA (20 items GLP).</p>
+          </div>
+          <span class="phase-tag">GLP uniquement</span>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">7</div>
+          <div class="phase-body">
+            <h4>Reporting — Rapport</h4>
+            <p>Soumission des rapports (draft report, final report), suivi des statuts de publication.</p>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">8</div>
+          <div class="phase-body">
+            <h4>Archiving — Archivage</h4>
+            <p>Checklist d'archivage (18 items), soumission des documents d'archivage, validation finale et archivage du projet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 1 -->
+      <h2 class="section-title" id="phase1">Phase 1 — Study Creation</h2>
+      <div class="card">
+        <h3 class="subsection-title">Informations de base</h3>
+        <ul class="doc-list">
+          <li>Modification du code, titre, statut et type GLP/non-GLP du projet</li>
+          <li>Dates de début et fin effectives</li>
+          <li>Statut du projet (<em>not_started, in progress, suspended, completed</em>)</li>
+        </ul>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
+
+        <h3 class="subsection-title">Nomination du Study Director</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Le formulaire de nomination enregistre :</p>
+        <ul class="doc-list">
+          <li>Le Study Director sélectionné</li>
+          <li>La date de nomination</li>
+          <li>La signature électronique</li>
+        </ul>
+        <p style="font-size:.82rem;">En cas de remplacement, un second formulaire est disponible pour documenter le changement.</p>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
+
+        <h3 class="subsection-title">Personnel clé (Key Personnel)</h3>
+        <ul class="doc-list">
+          <li>Ajout de membres de l'équipe projet via le modal de sélection</li>
+          <li>Retrait d'un membre existant</li>
+          <li>Chaque membre ajouté reçoit une notification automatique</li>
+        </ul>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
+      </div>
+
+      <!-- PHASE 2 -->
+      <h2 class="section-title" id="phase2">Phase 2 — Protocol Details</h2>
+      <div class="card">
+        <ul class="doc-list">
+          <li><strong>Code protocole</strong> : identifiant unique du protocole</li>
+          <li><strong>Types d'étude</strong> : In vitro, In vivo, Observational, etc. (sélection multiple)</li>
+          <li><strong>Types de produits évalués</strong> : LLIN, IRS, Repellent, etc. (sélection multiple)</li>
+          <li><strong>Tests de laboratoire</strong> : sélection des tests concernés par le projet</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <!-- PHASE 3 -->
+      <h2 class="section-title" id="phase3">Phase 3 — Protocol Development</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Cette phase est structurée en <strong>5 niveaux</strong> de documents. Les niveaux 1 à 4 sont obligatoires, le niveau 5 est optionnel.</p>
+        <div class="card" style="overflow-x:auto;padding:0;">
+          <table class="feature-table">
+            <thead><tr><th>Niveau</th><th>Document</th><th>Obligatoire</th></tr></thead>
+            <tbody>
+              <tr><td>L1</td><td>Protocol Draft</td><td class="check">✓</td></tr>
+              <tr><td>L2</td><td>Final Protocol</td><td class="check">✓</td></tr>
+              <tr><td>L3</td><td>Study Plan</td><td class="check">✓</td></tr>
+              <tr><td>L4</td><td>Monitoring Plan</td><td class="check">✓</td></tr>
+              <tr><td>L5</td><td>Amendment / Deviation</td><td class="cross">Optionnel</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.88rem;margin-top:.8rem;">Pour chaque niveau, vous pouvez :</p>
+        <ul class="doc-list">
+          <li>Générer les activités de développement</li>
+          <li>Marquer l'activité comme complète avec date de réalisation</li>
+          <li>Uploader les documents associés</li>
+          <li>Supprimer un document ou une entrée de document</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <!-- PHASE 4 -->
+      <h2 class="section-title" id="phase4">Phase 4 — Planning <span class="phase-tag" style="margin-left:.5rem;">GLP uniquement</span></h2>
+      <div class="card">
+        <h3 class="subsection-title">Réunion d'initiation</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Planifiez la réunion de démarrage de l'étude (Study Initiation Meeting) :</p>
+        <ul class="doc-list">
+          <li>Date et heure prévues</li>
+          <li>Participants</li>
+          <li>Lieu ou lien de réunion</li>
+        </ul>
+        <p style="font-size:.82rem;">Une notification par e-mail est envoyée aux participants à la création de la réunion.</p>
+
+        <h3 class="subsection-title">Phases critiques</h3>
+        <ul class="doc-list">
+          <li>Marquer/démarquer les activités comme "<strong>phase critique</strong>"</li>
+          <li>Planifier une réunion spécifique pour les phases critiques</li>
+          <li>Les phases critiques déclenchent les inspections QA de type "Critical Phase Inspection"</li>
+        </ul>
+
+        <h3 class="subsection-title">CPIA</h3>
+        <p style="font-size:.88rem;">Accès direct à l'évaluation CPIA depuis cette phase. <a href="cpia.html">→ Voir la documentation CPIA</a></p>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <!-- PHASE 5 -->
+      <h2 class="section-title" id="phase5">Phase 5 — Experimental</h2>
+      <div class="card">
+        <h3 class="subsection-title">Gestion des activités</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Chaque activité dispose des informations suivantes :</p>
+        <ul class="doc-list">
+          <li>Nom de l'activité</li>
+          <li>Responsable assigné</li>
+          <li>Date estimée</li>
+          <li>Statut : <code>pending</code> / <code>in_progress</code> / <code>completed</code> / <code>delayed</code></li>
+          <li>Date réelle de réalisation</li>
+        </ul>
+        <h3 class="subsection-title">Actions sur les activités</h3>
+        <ul class="doc-list">
+          <li><strong>Ajouter une activité</strong> via le formulaire modal</li>
+          <li><strong>Exécuter une activité</strong> : marque comme réalisée avec date et utilisateur</li>
+          <li><strong>Réinitialiser</strong> : revenir au statut précédent</li>
+          <li><strong>Supprimer</strong> une activité (avec confirmation)</li>
+          <li><strong>Historique d'exécution</strong> : journal complet des actions effectuées sur l'activité</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
+      </div>
+
+      <!-- PHASE 6 -->
+      <h2 class="section-title" id="phase6">Phase 6 — Quality Assurance <span class="phase-tag" style="margin-left:.5rem;">GLP uniquement</span></h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Voir la documentation détaillée : <a href="quality-assurance.html">→ Assurance Qualité</a></p>
+        <p style="font-size:.88rem;">Cette phase inclut :</p>
+        <ul class="doc-list">
+          <li>Planification et suivi des inspections QA</li>
+          <li>Enregistrement des constatations (non-conformités)</li>
+          <li>Résolution des NC et actions correctives</li>
+          <li>Déclaration QA finale (QA Statement)</li>
+          <li>Checklist d'activités QA (20 items GLP, QA-PR-1-011/05)</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <!-- PHASE 7 -->
+      <h2 class="section-title" id="phase7">Phase 7 — Reporting</h2>
+      <div class="card">
+        <ul class="doc-list">
+          <li>Soumettre un <strong>Draft Report</strong> avec titre et date de soumission</li>
+          <li>Soumettre un <strong>Final Report</strong> après validation</li>
+          <li>Mettre à jour le statut : <code>submitted</code> → <code>published</code></li>
+          <li>Modifier ou supprimer un document de rapport</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
+      </div>
+
+      <!-- PHASE 8 -->
+      <h2 class="section-title" id="phase8">Phase 8 — Archiving</h2>
+      <div class="card">
+        <h3 class="subsection-title">Checklist d'archivage</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Une checklist de 18 items doit être complétée avant l'archivage :</p>
+        <ul class="doc-list">
+          <li>Vérification de la présence de tous les documents obligatoires</li>
+          <li>Chaque item peut être coché comme complété</li>
+          <li>Sauvegarde automatique de la progression</li>
+        </ul>
+
+        <h3 class="subsection-title">Documents d'archivage</h3>
+        <ul class="doc-list">
+          <li>Soumettre les documents physiques archivés avec type et date</li>
+          <li>Supprimer un document si nécessaire</li>
+        </ul>
+
+        <h3 class="subsection-title">Archivage du projet</h3>
+        <ol class="doc-list">
+          <li>Toutes les phases doivent être complètes</li>
+          <li>Cliquer sur <strong>Archiver le projet</strong></li>
+          <li>Le projet passe en lecture seule (<code>archived_at</code> est défini)</li>
+          <li>Le statut change à <strong>Archived</strong></li>
+        </ol>
+
+        <div class="info-box warn">
+          <span class="info-icon">⚠️</span>
+          <div>Un projet archivé désactive tous les boutons de modification. Le bouton "Désarchiver" reste disponible pour <span class="badge badge-super_admin">super_admin</span> et <span class="badge badge-facility_manager">facility_manager</span> si nécessaire.</div>
+        </div>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-archivist">archivist</span></p>
+      </div>
+
+      <!-- COMPLETION -->
+      <h2 class="section-title" id="completion">✅ Complétion des phases</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Chaque phase peut être marquée comme <strong>complète</strong> de deux façons :</p>
+        <div class="card-grid" style="margin-bottom:0;">
+          <div class="card-sm">
+            <div class="card-sm-icon">🤖</div>
+            <div>
+              <h4>Automatique</h4>
+              <p>Basé sur des critères définis (ex. : toutes les activités complètes, tous les documents soumis).</p>
+            </div>
+          </div>
+          <div class="card-sm">
+            <div class="card-sm-icon">✋</div>
+            <div>
+              <h4>Manuelle</h4>
+              <p>Via le bouton "Compléter la phase" pour forcer le statut même si les critères ne sont pas tous remplis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECT OVERVIEW -->
+      <h2 class="section-title" id="overview">🔍 Vue détaillée du projet (Project Overview)</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible depuis la carte du projet sur le tableau de bord, cette vue récapitule :</p>
+        <ul class="doc-list">
+          <li>Toutes les phases et leur statut de complétion</li>
+          <li>Liste des inspections QA et leurs constatations</li>
+          <li>Documents téléchargeables (selon les droits)</li>
+          <li>Score global d'avancement calculé</li>
+          <li>Équipe du projet</li>
+        </ul>
+        <h3 class="subsection-title">Droits de téléchargement</h3>
+        <table class="feature-table">
+          <thead><tr><th>Rôle</th><th>Documents accessibles</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></td><td>Tous les documents</td></tr>
+            <tr><td><span class="badge badge-qa_manager">qa_manager</span></td><td>Documents QA uniquement</td></tr>
+            <tr><td><span class="badge badge-study_director">study_director</span></td><td>Documents de ses projets uniquement</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

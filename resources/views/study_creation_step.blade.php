@@ -1,469 +1,555 @@
 <style>
-        .btn-custom {
-        font-weight: 600;
-        padding: 12px 22px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    }
+/* ── Study Creation – local styles ─────────────────────────────── */
+.sc-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+.sc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem .9rem;
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity .18s, transform .18s;
+    white-space: nowrap;
+}
+.sc-action-btn:hover { opacity: .88; transform: translateY(-1px); }
+.sc-action-btn.navy   { background: #1a3a6b; color: #fff; }
+.sc-action-btn.indigo { background: #4e2d8e; color: #fff; }
+.sc-action-btn.teal   { background: #0d7377; color: #fff; }
+.sc-action-btn.slate  { background: #475569; color: #fff; }
+.sc-action-btn.violet { background: #5c6bc0; color: #fff; }
 
-    /* Bouton principal */
-    .btn-primary-custom {
-        background-color: #c20102;
-        color: #fff;
-        border: none;
-    }
+/* Info cards */
+.sc-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; height: 100%; }
+.sc-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .7rem 1rem;
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: #fff;
+}
+.sc-card-header.navy   { background: linear-gradient(90deg,#1a3a6b,#22549a); }
+.sc-card-header.indigo { background: linear-gradient(90deg,#4e2d8e,#6b4ab5); }
+.sc-card-header .edit-btn {
+    padding: .25rem .55rem;
+    border-radius: 6px;
+    font-size: .75rem;
+    font-weight: 600;
+    border: 1.5px solid rgba(255,255,255,.5);
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    transition: background .15s;
+}
+.sc-card-header .edit-btn:hover { background: rgba(255,255,255,.2); }
 
-    .btn-primary-custom:hover {
-        background-color: #a10001;
-        transform: translateY(-2px);
-    }
+/* Field rows */
+.sc-field { display: flex; align-items: baseline; gap: .5rem; padding: .55rem .1rem; border-bottom: 1px solid #f3f4f6; font-size: .83rem; }
+.sc-field:last-child { border-bottom: none; }
+.sc-field-icon { color: #94a3b8; flex-shrink: 0; font-size: .9rem; width: 1.1rem; text-align: center; }
+.sc-field-label { color: #6b7280; min-width: 155px; flex-shrink: 0; font-size: .78rem; }
+.sc-field-value { color: #1e293b; font-weight: 500; word-break: break-word; }
+.sc-field-value a { color: #1a3a6b; text-decoration: none; font-weight: 600; font-size: .78rem; }
+.sc-field-value a:hover { text-decoration: underline; }
+.sc-empty { color: #9ca3af; font-size: .83rem; text-align: center; padding: 1.5rem 0; }
 
-    /* Variante plus claire */
-    .btn-secondary-custom {
-        background-color: #e45c5d;
-        color: #fff;
-        border: none;
-    }
+/* Progression */
+.sc-progress-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
 
-    .btn-secondary-custom:hover {
-        background-color: #c94a4b;
-        transform: translateY(-2px);
-    }
+/* Section tables */
+.sc-section-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
+.sc-section-card .sc-section-header {
+    padding: .6rem 1rem;
+    background: #f8fafc;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: .83rem;
+    font-weight: 700;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.sc-table { font-size: .82rem; margin-bottom: 0; }
+.sc-table thead th { background: #f1f5f9; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; border-bottom: 1px solid #e2e8f0; padding: .55rem .75rem; }
+.sc-table tbody td { padding: .55rem .75rem; vertical-align: middle; border-color: #f1f5f9; color: #374151; }
+.sc-table tbody tr:hover td { background: #f8fafc; }
 
-    /* Variante encore plus claire */
-    .btn-tertiary-custom {
-        background-color: #f28b8c;
-        color: #fff;
-        border: none;
-    }
-
-    .btn-tertiary-custom:hover {
-        background-color: #d67374;
-        transform: translateY(-2px);
-    }
-
-    /* Variante très claire */
-    .btn-light-custom {
-        background-color: #f5b5b5;
-        color: #333;
-        border: none;
-    }
-
-    .btn-light-custom:hover {
-        background-color: #e49c9c;
-        color: #fff;
-        transform: translateY(-2px);
-    }
+/* Badge GLP */
+.badge-glp-yes { background: #dcfce7; color: #15803d; font-size: .72rem; font-weight: 700; padding: .2rem .5rem; border-radius: 20px; }
+.badge-glp-no  { background: #fef9c3; color: #854d0e; font-size: .72rem; font-weight: 700; padding: .2rem .5rem; border-radius: 20px; }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        <h4>Study Creation</h4>
-        <p>In this section, you are asked to provide basic information about the study along with basic documents such
-            as the Study Director Appointment Form..</p>
-    </div>
+<div class="row g-3">
 
-    <div class="col-12 col-sm-7 ">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex flex-column gap-3 w-50 mx-auto">
-                    <button class="btn btn-custom btn-primary-custom" id="project_basic_information" data-bs-toggle="modal" data-bs-target="#detailedInformationProjectModal">Update Project Basic
-                        Information</button>
-
-                    <button class="btn btn-custom btn-secondary-custom" data-bs-toggle="modal"
-                        data-bs-target="#customModal"> Study Director Appointment
-                        Form</button>
-
-                    <button class="btn btn-custom btn-tertiary-custom" data-bs-toggle="modal"
-                        data-bs-target="#replacementModal">Study Director Replacement Form</button>
-
-                    <button class="btn btn-custom btn-light-custom" data-bs-toggle="modal"
-                        data-bs-target="#otherBasicDocumentsModal">Upload other basic documents</button>
-
-                    <button class="btn btn-custom" style="background:#5c6bc0;color:#fff;" data-bs-toggle="modal"
-                        data-bs-target="#keyPersonnelModal">
-                        <i class="bi bi-people-fill me-1"></i> Manage Key Personnel
-                    </button>
-                </div>
+    {{-- ── Page header ───────────────────────────────────────────── --}}
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+            <div>
+                <h5 class="fw-bold mb-0" style="color:#1a3a6b;">
+                    <i class="bi bi-folder2-open me-2"></i>Study Creation
+                </h5>
+                <p class="text-muted small mb-0 mt-1">
+                    Provide basic study information and upload founding documents before moving to the next phase.
+                </p>
             </div>
         </div>
     </div>
-    <div class="col-sm-5">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Progression</h5>
 
+    {{-- ── Action toolbar ─────────────────────────────────────────── --}}
+    @if(auth()->user()->canManageProtocol())
+    <div class="col-12">
+        <div class="sc-action-bar">
+            <button class="sc-action-btn navy"
+                    data-bs-toggle="modal" data-bs-target="#detailedInformationProjectModal">
+                <i class="bi bi-pencil-square"></i>Edit Project Info
+            </button>
+            <button class="sc-action-btn indigo"
+                    data-bs-toggle="modal" data-bs-target="#customModal">
+                <i class="bi bi-person-badge"></i>Study Director Form
+            </button>
+            <button class="sc-action-btn teal"
+                    data-bs-toggle="modal" data-bs-target="#replacementModal">
+                <i class="bi bi-arrow-repeat"></i>Director Replacement
+            </button>
+            <button class="sc-action-btn slate"
+                    data-bs-toggle="modal" data-bs-target="#otherBasicDocumentsModal">
+                <i class="bi bi-paperclip"></i>Other Documents
+            </button>
+            <button class="sc-action-btn violet"
+                    data-bs-toggle="modal" data-bs-target="#keyPersonnelModal">
+                <i class="bi bi-people-fill"></i>Manage Key Personnel
+            </button>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Project Basic Info  +  Study Director Form ──────────── --}}
+    @php
+        $study_director_appointment = $project->studyDirectorAppointmentForm ?? null;
+        $studyDirector   = $study_director_appointment->studyDirector  ?? null;
+        $projectManager  = $study_director_appointment->projectManager ?? null;
+        $isGlp = $project->is_glp ?? null;
+        $isGlpLabel = is_bool($isGlp) ? ($isGlp ? 'Yes' : 'No') : ($isGlp ?? 'N/A');
+    @endphp
+
+    {{-- Project Basic Information --}}
+    <div class="col-lg-6">
+        <div class="sc-card">
+            <div class="sc-card-header navy">
+                <span><i class="bi bi-info-circle me-2"></i>Project Basic Information</span>
+                @if(auth()->user()->canManageProtocol())
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#detailedInformationProjectModal">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </button>
+                @endif
+            </div>
+            <div class="card-body px-3 py-2">
+                @if(isset($project))
+                    <div class="sc-field">
+                        <i class="bi bi-hash sc-field-icon"></i>
+                        <span class="sc-field-label">Project Code</span>
+                        <span class="sc-field-value">{{ $project->project_code ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-journal-text sc-field-icon"></i>
+                        <span class="sc-field-label">Project Title</span>
+                        <span class="sc-field-value">{{ $project->project_title ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-patch-check sc-field-icon"></i>
+                        <span class="sc-field-label">GLP Study</span>
+                        <span class="sc-field-value">
+                            @if($isGlpLabel === 'Yes')
+                                <span class="badge-glp-yes"><i class="bi bi-check2 me-1"></i>Yes — GLP</span>
+                            @elseif($isGlpLabel === 'No')
+                                <span class="badge-glp-no"><i class="bi bi-x me-1"></i>No — Non-GLP</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-tag sc-field-icon"></i>
+                        <span class="sc-field-label">Project Nature</span>
+                        <span class="sc-field-value">{{ $project->project_nature ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-upc-scan sc-field-icon"></i>
+                        <span class="sc-field-label">Protocol Code</span>
+                        <span class="sc-field-value">{{ $project->protocol_code ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-virus sc-field-icon"></i>
+                        <span class="sc-field-label">Test System</span>
+                        <span class="sc-field-value">{{ $project->test_system ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-layers sc-field-icon"></i>
+                        <span class="sc-field-label">Project Phase</span>
+                        <span class="sc-field-value">{{ $project->project_stage ?? '—' }}</span>
+                    </div>
+                @else
+                    <p class="sc-empty">No project information available.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- Study Director Appointment Form --}}
+    <div class="col-lg-6">
+        <div class="sc-card">
+            <div class="sc-card-header indigo">
+                <span><i class="bi bi-person-badge me-2"></i>Study Director Appointment</span>
+                @if(auth()->user()->canManageProtocol())
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#customModal">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </button>
+                @endif
+            </div>
+            <div class="card-body px-3 py-2">
+                @if(isset($study_director_appointment))
+                    <div class="sc-field">
+                        <i class="bi bi-person-circle sc-field-icon"></i>
+                        <span class="sc-field-label">Study Director</span>
+                        <span class="sc-field-value">
+                            {{ $studyDirector
+                                ? trim(($studyDirector->titre ?? '') . ' ' . $studyDirector->prenom . ' ' . $studyDirector->nom)
+                                : '—' }}
+                        </span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-award sc-field-icon"></i>
+                        <span class="sc-field-label">Director Qualification</span>
+                        <span class="sc-field-value">{{ $studyDirector->titre_qualitification ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-calendar-check sc-field-icon"></i>
+                        <span class="sc-field-label">Date of Appointment</span>
+                        <span class="sc-field-value">{{ $study_director_appointment->sd_appointment_date ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-paperclip sc-field-icon"></i>
+                        <span class="sc-field-label">Appointment File</span>
+                        <span class="sc-field-value">
+                            @if($study_director_appointment->sd_appointment_file)
+                                <a href="{{ asset('storage/' . $study_director_appointment->sd_appointment_file) }}" target="_blank">
+                                    <i class="bi bi-file-earmark-arrow-down me-1"></i>View file
+                                </a>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-calendar2-week sc-field-icon"></i>
+                        <span class="sc-field-label">Est. Start Date</span>
+                        <span class="sc-field-value">{{ $study_director_appointment->estimated_start_date ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-calendar2-x sc-field-icon"></i>
+                        <span class="sc-field-label">Est. End Date</span>
+                        <span class="sc-field-value">{{ $study_director_appointment->estimated_end_date ?? '—' }}</span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-person-workspace sc-field-icon"></i>
+                        <span class="sc-field-label">Project Manager</span>
+                        <span class="sc-field-value">
+                            {{ $projectManager
+                                ? trim(($projectManager->titre ?? '') . ' ' . $projectManager->prenom . ' ' . $projectManager->nom)
+                                : '—' }}
+                        </span>
+                    </div>
+                    <div class="sc-field">
+                        <i class="bi bi-award sc-field-icon"></i>
+                        <span class="sc-field-label">Manager Qualification</span>
+                        <span class="sc-field-value">{{ $projectManager->titre_qualitification ?? '—' }}</span>
+                    </div>
+                @else
+                    <p class="sc-empty">No appointment form submitted yet.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Progression ─────────────────────────────────────────────── --}}
+    <div class="col-12">
+        <div class="sc-progress-card card">
+            <div class="card-body py-3 px-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="fw-bold small" style="color:#374151;">
+                        <i class="bi bi-bar-chart-line me-1" style="color:#1a3a6b;"></i>Overall Progression
+                    </span>
+                    <span class="fw-bold small {{ $execution_rate >= 100 ? 'text-success' : ($execution_rate >= 60 ? 'text-primary' : 'text-danger') }}">
+                        {{ $execution_rate }}%
+                    </span>
+                </div>
                 @php
-                    $progressColor = '';
-                    if ($execution_rate <= 20) {
-                        $progressColor = 'bg-danger';
-                    } elseif ($execution_rate <= 40) {
-                        $progressColor = 'bg-warning';
-                    } elseif ($execution_rate <= 60) {
-                        $progressColor = 'bg-info';
-                    } elseif ($execution_rate <= 80) {
-                        $progressColor = 'bg-primary';
-                    } else {
-                        $progressColor = 'bg-success';
-                    }
+                    $progressColor = match(true) {
+                        $execution_rate <= 20 => 'bg-danger',
+                        $execution_rate <= 40 => 'bg-warning',
+                        $execution_rate <= 60 => 'bg-info',
+                        $execution_rate <= 80 => 'bg-primary',
+                        default               => 'bg-success',
+                    };
                 @endphp
-                <div class="progress" style="height: 25px;">
+                <div class="progress mb-3" style="height:12px;border-radius:8px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated {{ $progressColor }}"
-                        role="progressbar" style="width: {{ $execution_rate }}%;" aria-valuenow="{{ $execution_rate }}"
-                        aria-valuemin="0" aria-valuemax="100">{{ $execution_rate }}%</div>
+                         role="progressbar" style="width:{{ $execution_rate }}%;"
+                         aria-valuenow="{{ $execution_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
 
-                <p class="mt-3 mb-0 small text-muted">Overall execution rate: <strong class="{{ $execution_rate >= 100 ? 'text-success' : ($execution_rate >= 60 ? 'text-primary' : 'text-danger') }}">{{ $execution_rate }}%</strong></p>
                 @if(!empty($phase_metrics))
                 @php
                     $metricRows = [
-                        ['key' => 'activities',   'label' => 'Activités de l\'étude',     'icon' => 'bi-list-check',          'type' => 'count'],
-                        ['key' => 'protocol_dev', 'label' => 'Documents Protocol Dev',    'icon' => 'bi-file-earmark-code',   'type' => 'count'],
-                        ['key' => 'inspections',  'label' => 'Inspections QA',             'icon' => 'bi-shield-check',        'type' => 'count'],
-                        ['key' => 'nc_findings',  'label' => 'NC findings résolus',        'icon' => 'bi-exclamation-triangle','type' => 'count'],
-                        ['key' => 'report_docs',  'label' => 'Rapport (document soumis)',  'icon' => 'bi-file-earmark-text',   'type' => 'milestone'],
-                        ['key' => 'archiving',    'label' => 'Archivage',                  'icon' => 'bi-archive',             'type' => 'milestone'],
+                        ['key' => 'activities',   'label' => 'Study Activities',          'icon' => 'bi-list-check'],
+                        ['key' => 'protocol_dev', 'label' => 'Protocol Dev Documents',    'icon' => 'bi-file-earmark-code'],
+                        ['key' => 'inspections',  'label' => 'QA Inspections',            'icon' => 'bi-shield-check'],
+                        ['key' => 'nc_findings',  'label' => 'NC Findings resolved',      'icon' => 'bi-exclamation-triangle'],
+                        ['key' => 'report_docs',  'label' => 'Report submitted',          'icon' => 'bi-file-earmark-text',  'type' => 'milestone'],
+                        ['key' => 'archiving',    'label' => 'Archiving',                 'icon' => 'bi-archive',            'type' => 'milestone'],
                     ];
                 @endphp
-                <ul class="list-unstyled mt-2 mb-0">
+                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-6 g-2">
                     @foreach($metricRows as $row)
-                        @php
-                            $m = $phase_metrics[$row['key']] ?? ['total' => 0, 'done' => 0];
-                            if ($row['type'] === 'milestone') {
-                                $isDone  = (bool) $m['done'];
-                                $label   = $isDone ? 'Fait' : 'En attente';
-                                $isNA    = false;
-                            } else {
-                                $isNA    = $m['total'] === 0;
-                                $isDone  = !$isNA && $m['done'] >= $m['total'];
-                                $label   = $isNA ? 'N/A' : $m['done'] . '/' . $m['total'];
-                            }
-                        @endphp
-                        <li class="d-flex align-items-center gap-2 py-1 border-bottom" style="font-size:.8rem;">
-                            @if($isNA)
-                                <i class="bi bi-dash-circle text-secondary flex-shrink-0" style="font-size:.9rem;"></i>
-                                <span class="text-muted flex-grow-1">{{ $row['label'] }}</span>
-                                <span class="badge bg-light text-secondary border" style="font-size:.68rem;">N/A</span>
-                            @elseif($isDone)
-                                <i class="bi bi-check-circle-fill text-success flex-shrink-0" style="font-size:.9rem;"></i>
-                                <span class="text-muted flex-grow-1">{{ $row['label'] }}</span>
-                                <span class="badge bg-success" style="font-size:.68rem;">{{ $label }}</span>
-                            @else
-                                <i class="bi bi-x-circle-fill text-danger flex-shrink-0" style="font-size:.9rem;"></i>
-                                <span class="fw-semibold flex-grow-1" style="color:#dc3545;">{{ $row['label'] }}</span>
-                                <span class="badge bg-danger" style="font-size:.68rem;">{{ $label }}</span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-                @endif
-
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2">
-
-        <h5 class="card-title h5 mb-3 mt-3">Summary of Entered Data </h5>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    Project Basic Information
-                </div>
-                <div class="card-body">
-                    @if (isset($project))
-                        <table class="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <th>Project Code</th>
-                                    <td>{{ $project->project_code ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Project Title</th>
-                                    <td>{{ $project->project_title ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Is GLP ? </th>
-                                    @php
-                                        $isGlp = $project->is_glp ?? 'N/A';
-                                        if (is_bool($isGlp)) {
-                                            $isGlp = $isGlp ? 'Yes' : 'No';
-                                        }
-                                    @endphp
-                                    <td>{{ $isGlp }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Project Nature</th>
-                                    <td>{{ $project->project_nature ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Protocol Code</th>
-                                    <td>{{ $project->protocol_code ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Test System</th>
-                                    <td>{{ $project->test_system ?? 'N/A' }}</td>
-                                </tr>
-                                {{-- <tr>
-                                    <th>Study Director</th>
-                                    @php
-                                        $studyDirector = $project->studyDirector ?? 'N/A';
-                                    @endphp
-                                    <td>{{ $studyDirector && $studyDirector != 'N/A' ? $studyDirector->titre . ' ' . $studyDirector->prenom . ' ' . $studyDirector->nom : 'N/A' }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <th>Project Manager</th>
-                                    @php
-                                        $projectManager = $project->projectManager ?? 'N/A';
-                                    @endphp
-                                    <td>{{ $projectManager && $projectManager != 'N/A' ? $projectManager->titre . ' ' . $projectManager->prenom . ' ' . $projectManager->nom : 'N/A' }}
-                                    </td>
-                                </tr> --}}
-
-
-                                <tr>
-                                    <th>Project Phase</th>
-                                    <td>{{ $project->project_stage ?? 'N/A' }}</td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                        <a href="#" class="btn btn-primary btn-sm"
-                           data-bs-toggle="modal" data-bs-target="#detailedInformationProjectModal">
-                            <i class="bi bi-pencil-square me-1"></i>Edit
-                        </a>
-                    @else
-                        <p>No Project Basic Information available.</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    Study Director Appointment Form
-                </div>
-                <div class="card-body">
-
                     @php
-                        $study_director_appointment = $project->studyDirectorAppointmentForm ?? null;
-
-                        $studyDirector = $study_director_appointment->studyDirector ?? null;
-                        $projectManager = $study_director_appointment->projectManager ?? null;
+                        $m = $phase_metrics[$row['key']] ?? ['total' => 0, 'done' => 0];
+                        $isMilestone = ($row['type'] ?? '') === 'milestone';
+                        if ($isMilestone) {
+                            $isDone = (bool) $m['done'];
+                            $label  = $isDone ? 'Done' : 'Pending';
+                            $isNA   = false;
+                        } else {
+                            $isNA   = $m['total'] === 0;
+                            $isDone = !$isNA && $m['done'] >= $m['total'];
+                            $label  = $isNA ? 'N/A' : $m['done'] . '/' . $m['total'];
+                        }
+                        $chipBg  = $isNA ? '#f1f5f9' : ($isDone ? '#dcfce7' : '#fee2e2');
+                        $chipClr = $isNA ? '#64748b' : ($isDone ? '#166534' : '#991b1b');
+                        $iconClr = $isNA ? 'text-secondary' : ($isDone ? 'text-success' : 'text-danger');
                     @endphp
-                    @if (isset($study_director_appointment))
-                        <table class="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <th>Study Director Name</th>
-                                    <td>{{ $studyDirector ? $studyDirector->titre . ' ' . $studyDirector->prenom . ' ' . $studyDirector->nom : 'N/A' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Study Director Title</th>
-                                    <td>{{ $studyDirector->titre_qualitification ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Date of Appointment</th>
-                                    <td>{{ $study_director_appointment->sd_appointment_date ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Study Director Appointment File</th>
-                                    <td>
-                                        @if (isset($study_director_appointment) && $study_director_appointment->sd_appointment_file)
-                                            <a href="{{ asset('storage/' . $study_director_appointment->sd_appointment_file) }}"
-                                                target="_blank" class="mt-2 d-block">View Current Study Director
-                                                Appointment Form</a>
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Estimated Start Date</th>
-                                    <td>{{ $study_director_appointment->estimated_start_date ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Estimated End Date</th>
-                                    <td>{{ $study_director_appointment->estimated_end_date ?? 'N/A' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Project Manager Name</th>
-                                    <td>{{ $projectManager ? $projectManager->titre . ' ' . $projectManager->prenom . ' ' . $projectManager->nom : 'N/A' }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Project Manager Title</th>
-                                    <td>{{ $projectManager->titre_qualitification ?? 'N/A' }}</td>
-                                </tr>
-                                <!-- Display other fields as needed -->
-                            </tbody>
-                        </table>
-                        <a href="#" class="btn btn-primary btn-sm"
-                           data-bs-toggle="modal" data-bs-target="#customModal">
-                            <i class="bi bi-pencil-square me-1"></i>Edit
-                        </a>
-                    @else
-                        <p>No Study Director Appointment Form available.</p>
-                    @endif
+                    <div class="col">
+                        <div class="d-flex flex-column align-items-center text-center p-2"
+                             style="border-radius:10px;background:{{ $chipBg }};border:1px solid {{ $isDone && !$isNA ? '#bbf7d0' : ($isNA ? '#e2e8f0' : '#fecaca') }};">
+                            <i class="bi {{ $row['icon'] }} {{ $iconClr }} mb-1" style="font-size:1.1rem;"></i>
+                            <span style="font-size:.68rem;color:#374151;line-height:1.2;margin-bottom:.2rem;">{{ $row['label'] }}</span>
+                            <span style="font-size:.75rem;font-weight:700;color:{{ $chipClr }};">{{ $label }}</span>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
+                @endif
             </div>
         </div>
     </div>
 
-    <div class="row mt-2">
-        <h5 class="mt-2 mb-3 ">Study Director Replacement History</h5>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Replaced Study Director </th>
-                    <th>Appointment Date</th>
-                    <th>Replacement Date</th>
-                    <th>Comments</th>
-                </tr>
-            </thead>
-
-            @php
-                $replacementHistory = $project->studyDirectorReplacementHistory()->get(); ;
-
-            @endphp
-            <tbody>
-                @forelse ($replacementHistory ?? [] as $replacement)
-
-                    <tr>
-                        @php
-                             $studyDirector = $replacement->studyDirector ?? null;
-                        @endphp
-                        <td>{{ $studyDirector ? $studyDirector->titre . ' ' . $studyDirector->prenom . ' ' . $studyDirector->nom : 'N/A' }}</td>
-                        <td>{{ $replacement->sd_appointment_date }}</td>
-                        <td>{{ $replacement->replacement_date }}</td>
-                        <td>{{ $replacement->replacement_reason }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4">No replacements found.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    {{-- ── Study Director Replacement History ─────────────────────── --}}
+    @php $replacementHistory = $project->studyDirectorReplacementHistory()->get(); @endphp
+    <div class="col-12">
+        <div class="sc-section-card card">
+            <div class="sc-section-header">
+                <i class="bi bi-arrow-repeat" style="color:#0d7377;"></i>
+                Study Director Replacement History
+                @if(auth()->user()->canManageProtocol())
+                <button class="ms-auto sc-action-btn teal" style="font-size:.76rem;padding:.3rem .7rem;"
+                        data-bs-toggle="modal" data-bs-target="#replacementModal">
+                    <i class="bi bi-plus-lg"></i>Add
+                </button>
+                @endif
+            </div>
+            <div class="table-responsive">
+                <table class="table sc-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Replaced Study Director</th>
+                            <th>Appointment Date</th>
+                            <th>Replacement Date</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($replacementHistory as $replacement)
+                        @php $sd = $replacement->studyDirector ?? null; @endphp
+                        <tr>
+                            <td class="fw-semibold">
+                                {{ $sd ? trim(($sd->titre ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : '—' }}
+                            </td>
+                            <td>{{ $replacement->sd_appointment_date ?? '—' }}</td>
+                            <td>{{ $replacement->replacement_date ?? '—' }}</td>
+                            <td class="text-muted">{{ $replacement->replacement_reason ?? '—' }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3" style="font-size:.82rem;">
+                                <i class="bi bi-dash-circle me-1"></i>No replacement history.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <div class="row mt-2">
-        <h5 class="mt-2 mb-3 ">Other Basic Documents Submitted</h5>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Title of Document</th>
-                    <th>Description</th>
-                    <th>Uploaded By</th>
-                    <th>Upload Date</th>
-                    <th>Document</th>
-                </tr>
-            </thead>
-
-            @php
-                $otherBasicDocuments = $project->otherBasicDocuments()->get(); ;
-
-            @endphp
-            <tbody>
-                @forelse ($otherBasicDocuments ?? [] as $document)
-
-                    <tr>
-                        <td>{{ $document->titre_document }}</td>
-                        <td>{{ $document->description_document }}</td>
-                        @php
-                            $uploadedBy = \App\Models\User::find($document->uploaded_by);
-                        @endphp
-                        <td>{{ $uploadedBy ? $uploadedBy->prenom . ' ' . $uploadedBy->nom : 'N/A' }}</td>
-                        <td>{{ $document->upload_date }}</td>
-                        <td>
-                            @if ($document->document_file_path)
-                                <a href="{{ asset('storage/' . $document->document_file_path) }}" target="_blank"
-                                    class="mt-2 d-block">View Document</a>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5">No other basic documents found.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    {{-- ── Other Basic Documents ───────────────────────────────────── --}}
+    @php $otherBasicDocuments = $project->otherBasicDocuments()->get(); @endphp
+    <div class="col-12">
+        <div class="sc-section-card card">
+            <div class="sc-section-header">
+                <i class="bi bi-paperclip" style="color:#475569;"></i>
+                Other Basic Documents
+                @if(auth()->user()->canManageProtocol())
+                <button class="ms-auto sc-action-btn slate" style="font-size:.76rem;padding:.3rem .7rem;"
+                        data-bs-toggle="modal" data-bs-target="#otherBasicDocumentsModal">
+                    <i class="bi bi-upload"></i>Upload
+                </button>
+                @endif
+            </div>
+            <div class="table-responsive">
+                <table class="table sc-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Uploaded By</th>
+                            <th>Upload Date</th>
+                            <th>Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($otherBasicDocuments as $document)
+                        @php $uploadedBy = \App\Models\User::find($document->uploaded_by); @endphp
+                        <tr>
+                            <td class="fw-semibold">{{ $document->titre_document ?? '—' }}</td>
+                            <td class="text-muted">{{ $document->description_document ?? '—' }}</td>
+                            <td>{{ $uploadedBy ? $uploadedBy->name : '—' }}</td>
+                            <td>{{ $document->upload_date ?? '—' }}</td>
+                            <td>
+                                @if($document->document_file_path)
+                                    <a href="{{ asset('storage/' . $document->document_file_path) }}" target="_blank"
+                                       class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:.76rem;">
+                                        <i class="bi bi-download me-1"></i>View
+                                    </a>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3" style="font-size:.82rem;">
+                                <i class="bi bi-dash-circle me-1"></i>No documents uploaded yet.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    {{-- ── KEY PERSONNEL ── --}}
+    {{-- ── Key Personnel ───────────────────────────────────────────── --}}
     @php
         $keyPersonnel    = $project ? $project->keyPersonnelProject()->orderBy('nom')->get() : collect();
         $kpCurrentIds    = $keyPersonnel->pluck('id')->toArray();
         $kpAllPersonnels = \App\Models\Pro_Personnel::orderBy('nom')->get();
         $kpProjectId     = $project?->id;
     @endphp
-    <div class="row mt-4">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-            <h5 class="mb-0"><i class="bi bi-people-fill me-2" style="color:#5c6bc0;"></i>Key Personnel</h5>
-        </div>
+    <div class="col-12">
+        <div class="sc-section-card card">
+            <div class="sc-section-header">
+                <i class="bi bi-people-fill" style="color:#5c6bc0;"></i>
+                Key Personnel
+            </div>
+            <div class="card-body pt-2 pb-3">
 
-        {{-- Add person inline --}}
-        <div class="d-flex gap-2 mb-3" id="kp-add-row">
-            <select id="kp-add-select" class="form-select form-select-sm" style="max-width:360px;">
-                <option value="">— Select person to add —</option>
-                @foreach($kpAllPersonnels as $p)
-                    @if(!in_array($p->id, $kpCurrentIds))
-                    <option value="{{ $p->id }}">
-                        {{ trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}
-                        @if($p->role) ({{ $p->role }}) @endif
-                    </option>
-                    @endif
-                @endforeach
-            </select>
-            <button class="btn btn-sm fw-semibold" style="background:#5c6bc0;color:#fff;" onclick="kpAddPerson()">
-                <i class="bi bi-plus-circle me-1"></i>Add
-            </button>
-            <span id="kp-add-msg" class="align-self-center small"></span>
-        </div>
+                {{-- Add person row --}}
+                @if(auth()->user()->canManageProtocol())
+                <div class="d-flex gap-2 mb-3" id="kp-add-row">
+                    <select id="kp-add-select" class="form-select form-select-sm" style="max-width:360px;">
+                        <option value="">— Select person to add —</option>
+                        @foreach($kpAllPersonnels as $p)
+                            @if(!in_array($p->id, $kpCurrentIds))
+                            <option value="{{ $p->id }}">
+                                {{ trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}
+                                @if($p->role) ({{ $p->role }}) @endif
+                            </option>
+                            @endif
+                        @endforeach
+                    </select>
+                    <button class="sc-action-btn violet" onclick="kpAddPerson()">
+                        <i class="bi bi-plus-circle"></i>Add
+                    </button>
+                    <span id="kp-add-msg" class="align-self-center small"></span>
+                </div>
+                @endif
 
-        <table class="table table-sm table-hover align-middle mb-0" id="kp-inline-table">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Title</th>
-                    <th>Role</th>
-                    <th class="text-center" style="width:60px;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="kp-inline-tbody">
-                @forelse($keyPersonnel as $i => $p)
-                <tr id="kp-row-{{ $p->id }}">
-                    <td class="text-muted small">{{ $i + 1 }}</td>
-                    <td class="fw-semibold">{{ trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}</td>
-                    <td class="text-muted small">{{ $p->titre_personnel ?? '—' }}</td>
-                    <td class="text-muted small">{{ $p->role ?? '—' }}</td>
-                    <td class="text-center">
-                        <button class="btn btn-outline-danger btn-sm py-0 px-2"
-                                onclick="kpRemovePerson({{ $p->id }}, this)" title="Remove">
-                            <i class="bi bi-trash3"></i>
-                        </button>
-                    </td>
-                </tr>
-                @empty
-                <tr id="kp-empty-row">
-                    <td colspan="5" class="text-muted text-center small py-3">No key personnel assigned yet.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+                <div class="table-responsive">
+                    <table class="table sc-table table-hover align-middle mb-0" id="kp-inline-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th>Name</th>
+                                <th>Title</th>
+                                <th>Role</th>
+                                @if(auth()->user()->canManageProtocol())
+                                <th class="text-center" style="width:60px;">Action</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody id="kp-inline-tbody">
+                            @forelse($keyPersonnel as $i => $p)
+                            <tr id="kp-row-{{ $p->id }}">
+                                <td class="text-muted small">{{ $i + 1 }}</td>
+                                <td class="fw-semibold">{{ trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom) }}</td>
+                                <td class="text-muted small">{{ $p->titre_personnel ?? '—' }}</td>
+                                <td class="text-muted small">{{ $p->role ?? '—' }}</td>
+                                @if(auth()->user()->canManageProtocol())
+                                <td class="text-center">
+                                    <button class="btn btn-outline-danger btn-sm py-0 px-2"
+                                            onclick="kpRemovePerson({{ $p->id }}, this)" title="Remove">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                                @endif
+                            </tr>
+                            @empty
+                            <tr id="kp-empty-row">
+                                <td colspan="{{ auth()->user()->canManageProtocol() ? 5 : 4 }}" class="text-muted text-center small py-3">
+                                    <i class="bi bi-dash-circle me-1"></i>No key personnel assigned yet.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
     </div>
+
+</div>{{-- /row --}}
 
 <script>
 (function () {
     const PROJECT_ID = {{ $kpProjectId ?? 'null' }};
     const CSRF       = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     let   rowCount   = {{ $keyPersonnel->count() }};
+    const CAN_EDIT   = {{ auth()->user()->canManageProtocol() ? 'true' : 'false' }};
 
-    // Initialise Tom Select on the add-select
     var kpTomAdd = null;
     document.addEventListener('DOMContentLoaded', function () {
         var el = document.getElementById('kp-add-select');
@@ -497,7 +583,6 @@
                     msgEl.textContent = data.message || 'Error.';
                     return;
                 }
-                // Remove empty row if present
                 var emptyRow = document.getElementById('kp-empty-row');
                 if (emptyRow) emptyRow.remove();
 
@@ -510,15 +595,14 @@
                     <td class="fw-semibold">${p.full_name}</td>
                     <td class="text-muted small">${p.titre_personnel || '—'}</td>
                     <td class="text-muted small">${p.role || '—'}</td>
-                    <td class="text-center">
+                    ${CAN_EDIT ? `<td class="text-center">
                         <button class="btn btn-outline-danger btn-sm py-0 px-2"
                                 onclick="kpRemovePerson(${p.id}, this)" title="Remove">
                             <i class="bi bi-trash3"></i>
                         </button>
-                    </td>`;
+                    </td>` : ''}`;
                 document.getElementById('kp-inline-tbody').appendChild(tr);
 
-                // Remove from Tom Select options
                 if (kpTomAdd) { kpTomAdd.removeOption(String(p.id)); kpTomAdd.setValue(''); }
                 else { selectEl.querySelector(`option[value="${p.id}"]`)?.remove(); selectEl.value = ''; }
 
@@ -549,33 +633,23 @@
                 if (row) row.remove();
                 rowCount--;
 
-                // Re-number rows
                 document.querySelectorAll('#kp-inline-tbody tr').forEach(function (tr, idx) {
                     var first = tr.querySelector('td:first-child');
-                    if (first) first.textContent = idx + 1;
+                    if (first && first.textContent.trim().match(/^\d+$/)) first.textContent = idx + 1;
                 });
 
-                // Show empty row if no one left
                 if (rowCount <= 0) {
                     rowCount = 0;
                     var emptyTr = document.createElement('tr');
                     emptyTr.id = 'kp-empty-row';
-                    emptyTr.innerHTML = '<td colspan="5" class="text-muted text-center small py-3">No key personnel assigned yet.</td>';
+                    emptyTr.innerHTML = `<td colspan="${CAN_EDIT ? 5 : 4}" class="text-muted text-center small py-3"><i class="bi bi-dash-circle me-1"></i>No key personnel assigned yet.</td>`;
                     document.getElementById('kp-inline-tbody').appendChild(emptyTr);
                 }
-
-                // Add person back to Tom Select options
-                // We need to fetch the person name — it's in the row cells we just removed
-                // Use the removed row's text content
-                // (already removed, so we skip re-adding to select — page refresh will restore it)
             })
             .catch(() => { btn.disabled = false; alert('Network error.'); });
     };
 })();
 </script>
-
-</div>
-
 
 @include('partials.dialog_detailed_information_project')
 @include('partials.study_director_appointment_form')

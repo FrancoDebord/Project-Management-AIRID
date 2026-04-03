@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('qa_review_inspections', function (Blueprint $table) {
+        Schema::create('pro_qa_review_inspections', function (Blueprint $table) {
             $table->id();
             $table->date('scheduled_date')->nullable();
             $table->date('review_date')->nullable();

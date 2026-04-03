@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class ClTemplate extends Model
 {
-    protected $table = 'cl_templates';
+    protected $table = 'pro_cl_templates';
 
     protected $fillable = [
         'code', 'name', 'reference_code', 'version', 'category', 'description', 'is_active',

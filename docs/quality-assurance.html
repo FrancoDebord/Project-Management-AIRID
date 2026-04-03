@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assurance Qualité — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html" class="active"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Assurance Qualité
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">🔬</div>
+        <div>
+          <h1>Assurance Qualité (QA)</h1>
+          <p>Module dédié à la gestion des inspections, des constatations et du suivi des non-conformités pour les projets GLP. Accessible via <strong>Quality Assurance</strong> dans la navigation.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">🔐</span>
+        <div>La phase QA est disponible <strong>uniquement pour les projets GLP</strong>. Le tableau de bord QA est accessible aux rôles <span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span>.</div>
+      </div>
+
+      <!-- TABLEAU DE BORD QA -->
+      <h2 class="section-title" id="qa-dashboard">📊 Tableau de bord QA</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Le tableau de bord QA (<code>/qa-dashboard</code>) offre une vue consolidée de toutes les activités qualité :</p>
+        <div class="card-grid">
+          <div class="card-sm">
+            <div class="card-sm-icon" style="background:#fdecea;">🚨</div>
+            <div><h4>Non-conformités ouvertes</h4><p>Constatations non résolues par projet.</p></div>
+          </div>
+          <div class="card-sm">
+            <div class="card-sm-icon" style="background:#fff3e0;">🔍</div>
+            <div><h4>Inspections en attente</h4><p>Inspections planifiées sans date de réalisation.</p></div>
+          </div>
+          <div class="card-sm">
+            <div class="card-sm-icon" style="background:#e8f5e9;">📈</div>
+            <div><h4>Tendances</h4><p>Évolution du nombre de NC et inspections dans le temps.</p></div>
+          </div>
+          <div class="card-sm">
+            <div class="card-sm-icon" style="background:#e8f0fe;">⚡</div>
+            <div><h4>Activités critiques</h4><p>Activités des phases critiques nécessitant une inspection.</p></div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Activités critiques</h3>
+        <p style="font-size:.88rem;">La sous-page <strong>Critical Activities</strong> (<code>/qa-dashboard/critical-activities</code>) liste toutes les activités marquées comme critiques à travers les projets GLP, avec leur statut d'inspection associé.</p>
+      </div>
+
+      <!-- INSPECTIONS -->
+      <h2 class="section-title" id="inspections">🔍 Gestion des inspections</h2>
+      <div class="card">
+        <h3 class="subsection-title">Types d'inspection</h3>
+        <div style="overflow-x:auto;">
+          <table class="feature-table">
+            <thead><tr><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Study Inspection</strong></td><td>Inspection générale de l'étude</td></tr>
+              <tr><td><strong>Critical Phase Inspection</strong></td><td>Inspection liée à une phase critique identifiée en planification</td></tr>
+              <tr><td><strong>Data Quality Inspection</strong></td><td>Vérification de la qualité des données</td></tr>
+              <tr><td><strong>Facility Inspection</strong></td><td>Inspection des installations</td></tr>
+              <tr><td><strong>Process Inspection</strong></td><td>Inspection des procédés</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-title">Planifier une inspection</h3>
+        <ol class="step-list">
+          <li>Dans la phase QA du projet, cliquez sur <strong>Planifier une inspection</strong></li>
+          <li>Sélectionnez le <strong>type d'inspection</strong></li>
+          <li>Choisissez l'<strong>activité associée</strong> (si Critical Phase)</li>
+          <li>Saisissez la <strong>date planifiée</strong></li>
+          <li>Assignez un <strong>inspecteur</strong></li>
+          <li>Cliquez sur <strong>Enregistrer</strong></li>
+        </ol>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+
+        <h3 class="subsection-title">Marquer une inspection comme réalisée</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Une fois l'inspection effectuée :</p>
+        <ol class="doc-list">
+          <li>Cliquez sur <strong>Marquer comme réalisée</strong> dans la liste des inspections</li>
+          <li>Entrez la date réelle de réalisation</li>
+          <li>L'inspection passe au statut <em>done</em></li>
+        </ol>
+
+        <h3 class="subsection-title">Compléter une inspection</h3>
+        <p style="font-size:.88rem;">Le bouton <strong>Compléter</strong> finalise l'inspection après résolution de toutes les constatations. L'état peut être basculé (toggle).</p>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <!-- CONSTATATIONS -->
+      <h2 class="section-title" id="findings">📋 Constatations &amp; Non-conformités</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Les constatations sont des observations faites lors d'une inspection. Une constatation peut être une <strong>non-conformité (NC)</strong> ou une <strong>conformité</strong>.</p>
+
+        <h3 class="subsection-title">Ajouter une constatation</h3>
+        <ol class="step-list">
+          <li>Ouvrez l'inspection concernée</li>
+          <li>Cliquez sur <strong>Ajouter une constatation</strong></li>
+          <li>Renseignez la description</li>
+          <li>Sélectionnez <strong>Non-conformité</strong> ou <strong>Conformité</strong></li>
+          <li>Choisissez la <strong>sévérité</strong> (si NC)</li>
+          <li>Assignez à un responsable</li>
+          <li>Enregistrez</li>
+        </ol>
+        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+
+        <h3 class="subsection-title">Résoudre une non-conformité</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Pour chaque NC ouverte :</p>
+        <ol class="doc-list">
+          <li>Cliquer sur <strong>Résoudre</strong> dans la liste des constatations</li>
+          <li>Décrire l'action corrective effectuée</li>
+          <li>Le statut passe de <code>open</code> à <code>complete</code></li>
+          <li>Une notification est envoyée aux parties prenantes</li>
+        </ol>
+
+        <h3 class="subsection-title">Modifier / Supprimer une constatation</h3>
+        <ul class="doc-list">
+          <li><strong>Modifier</strong> : corriger la description ou les informations via le bouton d'édition</li>
+          <li><strong>Supprimer</strong> : retirer définitivement la constatation (confirmation requise)</li>
+          <li><strong>Supprimer une action corrective</strong> : retirer l'action corrective associée</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <!-- QA STATEMENT -->
+      <h2 class="section-title" id="qa-statement">📄 Déclaration QA (QA Statement)</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">La déclaration QA est un document formel attestant la conformité de l'étude au regard des exigences GLP.</p>
+        <h3 class="subsection-title">Créer une déclaration QA</h3>
+        <ol class="step-list">
+          <li>Dans la phase QA du projet, localisez la section <em>QA Statement</em></li>
+          <li>Saisissez le <strong>numéro de rapport</strong></li>
+          <li>Entrez la <strong>date de signature</strong></li>
+          <li>Assignez le responsable</li>
+          <li>Cliquez sur <strong>Enregistrer</strong></li>
+        </ol>
+        <h3 class="subsection-title">Signature électronique</h3>
+        <p style="font-size:.88rem;">La déclaration QA peut être signée électroniquement. Voir <a href="notifications.html#signatures">→ Signatures électroniques</a>.</p>
+        <h3 class="subsection-title">Impression</h3>
+        <p style="font-size:.88rem;">Le bouton <strong>Imprimer</strong> génère un PDF de la déclaration QA.</p>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <!-- QA ACTIVITIES CHECKLIST -->
+      <h2 class="section-title" id="qa-checklist">✅ Checklist d'activités QA</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">La <strong>QA Activities Checklist</strong> (référence <code>QA-PR-1-011/05</code>) est une checklist de <strong>20 items</strong> spécifique aux projets GLP. Elle pré-remplit automatiquement les dates clés à partir des données du projet.</p>
+        <h3 class="subsection-title">Accès</h3>
+        <ul class="doc-list">
+          <li>Depuis la phase QA du projet → bouton <strong>Open Checklist</strong></li>
+          <li>Le bouton <strong>Télécharger</strong> est toujours actif (même sur projet archivé)</li>
+          <li>Le bouton <strong>Open Checklist</strong> est désactivé si le projet est archivé</li>
+        </ul>
+        <h3 class="subsection-title">Contenu de la checklist</h3>
+        <p style="font-size:.88rem;">Les 20 items couvrent les jalons GLP : développement du protocole, initiation de l'étude, inspections planifiées et réalisées, rapports, archivage. Les dates sont pré-remplies à partir du projet.</p>
+        <h3 class="subsection-title">Sauvegarde &amp; Impression</h3>
+        <ul class="doc-list">
+          <li>Les réponses sont sauvegardées automatiquement via AJAX</li>
+          <li>Bouton <strong>Imprimer</strong> pour générer un PDF</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
+      </div>
+
+      <!-- FM QA REVIEW -->
+      <h2 class="section-title" id="fm-review">🏢 Revue QA Facility Manager</h2>
+      <div class="card">
+        <p style="font-size:.88rem;margin-bottom:.8rem;">Les revues QA Facility Manager (<code>/fm/qa-review</code>) permettent au FM de conduire ses propres audits de conformité.</p>
+
+        <h3 class="subsection-title">Créer une revue FM</h3>
+        <ol class="step-list">
+          <li>Cliquez sur <strong>Facility Manager</strong> dans la navigation</li>
+          <li>Sélectionnez <strong>QA Review Inspections</strong></li>
+          <li>Cliquez sur <strong>Nouvelle revue</strong></li>
+          <li>Sélectionnez le projet et le modèle de revue</li>
+          <li>Enregistrez pour créer la revue</li>
+        </ol>
+
+        <h3 class="subsection-title">Saisir les réponses</h3>
+        <p style="font-size:.88rem;margin-bottom:.6rem;">Dans la vue détail de la revue :</p>
+        <ul class="doc-list">
+          <li>Répondez à chaque question du modèle</li>
+          <li>Ajoutez des éléments personnalisés si nécessaire</li>
+          <li>Sauvegardez les réponses</li>
+        </ul>
+
+        <h3 class="subsection-title">Compléter &amp; Imprimer</h3>
+        <ul class="doc-list">
+          <li><strong>Compléter</strong> : finalise la revue, statut passe à <code>completed</code></li>
+          <li><strong>Imprimer</strong> : génère un PDF de la revue</li>
+          <li><strong>Supprimer</strong> : retire la revue (avec confirmation)</li>
+        </ul>
+        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

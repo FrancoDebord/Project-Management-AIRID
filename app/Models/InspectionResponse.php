@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InspectionResponse extends Model
 {
-    protected $table = 'inspection_responses';
+    protected $table = 'pro_inspection_responses';
 
     protected $fillable = [
         'inspection_id', 'snapshot_id', 'section_code', 'item_number',

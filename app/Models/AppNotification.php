@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AppNotification extends Model
 {
-    protected $table = 'app_notifications';
+    protected $table = 'pro_app_notifications';
 
     protected $fillable = [
         'user_id', 'type', 'title', 'body', 'data', 'url', 'icon', 'read_at',

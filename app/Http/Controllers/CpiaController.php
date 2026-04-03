@@ -82,6 +82,11 @@ class CpiaController extends Controller
         $project    = Pro_Project::findOrFail($project_id);
         $assessment = CpiaAssessment::where('project_id', $project_id)->firstOrFail();
 
+        // Block edits if assessment is completed
+        if ($assessment->isCompleted()) {
+            return response()->json(['success' => false, 'message' => 'Assessment is completed and locked. Revert to draft first.'], 403);
+        }
+
         $request->validate([
             'responses'              => 'required|array',
             'responses.*.item_id'    => 'required|integer|exists:cpia_items,id',
@@ -156,6 +161,35 @@ class CpiaController extends Controller
     }
 
     /**
+     * Revert the assessment back to draft so it can be edited again.
+     * Only allowed if the project is not archived.
+     */
+    public function revertToDraft(Request $request, int $project_id)
+    {
+        $project    = Pro_Project::findOrFail($project_id);
+        $assessment = CpiaAssessment::where('project_id', $project_id)->firstOrFail();
+
+        if ($project->archived_at) {
+            return response()->json(['success' => false, 'message' => 'Project is archived. The assessment cannot be modified.'], 403);
+        }
+
+        if (!$assessment->isCompleted()) {
+            return response()->json(['success' => false, 'message' => 'Assessment is already in draft.'], 409);
+        }
+
+        $assessment->update([
+            'status'       => 'draft',
+            'completed_at' => null,
+            'completed_by' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assessment reverted to draft. You can now edit it.',
+        ]);
+    }
+
+    /**
      * Print the CPIA — only sections that have at least one filled response.
      */
     public function print(int $project_id)
@@ -178,8 +212,11 @@ class CpiaController extends Controller
 
         $keyPersonnels = $this->keyPersonnels();
 
+        $signatures = \App\Models\DocumentSignature::getForDocument('cpia_assessment', $assessment->id)
+            ->keyBy('role_in_document');
+
         return view('cpia.print', compact(
-            'project', 'assessment', 'sections', 'responses', 'keyPersonnels'
+            'project', 'assessment', 'sections', 'responses', 'keyPersonnels', 'signatures'
         ));
     }
 
@@ -195,7 +232,7 @@ class CpiaController extends Controller
 
     private function notifySignatories(Pro_Project $project, CpiaAssessment $assessment): void
     {
-        $printUrl = route('cpia.print', $project->id);
+        $printUrl = route('sign.document', ['cpia_assessment', $assessment->id]);
         $title    = "CPIA ready for signature — {$project->project_code}";
         $body     = "The Critical Phase Impact Assessment for project \"{$project->project_title}\" has been completed and requires your signature.";
 

@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('inspection_question_snapshots', function (Blueprint $table) {
+        Schema::create('pro_inspection_question_snapshots', function (Blueprint $table) {
             $table->id();
             $table->foreignId('inspection_id')->constrained('pro_qa_inspections')->cascadeOnDelete();
 
             // Traceability — nullable because question may be deleted later
             $table->unsignedBigInteger('cl_question_id')->nullable();
-            $table->foreign('cl_question_id')->references('id')->on('cl_questions')->nullOnDelete();
+            $table->foreign('cl_question_id')->references('id')->on('pro_cl_questions')->nullOnDelete();
 
             // Template this snapshot belongs to
             $table->string('template_code');        // 'facility_main', 'cone_llin', …

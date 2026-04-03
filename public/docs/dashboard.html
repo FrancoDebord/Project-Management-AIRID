@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tableau de bord — Documentation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">📋</div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+    </div>
+    <div class="sidebar-section">Général</div>
+    <nav>
+      <a href="index.html"><span class="nav-icon">🏠</span> Accueil</a>
+      <a href="roles.html"><span class="nav-icon">🔑</span> Rôles &amp; Permissions</a>
+      <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications &amp; Signatures</a>
+    </nav>
+    <div class="sidebar-section">Gestion des projets</div>
+    <nav>
+      <a href="dashboard.html" class="active"><span class="nav-icon">📊</span> Tableau de bord</a>
+      <a href="projects.html"><span class="nav-icon">🗂️</span> Créer / Gérer un projet</a>
+      <a href="scheduling.html"><span class="nav-icon">📅</span> Planning &amp; Master Schedule</a>
+    </nav>
+    <div class="sidebar-section">Qualité</div>
+    <nav>
+      <a href="quality-assurance.html"><span class="nav-icon">🔬</span> Assurance Qualité (QA)</a>
+      <a href="checklists.html"><span class="nav-icon">✅</span> Checklists d'inspection</a>
+      <a href="cpia.html"><span class="nav-icon">⚠️</span> CPIA</a>
+    </nav>
+    <div class="sidebar-section">Administration</div>
+    <nav>
+      <a href="administration.html"><span class="nav-icon">⚙️</span> Administration</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="index.html">Accueil</a> <span>/</span> Tableau de bord
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page-hero">
+        <div class="hero-icon">📊</div>
+        <div>
+          <h1>Tableau de bord</h1>
+          <p>La page d'accueil après connexion. Elle offre une vue d'ensemble en temps réel de tous vos projets avec des indicateurs clés de performance.</p>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-icon">👥</span>
+        <div><strong>Visibilité selon le rôle :</strong> Les <em>Study Directors</em> ne voient que leurs projets. Les <em>Project Managers</em> voient uniquement les projets dont ils font partie. Les autres rôles voient tous les projets.</div>
+      </div>
+
+      <h2 class="section-title" id="kpis">📈 Indicateurs KPI</h2>
+      <p style="margin-bottom:1rem;font-size:.88rem;">Quatre cartes en haut du tableau de bord affichent les métriques globales :</p>
+      <div class="card-grid">
+        <div class="card-sm">
+          <div class="card-sm-icon" style="background:#e8f5e9;">🟢</div>
+          <div>
+            <h4>Projets en cours</h4>
+            <p>Nombre de projets au statut <strong>in progress</strong>.</p>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div class="card-sm-icon" style="background:#fdecea;">🔴</div>
+          <div>
+            <h4>Non-conformités ouvertes</h4>
+            <p>Nombre total de constatations QA non résolues.</p>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div class="card-sm-icon" style="background:#fff3e0;">⏳</div>
+          <div>
+            <h4>Inspections QA en attente</h4>
+            <p>Inspections planifiées mais pas encore réalisées.</p>
+          </div>
+        </div>
+        <div class="card-sm">
+          <div class="card-sm-icon" style="background:#e8f0fe;">📊</div>
+          <div>
+            <h4>Achèvement moyen</h4>
+            <p>Pourcentage moyen de complétion de tous les projets visibles.</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title" id="filters">🔍 Filtres par statut</h2>
+      <p style="font-size:.88rem;margin-bottom:1rem;">Des liens de filtre permettent d'afficher uniquement les projets d'un statut donné :</p>
+      <div class="card" style="overflow-x:auto;">
+        <table class="feature-table">
+          <thead>
+            <tr><th>Filtre</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tous</strong></td><td>Affiche tous les projets (par défaut)</td></tr>
+            <tr><td><strong>In Progress</strong></td><td>Projets en cours d'exécution</td></tr>
+            <tr><td><strong>Not Started</strong></td><td>Projets créés mais pas encore démarrés</td></tr>
+            <tr><td><strong>Suspended</strong></td><td>Projets temporairement suspendus</td></tr>
+            <tr><td><strong>Completed</strong></td><td>Projets terminés (toutes phases complètes)</td></tr>
+            <tr><td><strong>Archived</strong></td><td>Projets archivés, en lecture seule</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title" id="cards">🗂️ Cartes de projets</h2>
+      <p style="font-size:.88rem;margin-bottom:1rem;">Chaque projet est affiché sous forme de carte contenant :</p>
+      <ul class="doc-list">
+        <li><strong>Code et titre</strong> du projet</li>
+        <li><strong>Barre latérale colorée</strong> indiquant le statut (vert = in progress, gris = archivé, etc.)</li>
+        <li><strong>Informations d'équipe</strong> : Study Director, Project Manager</li>
+        <li><strong>Métriques de complétion</strong> : activités, inspections, constatations, documents</li>
+        <li><strong>Score global</strong> (pourcentage d'avancement)</li>
+        <li><strong>Bouton Modifier</strong> <span class="role-list"><span class="badge badge-super_admin">super_admin</span><span class="badge badge-facility_manager">facility_manager</span></span></li>
+      </ul>
+
+      <div class="info-box tip">
+        <span class="info-icon">💡</span>
+        <div>Cliquer sur le titre ou le code d'un projet vous amène à la <strong>vue détaillée du projet</strong> (Project Overview) qui récapitule toutes les phases, inspections et documents.</div>
+      </div>
+
+      <h2 class="section-title" id="pagination">📄 Pagination</h2>
+      <p style="font-size:.88rem;">Les projets sont affichés par groupes de <strong>6 par page</strong>. Utilisez les boutons de pagination en bas de la liste pour naviguer.</p>
+
+      <h2 class="section-title" id="navigation">🧭 Navigation principale</h2>
+      <p style="font-size:.88rem;margin-bottom:1rem;">La barre de navigation supérieure donne accès aux modules selon votre rôle :</p>
+      <div class="card" style="overflow-x:auto;">
+        <table class="feature-table">
+          <thead>
+            <tr><th>Lien de navigation</th><th>Destination</th><th>Accès</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🏠 Home</td>
+              <td>Tableau de bord (page d'accueil)</td>
+              <td><span class="badge badge-all">Tous</span></td>
+            </tr>
+            <tr>
+              <td>🗂️ Study Management</td>
+              <td>Ouverture du wizard de gestion de projet</td>
+              <td><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></td>
+            </tr>
+            <tr>
+              <td>🔬 Quality Assurance</td>
+              <td>Tableau de bord QA</td>
+              <td><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></td>
+            </tr>
+            <tr>
+              <td>📅 Master Schedule</td>
+              <td>Planning global multi-projets</td>
+              <td><span class="badge badge-all">Tous</span></td>
+            </tr>
+            <tr>
+              <td>🏢 Facility Manager</td>
+              <td>Revues QA Facility Manager</td>
+              <td><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></td>
+            </tr>
+            <tr>
+              <td>⚙️ Settings</td>
+              <td>Paramètres, utilisateurs, checklists, CPIA</td>
+              <td>Selon sous-menu (voir <a href="administration.html">Administration</a>)</td>
+            </tr>
+            <tr>
+              <td>🔔 Notifications</td>
+              <td>Centre de notifications</td>
+              <td><span class="badge badge-all">Tous (connectés)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
+  </div>
+</div>
+</body>
+</html>

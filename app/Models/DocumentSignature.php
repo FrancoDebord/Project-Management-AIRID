@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DocumentSignature extends Model
 {
-    protected $table = 'document_signatures';
+    protected $table = 'pro_document_signatures';
 
     protected $fillable = [
         'user_id', 'signer_name', 'document_type', 'document_id',

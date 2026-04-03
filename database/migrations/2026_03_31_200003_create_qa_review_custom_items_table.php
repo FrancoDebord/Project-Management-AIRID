@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('qa_review_custom_items', function (Blueprint $table) {
+        Schema::create('pro_qa_review_custom_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('inspection_id')
-                  ->constrained('qa_review_inspections')
+                  ->constrained('pro_qa_review_inspections')
                   ->onDelete('cascade');
             $table->unsignedTinyInteger('sort_order')->default(1);
             $table->text('question');

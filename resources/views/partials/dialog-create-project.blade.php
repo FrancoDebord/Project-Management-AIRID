@@ -32,14 +32,14 @@
                             <label class="form-label small fw-semibold mb-1">
                                 Study Code <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="code" class="form-control form-control-sm"
+                            <input type="text" name="code" id="cp_code" class="form-control form-control-sm"
                                    placeholder="e.g. 1201" value="{{ old('code') }}">
                         </div>
                         <div class="col-8">
                             <label class="form-label small fw-semibold mb-1">
                                 Study Title <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="title" class="form-control form-control-sm"
+                            <input type="text" name="title" id="cp_title" class="form-control form-control-sm"
                                    placeholder="Full title of the study" value="{{ old('title') }}">
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                         </div>
                         <div class="col-4">
                             <label class="form-label small fw-semibold mb-1">GLP Study?</label>
-                            <select name="is_glp" class="form-select form-select-sm">
+                            <select name="is_glp" id="cp_is_glp" class="form-select form-select-sm">
                                 <option value="0">No — Non-GLP</option>
                                 <option value="1">Yes — GLP</option>
                             </select>
@@ -108,17 +108,31 @@
 
 <script>
 (function () {
+    let _initialized = false;
+
     function initCreateProjectSelects() {
-        const s2opts = {
-            theme: 'bootstrap-5',
-            width: '100%',
-            dropdownParent: $('#ModalformCreateNewProject'),
-        };
-        $('#cp_study_type_id').select2({ ...s2opts, placeholder: 'Select study types…' });
-        $('#cp_study_director_id').select2({ ...s2opts, placeholder: '— Select Study Director —' });
+        if (_initialized) return;
+        _initialized = true;
+
+        if (typeof TomSelect !== 'undefined') {
+            new TomSelect('#cp_study_type_id', {
+                plugins: ['remove_button'],
+                placeholder: 'Select study types…',
+                maxOptions: null,
+            });
+            new TomSelect('#cp_study_director_id', {
+                placeholder: '— Select Study Director —',
+                allowEmptyOption: true,
+                maxOptions: null,
+            });
+        }
     }
 
-    // Init on first open
-    $('#ModalformCreateNewProject').one('show.bs.modal', initCreateProjectSelects);
+    // Init on first open — works with or without jQuery
+    document.addEventListener('show.bs.modal', function (e) {
+        if (e.target && e.target.id === 'ModalformCreateNewProject') {
+            initCreateProjectSelects();
+        }
+    });
 })();
 </script>
