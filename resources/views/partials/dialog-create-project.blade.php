@@ -114,24 +114,41 @@
         if (_initialized) return;
         _initialized = true;
 
-        if (typeof TomSelect !== 'undefined') {
-            new TomSelect('#cp_study_type_id', {
-                plugins: ['remove_button'],
-                placeholder: 'Select study types…',
-                maxOptions: null,
-            });
-            new TomSelect('#cp_study_director_id', {
-                placeholder: '— Select Study Director —',
-                allowEmptyOption: true,
-                maxOptions: null,
-            });
-        }
+        new TomSelect('#cp_study_type_id', {
+            plugins: ['remove_button'],
+            placeholder: 'Select study types…',
+            maxOptions: null,
+        });
+        new TomSelect('#cp_study_director_id', {
+            placeholder: '— Select Study Director —',
+            allowEmptyOption: true,
+            maxOptions: null,
+            searchField: ['text'],
+        });
     }
 
-    // Init on first open — works with or without jQuery
+    function ensureTomSelect(callback) {
+        if (typeof TomSelect !== 'undefined') {
+            callback();
+            return;
+        }
+        // Load CSS if not already present
+        if (!document.querySelector('link[href*="tom-select"]')) {
+            const link = document.createElement('link');
+            link.rel  = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css';
+            document.head.appendChild(link);
+        }
+        // Load JS then call back
+        const script  = document.createElement('script');
+        script.src    = 'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js';
+        script.onload = callback;
+        document.head.appendChild(script);
+    }
+
     document.addEventListener('show.bs.modal', function (e) {
         if (e.target && e.target.id === 'ModalformCreateNewProject') {
-            initCreateProjectSelects();
+            ensureTomSelect(initCreateProjectSelects);
         }
     });
 })();

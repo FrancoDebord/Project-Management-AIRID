@@ -89,7 +89,7 @@ class CpiaController extends Controller
 
         $request->validate([
             'responses'              => 'required|array',
-            'responses.*.item_id'    => 'required|integer|exists:cpia_items,id',
+            'responses.*.item_id'    => 'required|integer|exists:pro_cpia_items,id',
             'responses.*.impact_score' => 'nullable|integer|min:0|max:10',
             'responses.*.is_selected' => 'nullable|boolean',
         ]);

@@ -297,6 +297,7 @@
                            min="0" max="10" step="1"
                            value="{{ $resp && $resp->impact_score !== null ? $resp->impact_score : '' }}"
                            placeholder="—"
+                           oninput="if(this.value>10)this.value=10;if(this.value<0)this.value=0;"
                            onchange="markDirty({{ $section->id }})"
                            {{ $assessment->isCompleted() ? 'disabled' : '' }}>
                 </div>
