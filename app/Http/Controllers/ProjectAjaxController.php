@@ -2313,6 +2313,37 @@ class ProjectAjaxController extends Controller
     // ─────────────────────────────────────────────
 
     /**
+     * Update project_stage (not_started → in progress, suspended → in progress, etc.)
+     * Only facility_manager and super_admin are allowed.
+     */
+    public function updateProjectStage(Request $request, int $project)
+    {
+        $p = Pro_Project::findOrFail($project);
+
+        if (!auth()->user()->canEditProject()) {
+            return redirect()->back()->with('error', 'You are not allowed to change the study status.');
+        }
+
+        $allowed = ['not_started', 'in progress', 'suspended', 'completed'];
+        $stage   = $request->input('project_stage');
+
+        if (!in_array($stage, $allowed)) {
+            return redirect()->back()->with('error', 'Invalid study status.');
+        }
+
+        $p->update(['project_stage' => $stage]);
+
+        $label = [
+            'not_started' => 'Not started',
+            'in progress' => 'In progress',
+            'suspended'   => 'Suspended',
+            'completed'   => 'Completed',
+        ][$stage] ?? $stage;
+
+        return redirect()->back()->with('success', "Study status updated to "{$label}".");
+    }
+
+    /**
      * Archive a project (lock it)
      */
     public function archiveProject(Request $request)

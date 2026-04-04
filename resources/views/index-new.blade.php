@@ -14,6 +14,22 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="app_url" content="{{ \Request::getSchemeAndHttpHost() }}/">
 
+    {{-- ── PWA ── --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a3a6b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AIRID Projects">
+    <link rel="apple-touch-icon" href="/storage/assets/logo/airid.png">
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+    }
+    </script>
+
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 

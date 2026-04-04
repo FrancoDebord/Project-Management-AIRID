@@ -296,6 +296,42 @@
                         All modifications are disabled. Go to <strong>Step 8 – Archiving Phase</strong> to unarchive.
                     </div>
                 </div>
+                @elseif($project && $project->project_stage === 'not_started')
+                <div class="alert mb-3 mt-2 d-flex align-items-center gap-3 py-2 px-3" style="background:linear-gradient(90deg,#495057,#6c757d);color:#fff;border-radius:.6rem;border:none;">
+                    <i class="bi bi-hourglass fs-5 flex-shrink-0"></i>
+                    <div class="small flex-grow-1">
+                        <strong>Study not started — read-only.</strong>
+                        This study has not been launched yet. All modifications are disabled until the study is set to <em>In Progress</em>.
+                    </div>
+                    @if(auth()->user()->canEditProject())
+                    <form method="POST" action="{{ route('project.updateStage', $project) }}" class="flex-shrink-0">
+                        @csrf @method('PATCH')
+                        <input type="hidden" name="project_stage" value="in progress">
+                        <button type="submit" class="btn btn-sm fw-semibold"
+                                style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);font-size:.78rem;">
+                            <i class="bi bi-play-fill me-1"></i>Lancer l'étude
+                        </button>
+                    </form>
+                    @endif
+                </div>
+                @elseif($project && $project->project_stage === 'suspended')
+                <div class="alert mb-3 mt-2 d-flex align-items-center gap-3 py-2 px-3" style="background:linear-gradient(90deg,#856404,#b45309);color:#fff;border-radius:.6rem;border:none;">
+                    <i class="bi bi-pause-circle-fill fs-5 flex-shrink-0"></i>
+                    <div class="small flex-grow-1">
+                        <strong>Study suspended — read-only.</strong>
+                        This study is currently suspended. All modifications are disabled until it is resumed.
+                    </div>
+                    @if(auth()->user()->canEditProject())
+                    <form method="POST" action="{{ route('project.updateStage', $project) }}" class="flex-shrink-0">
+                        @csrf @method('PATCH')
+                        <input type="hidden" name="project_stage" value="in progress">
+                        <button type="submit" class="btn btn-sm fw-semibold"
+                                style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.5);font-size:.78rem;">
+                            <i class="bi bi-play-fill me-1"></i>Reprendre l'étude
+                        </button>
+                    </form>
+                    @endif
+                </div>
                 @endif
 
                 {{-- ── Phase Progress Banner ── --}}
@@ -521,7 +557,7 @@
                     </div>
                 </div>
 
-                @if($project && $project->archived_at)
+                @if($project && ($project->archived_at || in_array($project->project_stage, ['not_started', 'suspended'])))
                 <script>
                 (function () {
                     const LOCKED_STEPS = ['step1','step2','step3','step4','step5','step6','step7'];

@@ -54,6 +54,9 @@ Route::prefix('ajax')->group(function () {
     Route::post('/update-report-document', [ProjectAjaxController::class, 'updateReportDocument'])->name('updateReportDocument');
     Route::post('/delete-report-document', [ProjectAjaxController::class, 'deleteReportDocument'])->name('deleteReportDocument');
 
+    // Project stage
+    Route::patch('/project/{project}/stage',  [ProjectAjaxController::class, 'updateProjectStage'])->name('project.updateStage');
+
     // Archiving Phase
     Route::post('/archive-project',           [ProjectAjaxController::class, 'archiveProject'])->name('archiveProject');
     Route::post('/unarchive-project',         [ProjectAjaxController::class, 'unarchiveProject'])->name('unarchiveProject');

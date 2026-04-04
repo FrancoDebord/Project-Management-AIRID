@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Administration — Documentation</title>
+<title>Administration — Documentation AIRID</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon">📋</div>
-      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation AIRID</div></div>
     </div>
     <div class="sidebar-section">Général</div>
     <nav>
@@ -37,237 +37,157 @@
     </nav>
   </aside>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-breadcrumb">
-        <a href="index.html">Accueil</a> <span>/</span> Administration
+  <main class="content">
+    <div class="page-header">
+      <h1>⚙️ Administration</h1>
+      <p>Le panneau d'administration est accessible uniquement aux utilisateurs avec le rôle <strong>Super Admin</strong>. Il permet de gérer les comptes utilisateurs, les contenus structurants du système (sections CPIA, templates de checklists, personnel clé) et les paramètres de l'application.</p>
+    </div>
+
+    <!-- ── Accès au panneau ── -->
+    <div class="section">
+      <h2>Accéder au panneau d'administration</h2>
+      <p>Cliquez sur votre nom en haut à droite de la navigation, puis sur <strong>"Administration"</strong> dans le menu déroulant. Ce lien n'est visible que pour les Super Admins.</p>
+      <div class="warning-box">
+        Toutes les actions dans le panneau admin sont irréversibles (suppression de compte, désactivation d'un item). Procéder avec précaution.
       </div>
     </div>
-    <div class="content">
 
-      <div class="page-hero">
-        <div class="hero-icon">⚙️</div>
-        <div>
-          <h1>Administration</h1>
-          <p>Gestion des utilisateurs, paramètres globaux de l'application, administration des modèles de checklists et des sections CPIA.</p>
-        </div>
+    <!-- ── Gestion des utilisateurs ── -->
+    <div class="section">
+      <h2>👤 Gestion des utilisateurs</h2>
+      <p>Accessible via <strong>Admin → Utilisateurs</strong>. Cette vue liste tous les comptes enregistrés sur la plateforme.</p>
+
+      <h3>Créer un compte</h3>
+      <p>La création de compte se fait via la page de <strong>Register</strong> (lien sur la page de connexion ou <code>/register</code>). Après inscription, le Super Admin attribue un rôle à l'utilisateur.</p>
+
+      <h3>Modifier le rôle d'un utilisateur</h3>
+      <p>Dans la liste des utilisateurs, chaque ligne affiche le nom, l'email et le rôle actuel. Un menu déroulant permet de changer le rôle immédiatement. Les rôles disponibles sont :</p>
+      <table class="table">
+        <thead><tr><th>Rôle</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Super Admin</td><td>Accès total à toutes les fonctionnalités et au panneau admin</td></tr>
+          <tr><td>Facility Manager</td><td>Gestion complète des projets, QA Statement, archivage, paramètres</td></tr>
+          <tr><td>QA Manager</td><td>Inspections, checklists, findings, CPIA, QA Statement</td></tr>
+          <tr><td>Study Director</td><td>Création d'études, protocol, planning, rapport</td></tr>
+          <tr><td>Project Manager</td><td>Protocol, planning, rapport — pas de QA ni archivage</td></tr>
+          <tr><td>Archivist</td><td>Étape archivage uniquement</td></tr>
+          <tr><td>Read Only</td><td>Lecture seule sur toutes les sections</td></tr>
+        </tbody>
+      </table>
+      <div class="info-box">
+        Le changement de rôle est immédiat — la prochaine action de l'utilisateur applique déjà les nouvelles permissions.
       </div>
-
-      <div class="info-box danger">
-        <span class="info-icon">🔒</span>
-        <div>Les fonctions d'administration sont <strong>strictement réservées</strong> aux rôles <span class="badge badge-super_admin">super_admin</span> (toutes fonctions) et <span class="badge badge-facility_manager">facility_manager</span> (paramètres uniquement). Un accès non autorisé retourne une erreur 403.</div>
-      </div>
-
-      <!-- USERS -->
-      <h2 class="section-title" id="users">👥 Gestion des utilisateurs</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible via <strong>Settings → Gestion utilisateurs</strong> ou <code>/admin/users</code>.</p>
-        <p style="font-size:.82rem;margin-bottom:1rem;"><span class="badge badge-super_admin">super_admin</span> uniquement</p>
-
-        <h3 class="subsection-title">Liste des utilisateurs</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">La page affiche tous les utilisateurs enregistrés avec :</p>
-        <ul class="doc-list">
-          <li>Nom et e-mail</li>
-          <li>Rôle actuel (affiché sous forme de badge coloré)</li>
-          <li>Date de création du compte</li>
-        </ul>
-
-        <h3 class="subsection-title">Modifier le rôle d'un utilisateur</h3>
-        <ol class="step-list">
-          <li>Repérez l'utilisateur dans la liste</li>
-          <li>Cliquez sur le menu déroulant de son rôle</li>
-          <li>Sélectionnez le nouveau rôle parmi les 7 disponibles</li>
-          <li>La modification est sauvegardée automatiquement</li>
-        </ol>
-
-        <div class="info-box warn">
-          <span class="info-icon">⚠️</span>
-          <div>Changer le rôle d'un utilisateur modifie immédiatement ses accès. Soyez prudent lors de la modification du rôle d'un utilisateur actif.</div>
-        </div>
-
-        <h3 class="subsection-title">Rôles disponibles</h3>
-        <div class="role-list" style="margin-top:.5rem;">
-          <span class="badge badge-super_admin">super_admin</span>
-          <span class="badge badge-facility_manager">facility_manager</span>
-          <span class="badge badge-qa_manager">qa_manager</span>
-          <span class="badge badge-study_director">study_director</span>
-          <span class="badge badge-project_manager">project_manager</span>
-          <span class="badge badge-archivist">archivist</span>
-          <span class="badge badge-read_only">read_only</span>
-        </div>
-      </div>
-
-      <!-- SETTINGS -->
-      <h2 class="section-title" id="settings">🔧 Paramètres de l'application</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible via <strong>Settings → Paramètres</strong> ou <code>/settings</code>.</p>
-        <p style="font-size:.82rem;margin-bottom:1rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
-
-        <p style="font-size:.88rem;margin-bottom:.8rem;">La page de paramètres permet de configurer les options globales de l'application :</p>
-        <ul class="doc-list">
-          <li>Configuration des paramètres de messagerie (e-mail sender, etc.)</li>
-          <li>Paramètres de l'organisation</li>
-          <li>Options d'affichage globales</li>
-        </ul>
-
-        <h3 class="subsection-title">Sauvegarder les paramètres</h3>
-        <ol class="step-list">
-          <li>Modifiez les valeurs souhaitées dans le formulaire</li>
-          <li>Cliquez sur <strong>Enregistrer les paramètres</strong></li>
-          <li>Les nouveaux paramètres s'appliquent immédiatement</li>
-        </ol>
-      </div>
-
-      <!-- CHECKLISTS ADMIN -->
-      <h2 class="section-title" id="checklists">📋 Administration des checklists</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible via <strong>Settings → Questions Checklists</strong> ou <code>/admin/checklists</code>.</p>
-        <p style="font-size:.82rem;margin-bottom:1rem;"><span class="badge badge-super_admin">super_admin</span> uniquement</p>
-
-        <h3 class="subsection-title">Vue d'ensemble des modèles</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">La page liste les 6 modèles de checklists disponibles. Cliquer sur un modèle ouvre son éditeur.</p>
-
-        <h3 class="subsection-title">Gérer les questions</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">Pour chaque modèle, vous pouvez gérer les questions par section :</p>
-
-        <div style="overflow-x:auto;margin-bottom:1rem;">
-          <table class="feature-table">
-            <thead><tr><th>Action</th><th>Description</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>Ajouter une question</strong></td>
-                <td>Crée une nouvelle question dans une section donnée</td>
-              </tr>
-              <tr>
-                <td><strong>Modifier une question</strong></td>
-                <td>Met à jour le texte ou le type de réponse</td>
-              </tr>
-              <tr>
-                <td><strong>Dupliquer une question</strong></td>
-                <td>Crée une copie de la question dans la même section</td>
-              </tr>
-              <tr>
-                <td><strong>Activer / Désactiver</strong></td>
-                <td>Bascule la visibilité de la question dans les checklists (toggle)</td>
-              </tr>
-              <tr>
-                <td><strong>Supprimer</strong></td>
-                <td>Supprime définitivement la question (avec confirmation)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="info-box warn">
-          <span class="info-icon">⚠️</span>
-          <div>La suppression d'une question est <strong>irréversible</strong> et peut affecter les inspections existantes qui utilisent cette question. Préférez la désactivation.</div>
-        </div>
-
-        <h3 class="subsection-title">Ajouter une question</h3>
-        <ol class="step-list">
-          <li>Ouvrez le modèle souhaité</li>
-          <li>Naviguez vers la section concernée</li>
-          <li>Cliquez sur <strong>+ Ajouter une question</strong></li>
-          <li>Saisissez le texte de la question</li>
-          <li>Sélectionnez le type de réponse attendu</li>
-          <li>Enregistrez</li>
-        </ol>
-      </div>
-
-      <!-- CPIA ADMIN -->
-      <h2 class="section-title" id="cpia">⚠️ Administration des sections CPIA</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible via <strong>Settings → CPIA Sections</strong> ou <code>/admin/cpia</code>.</p>
-        <p style="font-size:.82rem;margin-bottom:1rem;"><span class="badge badge-super_admin">super_admin</span> uniquement</p>
-
-        <h3 class="subsection-title">Vue d'ensemble</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">La page liste toutes les sections CPIA. Cliquer sur une section ouvre son éditeur d'items.</p>
-
-        <h3 class="subsection-title">Gérer les items CPIA</h3>
-        <div style="overflow-x:auto;margin-bottom:1rem;">
-          <table class="feature-table">
-            <thead><tr><th>Action</th><th>Description</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>Ajouter un item</strong></td>
-                <td>Crée un nouvel item dans la section (POST <code>admin.cpia.items.store</code>)</td>
-              </tr>
-              <tr>
-                <td><strong>Modifier un item</strong></td>
-                <td>Met à jour le texte ou le niveau de risque de l'item</td>
-              </tr>
-              <tr>
-                <td><strong>Dupliquer un item</strong></td>
-                <td>Crée une copie de l'item dans la même section</td>
-              </tr>
-              <tr>
-                <td><strong>Activer / Désactiver</strong></td>
-                <td>Bascule la visibilité de l'item dans les formulaires CPIA</td>
-              </tr>
-              <tr>
-                <td><strong>Supprimer</strong></td>
-                <td>Supprime définitivement l'item</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="info-box tip">
-          <span class="info-icon">💡</span>
-          <div>Pour retirer un item sans perdre l'historique des évaluations existantes, utilisez <strong>Désactiver</strong> plutôt que Supprimer. Les items désactivés ne s'affichent plus dans les nouveaux formulaires CPIA.</div>
-        </div>
-      </div>
-
-      <!-- ACCESS SUMMARY -->
-      <h2 class="section-title" id="access-summary">📊 Récapitulatif des accès admin</h2>
-      <div class="card" style="overflow-x:auto;">
-        <table class="feature-table">
-          <thead>
-            <tr>
-              <th>Module Admin</th>
-              <th>URL</th>
-              <th>super_admin</th>
-              <th>facility_manager</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Gestion des utilisateurs</td>
-              <td><code>/admin/users</code></td>
-              <td class="check" style="text-align:center;">✓</td>
-              <td class="cross" style="text-align:center;">—</td>
-            </tr>
-            <tr>
-              <td>Paramètres application</td>
-              <td><code>/settings</code></td>
-              <td class="check" style="text-align:center;">✓</td>
-              <td class="check" style="text-align:center;">✓</td>
-            </tr>
-            <tr>
-              <td>Admin checklists</td>
-              <td><code>/admin/checklists</code></td>
-              <td class="check" style="text-align:center;">✓</td>
-              <td class="cross" style="text-align:center;">—</td>
-            </tr>
-            <tr>
-              <td>Admin CPIA</td>
-              <td><code>/admin/cpia</code></td>
-              <td class="check" style="text-align:center;">✓</td>
-              <td class="cross" style="text-align:center;">—</td>
-            </tr>
-            <tr>
-              <td>Revues FM QA</td>
-              <td><code>/fm/qa-review</code></td>
-              <td class="check" style="text-align:center;">✓</td>
-              <td class="check" style="text-align:center;">✓</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
-    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
-  </div>
+
+    <!-- ── CPIA ── -->
+    <div class="section">
+      <h2>⚠️ Gestion des sections CPIA</h2>
+      <p>Accessible via <strong>Admin → Sections CPIA</strong>. La CPIA (Critical Phase Impact Assessment) est structurée en sections (A, B, C…), chacune contenant des items évaluables. Ce module permet de personnaliser ce contenu.</p>
+
+      <h3>Sections</h3>
+      <p>Les sections sont affichées avec leur lettre, leur titre et le nombre d'items actifs. Elles sont en lecture seule dans l'interface actuelle (les titres peuvent être modifiés en base si besoin).</p>
+
+      <h3>Items d'une section</h3>
+      <p>Cliquez sur une section pour accéder à sa liste d'items. Pour chaque item vous pouvez :</p>
+      <ul>
+        <li><strong>Modifier le texte</strong> — édition inline avec sauvegarde immédiate</li>
+        <li><strong>Activer / Désactiver</strong> — un item désactivé n'apparaît plus dans la CPIA (mais son historique est conservé)</li>
+        <li><strong>Dupliquer</strong> — crée une copie de l'item dans la même section</li>
+        <li><strong>Supprimer</strong> — suppression définitive (impossible si des réponses existent)</li>
+        <li><strong>Ajouter un item</strong> — formulaire en bas de la liste</li>
+      </ul>
+
+      <div class="warning-box">
+        La numérotation des items est automatique. Modifier l'ordre ou supprimer un item peut affecter des évaluations déjà en cours.
+      </div>
+    </div>
+
+    <!-- ── Checklists ── -->
+    <div class="section">
+      <h2>✅ Gestion des checklists d'inspection</h2>
+      <p>Accessible via <strong>Admin → Checklists</strong>. Les checklists sont organisées par <strong>template</strong> (ex. : Facility Inspection, Process Inspection, Study Protocol…). Chaque template contient des <strong>sections</strong>, elles-mêmes composées de <strong>questions</strong>.</p>
+
+      <h3>Templates disponibles</h3>
+      <ul>
+        <li>Facility Inspection Checklist</li>
+        <li>Process Inspection Checklist</li>
+        <li>Study Protocol Inspection Checklist</li>
+        <li>Study Report Inspection Checklist</li>
+        <li>Amendment Inspection Checklist</li>
+        <li>Data Quality Inspection Checklist</li>
+      </ul>
+
+      <h3>Gérer les questions d'une section</h3>
+      <p>Cliquez sur un template pour voir ses sections et questions. Chaque question peut être :</p>
+      <ul>
+        <li><strong>Modifiée</strong> — texte éditable inline</li>
+        <li><strong>Activée / Désactivée</strong> — contrôle la visibilité dans le formulaire d'inspection</li>
+        <li><strong>Dupliquée</strong> — copie dans la même section</li>
+        <li><strong>Supprimée</strong> — uniquement si aucune réponse n'existe pour cette question</li>
+        <li><strong>Ajoutée</strong> — nouveau formulaire en bas de section</li>
+      </ul>
+
+      <div class="info-box">
+        Les modifications de questions affectent uniquement les <em>nouvelles</em> inspections. Les inspections déjà créées conservent une <strong>copie instantanée (snapshot)</strong> des questions au moment de leur création.
+      </div>
+    </div>
+
+    <!-- ── Personnel Clé ── -->
+    <div class="section">
+      <h2>🧑‍🔬 Personnel Clé de la Facilité (Key Facility Personnel)</h2>
+      <p>Le personnel clé est le référentiel des agents AIRID qui peuvent être assignés aux études (comme Study Director, Project Manager, Key Personnel). Ce référentiel est géré par le Facility Manager ou le Super Admin.</p>
+      <p>Pour chaque agent, les informations disponibles sont :</p>
+      <ul>
+        <li>Titre, prénom, nom</li>
+        <li>Qualification (titre académique ou professionnel)</li>
+        <li>Rôle principal (Study Director, Lab Technician, etc.)</li>
+        <li>Email professionnel</li>
+        <li>Compte utilisateur associé (pour les notifications)</li>
+      </ul>
+      <div class="info-box">
+        Le lien entre un agent du personnel et un compte utilisateur (<em>user_id</em>) est essentiel pour que les notifications in-app fonctionnent correctement. Si un agent n'a pas de compte, il ne recevra pas de notification.
+      </div>
+    </div>
+
+    <!-- ── Paramètres ── -->
+    <div class="section">
+      <h2>🔧 Paramètres de l'application</h2>
+      <p>Accessible via <strong>Admin → Paramètres</strong> (Facility Manager + Super Admin). Permet de configurer des valeurs globales utilisées dans l'application :</p>
+      <ul>
+        <li>Nom de la facilité</li>
+        <li>Numéro d'accréditation SANAS</li>
+        <li>Logo et informations institutionnelles</li>
+        <li>Emails de notification par défaut</li>
+      </ul>
+      <p>Ces paramètres alimentent les en-têtes des documents PDF et des rapports générés.</p>
+    </div>
+
+    <!-- ── QA Review (FM) ── -->
+    <div class="section">
+      <h2>🔍 QA Review (Facility Manager)</h2>
+      <p>Accessible via <strong>FM → QA Review</strong>. Ce module permet au Facility Manager de réaliser ses propres revues qualité indépendamment des inspections QA Manager. Une QA Review contient :</p>
+      <ul>
+        <li>Date et objet de la revue</li>
+        <li>Réponses structurées par sections (similaire aux checklists)</li>
+        <li>Statut (en cours / complétée)</li>
+        <li>Impression PDF de la revue</li>
+      </ul>
+    </div>
+
+    <!-- ── Sécurité ── -->
+    <div class="section">
+      <h2>🔐 Bonnes pratiques de sécurité</h2>
+      <ul>
+        <li>Ne partagez jamais votre mot de passe — chaque action est tracée avec l'identifiant de l'utilisateur connecté</li>
+        <li>Déconnectez-vous après chaque session sur un poste partagé</li>
+        <li>Les mots de passe sont stockés chiffrés (bcrypt) — en cas d'oubli, utilisez <strong>"Mot de passe oublié ?"</strong> sur la page de connexion</li>
+        <li>Le Super Admin peut réinitialiser un rôle mais pas un mot de passe — l'utilisateur doit le faire lui-même via le lien de réinitialisation</li>
+        <li>Tous les formulaires sont protégés par un jeton CSRF — les liens copiés depuis d'autres onglets peuvent expirer</li>
+      </ul>
+    </div>
+
+    <div class="footer">© AIRID — African Institute for Research in Infectious Diseases | Version 2025</div>
+  </main>
 </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gestion des projets — Documentation</title>
+<title>Gestion des projets — Documentation AIRID</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon">📋</div>
-      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation utilisateur</div></div>
+      <div class="brand-text">Project Tracking<div class="brand-sub">Documentation AIRID</div></div>
     </div>
     <div class="sidebar-section">Général</div>
     <nav>
@@ -37,324 +37,226 @@
     </nav>
   </aside>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-breadcrumb">
-        <a href="index.html">Accueil</a> <span>/</span> Créer / Gérer un projet
+  <main class="content">
+    <div class="page-header">
+      <h1>🗂️ Créer &amp; Gérer un Projet (Étude)</h1>
+      <p>L'application Project Tracking Sheet suit chaque étude à travers un processus en 8 étapes structurées (6 pour les études Non-GLP). Cette page explique chaque étape, ce qu'on y fait, qui peut y intervenir et comment progresser.</p>
+    </div>
+
+    <!-- ── Création d'un nouveau projet ── -->
+    <div class="section">
+      <h2>Créer un nouveau projet</h2>
+      <p>Les utilisateurs habilités (Super Admin, Facility Manager, Study Director) peuvent créer une étude depuis le <strong>Tableau de bord</strong> en cliquant sur <strong>"Nouveau projet"</strong>.</p>
+      <div class="info-box">
+        <strong>Champs requis à la création :</strong>
+        <ul>
+          <li><strong>Code de l'étude</strong> — identifiant unique (ex. : <code>1201</code>)</li>
+          <li><strong>Titre de l'étude</strong> — intitulé complet</li>
+          <li><strong>Type(s) d'étude</strong> — Laboratory Bioassays, Experimental Hut Trials, Community Trials, Resistance Bioassays (sélection multiple)</li>
+          <li><strong>GLP ?</strong> — Oui ou Non. Ce choix détermine si les étapes Planning (4), QA (6) et Archivage (8) sont actives</li>
+          <li><strong>Study Director</strong> — optionnel à la création, peut être renseigné à l'étape 1</li>
+        </ul>
+        <p>Une fois créé, vous êtes redirigé automatiquement vers la fiche de gestion du projet.</p>
       </div>
     </div>
-    <div class="content">
 
-      <div class="page-hero">
-        <div class="hero-icon">🗂️</div>
-        <div>
-          <h1>Créer &amp; Gérer un projet</h1>
-          <p>L'assistant de gestion de projet (Study Management Wizard) guide l'utilisateur à travers jusqu'à 8 phases pour les projets GLP, et 6 phases pour les projets non-GLP.</p>
-        </div>
+    <!-- ── Statuts d'une étude ── -->
+    <div class="section">
+      <h2>Statuts d'une étude</h2>
+      <p>Chaque étude possède un statut global qui détermine si elle est modifiable :</p>
+      <table class="table">
+        <thead><tr><th>Statut</th><th>Signification</th><th>Modifications</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-secondary">Non démarrée</span></td><td>L'étude est enregistrée mais pas encore lancée</td><td>❌ Bloquées</td></tr>
+          <tr><td><span class="badge badge-warning">Suspendue</span></td><td>L'étude est temporairement arrêtée</td><td>❌ Bloquées</td></tr>
+          <tr><td><span class="badge badge-primary">En cours</span></td><td>L'étude est active et modifiable</td><td>✅ Autorisées</td></tr>
+          <tr><td><span class="badge badge-success">Complétée</span></td><td>Toutes les phases sont finalisées</td><td>✅ Autorisées</td></tr>
+          <tr><td><span class="badge badge-dark">Archivée</span></td><td>L'étude est archivée et verrouillée</td><td>❌ Bloquées</td></tr>
+        </tbody>
+      </table>
+      <div class="warning-box">
+        Quand une étude est <strong>Non démarrée</strong> ou <strong>Suspendue</strong>, une bannière d'avertissement s'affiche en haut de la fiche et tous les champs sont grisés. Seuls le Facility Manager et le Super Admin peuvent changer le statut via le bouton <strong>"Lancer / Reprendre l'étude"</strong> dans la bannière.
       </div>
+    </div>
 
-      <div class="info-box note">
-        <span class="info-icon">🔐</span>
-        <div><strong>Qui peut créer un projet ?</strong> Uniquement les rôles <span class="badge badge-super_admin">super_admin</span> et <span class="badge badge-facility_manager">facility_manager</span>.</div>
-      </div>
+    <!-- ── Étape 1 ── -->
+    <div class="section">
+      <h2>Étape 1 — Study Creation</h2>
+      <p><strong>Qui :</strong> Facility Manager, Study Director, Project Manager, Super Admin</p>
+      <p>Cette étape recueille toutes les informations fondamentales avant que l'étude ne puisse avancer.</p>
 
-      <!-- CRÉATION -->
-      <h2 class="section-title" id="create">➕ Créer un nouveau projet</h2>
-      <p style="font-size:.88rem;margin-bottom:.8rem;">Depuis le tableau de bord, cliquez sur <strong>Study Management</strong> dans la navigation, puis sur le bouton <em>Nouveau projet</em>. Une boîte de dialogue s'ouvre :</p>
-      <ul class="doc-list">
-        <li>Entrez le <strong>code du projet</strong> (ex. : <code>BEN-2025-001</code>)</li>
-        <li>Entrez le <strong>titre du projet</strong></li>
-        <li>Sélectionnez si le projet est <strong>GLP</strong> ou non (détermine le nombre de phases)</li>
-        <li>Cliquez sur <strong>Créer</strong> pour initialiser le projet</li>
+      <h3>📌 Project Basic Information</h3>
+      <p>Informations générales de l'étude : code, titre, nature, protocole, système test, phase courante. Ces données peuvent être modifiées via le bouton <strong>"Edit Project Info"</strong>.</p>
+
+      <h3>📌 Study Director Appointment Form</h3>
+      <p>Désignation officielle du Study Director (SD) : nom, qualification, date de désignation, fichier d'appointment joint. Le Project Manager peut également y être renseigné. Ce formulaire génère une notification au SD concerné.</p>
+      <ul>
+        <li>Une seule nomination active à la fois (la précédente passe en historique si remplacement)</li>
+        <li>Le fichier d'appointment (PDF/Word) peut être téléchargé depuis cette section</li>
       </ul>
-      <p style="font-size:.88rem;">Le projet est créé et vous êtes redirigé vers l'assistant de gestion (wizard).</p>
 
-      <!-- PHASES OVERVIEW -->
-      <h2 class="section-title" id="phases">📋 Vue d'ensemble des phases</h2>
-      <p style="font-size:.88rem;margin-bottom:1rem;">Le wizard affiche toutes les phases sous forme d'onglets. Chaque phase indique son état d'avancement. Les phases marquées <span style="background:#6f42c122;color:#59359a;font-size:.75rem;padding:2px 8px;border-radius:20px;font-weight:600;">GLP uniquement</span> ne s'affichent que pour les projets GLP.</p>
+      <h3>📌 Study Director Replacement History</h3>
+      <p>Historique automatique de tous les Study Directors ayant occupé le rôle sur cette étude. Chaque ligne affiche le nom, la date de nomination, la date de remplacement et le motif. Ce tableau est en lecture seule.</p>
 
-      <div class="phase-list">
-        <div class="phase-item">
-          <div class="phase-num">1</div>
-          <div class="phase-body">
-            <h4>Study Creation — Création de l'étude</h4>
-            <p>Informations de base du projet, nomination du Study Director, formulaires d'appointment/remplacement, personnel clé.</p>
-          </div>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num">2</div>
-          <div class="phase-body">
-            <h4>Protocol Details — Détails du protocole</h4>
-            <p>Code protocole, types d'étude, types de produits évalués, tests de laboratoire concernés.</p>
-          </div>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num">3</div>
-          <div class="phase-body">
-            <h4>Protocol Development — Développement du protocole</h4>
-            <p>5 niveaux de documents à compléter : Protocol Draft (L1), Final Protocol (L2), Study Plan (L3), Monitoring Plan (L4), Amendment/Deviation (L5 — optionnel).</p>
-          </div>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num glp-only">4</div>
-          <div class="phase-body">
-            <h4>Planning — Planification</h4>
-            <p>Organisation de la réunion d'initiation de l'étude, identification des phases critiques, évaluation CPIA.</p>
-          </div>
-          <span class="phase-tag">GLP uniquement</span>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num">5</div>
-          <div class="phase-body">
-            <h4>Experimental — Phase expérimentale</h4>
-            <p>Planification et exécution des activités, suivi des statuts (pending / in_progress / completed / delayed), historique d'exécution.</p>
-          </div>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num glp-only">6</div>
-          <div class="phase-body">
-            <h4>Quality Assurance — Assurance Qualité</h4>
-            <p>Planification des inspections QA, suivi des constatations et non-conformités, déclaration QA finale, checklist d'activités QA (20 items GLP).</p>
-          </div>
-          <span class="phase-tag">GLP uniquement</span>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num">7</div>
-          <div class="phase-body">
-            <h4>Reporting — Rapport</h4>
-            <p>Soumission des rapports (draft report, final report), suivi des statuts de publication.</p>
-          </div>
-        </div>
-        <div class="phase-item">
-          <div class="phase-num">8</div>
-          <div class="phase-body">
-            <h4>Archiving — Archivage</h4>
-            <p>Checklist d'archivage (18 items), soumission des documents d'archivage, validation finale et archivage du projet.</p>
-          </div>
-        </div>
+      <h3>📌 Other Basic Documents</h3>
+      <p>Documents de base complémentaires (protocoles préliminaires, lettres de mission, etc.) que vous pouvez uploader avant de démarrer l'étude. Chaque document renseigné contient : titre, description, fichier joint, date d'upload.</p>
+
+      <h3>📌 Key Personnel</h3>
+      <p>Liste du personnel clé affecté à l'étude (autres que le SD et PM). Géré en ligne : on sélectionne une personne dans la liste du personnel AIRID et on clique <strong>"Add"</strong>. Un clic sur 🗑 retire la personne de l'équipe. Chaque ajout ou retrait déclenche une notification à la personne concernée.</p>
+
+      <h3>📌 Progression</h3>
+      <p>Carte de progression globale avec un indicateur en % et 6 métriques de suivi (activités, documents Protocol Dev, inspections QA, NC findings, rapport, archivage) présentées sous forme de chips colorées.</p>
+
+      <div class="info-box">
+        <strong>Complétion de l'étape 1 :</strong> Cette étape est marquée complète lorsque le Study Director Appointment Form est renseigné et qu'au moins un document ou une activité clé est enregistrée.
       </div>
-
-      <!-- PHASE 1 -->
-      <h2 class="section-title" id="phase1">Phase 1 — Study Creation</h2>
-      <div class="card">
-        <h3 class="subsection-title">Informations de base</h3>
-        <ul class="doc-list">
-          <li>Modification du code, titre, statut et type GLP/non-GLP du projet</li>
-          <li>Dates de début et fin effectives</li>
-          <li>Statut du projet (<em>not_started, in progress, suspended, completed</em>)</li>
-        </ul>
-        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
-
-        <h3 class="subsection-title">Nomination du Study Director</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">Le formulaire de nomination enregistre :</p>
-        <ul class="doc-list">
-          <li>Le Study Director sélectionné</li>
-          <li>La date de nomination</li>
-          <li>La signature électronique</li>
-        </ul>
-        <p style="font-size:.82rem;">En cas de remplacement, un second formulaire est disponible pour documenter le changement.</p>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
-
-        <h3 class="subsection-title">Personnel clé (Key Personnel)</h3>
-        <ul class="doc-list">
-          <li>Ajout de membres de l'équipe projet via le modal de sélection</li>
-          <li>Retrait d'un membre existant</li>
-          <li>Chaque membre ajouté reçoit une notification automatique</li>
-        </ul>
-        <p style="font-size:.82rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
-      </div>
-
-      <!-- PHASE 2 -->
-      <h2 class="section-title" id="phase2">Phase 2 — Protocol Details</h2>
-      <div class="card">
-        <ul class="doc-list">
-          <li><strong>Code protocole</strong> : identifiant unique du protocole</li>
-          <li><strong>Types d'étude</strong> : In vitro, In vivo, Observational, etc. (sélection multiple)</li>
-          <li><strong>Types de produits évalués</strong> : LLIN, IRS, Repellent, etc. (sélection multiple)</li>
-          <li><strong>Tests de laboratoire</strong> : sélection des tests concernés par le projet</li>
-        </ul>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
-      </div>
-
-      <!-- PHASE 3 -->
-      <h2 class="section-title" id="phase3">Phase 3 — Protocol Development</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Cette phase est structurée en <strong>5 niveaux</strong> de documents. Les niveaux 1 à 4 sont obligatoires, le niveau 5 est optionnel.</p>
-        <div class="card" style="overflow-x:auto;padding:0;">
-          <table class="feature-table">
-            <thead><tr><th>Niveau</th><th>Document</th><th>Obligatoire</th></tr></thead>
-            <tbody>
-              <tr><td>L1</td><td>Protocol Draft</td><td class="check">✓</td></tr>
-              <tr><td>L2</td><td>Final Protocol</td><td class="check">✓</td></tr>
-              <tr><td>L3</td><td>Study Plan</td><td class="check">✓</td></tr>
-              <tr><td>L4</td><td>Monitoring Plan</td><td class="check">✓</td></tr>
-              <tr><td>L5</td><td>Amendment / Deviation</td><td class="cross">Optionnel</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p style="font-size:.88rem;margin-top:.8rem;">Pour chaque niveau, vous pouvez :</p>
-        <ul class="doc-list">
-          <li>Générer les activités de développement</li>
-          <li>Marquer l'activité comme complète avec date de réalisation</li>
-          <li>Uploader les documents associés</li>
-          <li>Supprimer un document ou une entrée de document</li>
-        </ul>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
-      </div>
-
-      <!-- PHASE 4 -->
-      <h2 class="section-title" id="phase4">Phase 4 — Planning <span class="phase-tag" style="margin-left:.5rem;">GLP uniquement</span></h2>
-      <div class="card">
-        <h3 class="subsection-title">Réunion d'initiation</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">Planifiez la réunion de démarrage de l'étude (Study Initiation Meeting) :</p>
-        <ul class="doc-list">
-          <li>Date et heure prévues</li>
-          <li>Participants</li>
-          <li>Lieu ou lien de réunion</li>
-        </ul>
-        <p style="font-size:.82rem;">Une notification par e-mail est envoyée aux participants à la création de la réunion.</p>
-
-        <h3 class="subsection-title">Phases critiques</h3>
-        <ul class="doc-list">
-          <li>Marquer/démarquer les activités comme "<strong>phase critique</strong>"</li>
-          <li>Planifier une réunion spécifique pour les phases critiques</li>
-          <li>Les phases critiques déclenchent les inspections QA de type "Critical Phase Inspection"</li>
-        </ul>
-
-        <h3 class="subsection-title">CPIA</h3>
-        <p style="font-size:.88rem;">Accès direct à l'évaluation CPIA depuis cette phase. <a href="cpia.html">→ Voir la documentation CPIA</a></p>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
-      </div>
-
-      <!-- PHASE 5 -->
-      <h2 class="section-title" id="phase5">Phase 5 — Experimental</h2>
-      <div class="card">
-        <h3 class="subsection-title">Gestion des activités</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">Chaque activité dispose des informations suivantes :</p>
-        <ul class="doc-list">
-          <li>Nom de l'activité</li>
-          <li>Responsable assigné</li>
-          <li>Date estimée</li>
-          <li>Statut : <code>pending</code> / <code>in_progress</code> / <code>completed</code> / <code>delayed</code></li>
-          <li>Date réelle de réalisation</li>
-        </ul>
-        <h3 class="subsection-title">Actions sur les activités</h3>
-        <ul class="doc-list">
-          <li><strong>Ajouter une activité</strong> via le formulaire modal</li>
-          <li><strong>Exécuter une activité</strong> : marque comme réalisée avec date et utilisateur</li>
-          <li><strong>Réinitialiser</strong> : revenir au statut précédent</li>
-          <li><strong>Supprimer</strong> une activité (avec confirmation)</li>
-          <li><strong>Historique d'exécution</strong> : journal complet des actions effectuées sur l'activité</li>
-        </ul>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-study_director">study_director</span> <span class="badge badge-project_manager">project_manager</span></p>
-      </div>
-
-      <!-- PHASE 6 -->
-      <h2 class="section-title" id="phase6">Phase 6 — Quality Assurance <span class="phase-tag" style="margin-left:.5rem;">GLP uniquement</span></h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Voir la documentation détaillée : <a href="quality-assurance.html">→ Assurance Qualité</a></p>
-        <p style="font-size:.88rem;">Cette phase inclut :</p>
-        <ul class="doc-list">
-          <li>Planification et suivi des inspections QA</li>
-          <li>Enregistrement des constatations (non-conformités)</li>
-          <li>Résolution des NC et actions correctives</li>
-          <li>Déclaration QA finale (QA Statement)</li>
-          <li>Checklist d'activités QA (20 items GLP, QA-PR-1-011/05)</li>
-        </ul>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-qa_manager">qa_manager</span></p>
-      </div>
-
-      <!-- PHASE 7 -->
-      <h2 class="section-title" id="phase7">Phase 7 — Reporting</h2>
-      <div class="card">
-        <ul class="doc-list">
-          <li>Soumettre un <strong>Draft Report</strong> avec titre et date de soumission</li>
-          <li>Soumettre un <strong>Final Report</strong> après validation</li>
-          <li>Mettre à jour le statut : <code>submitted</code> → <code>published</code></li>
-          <li>Modifier ou supprimer un document de rapport</li>
-        </ul>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></p>
-      </div>
-
-      <!-- PHASE 8 -->
-      <h2 class="section-title" id="phase8">Phase 8 — Archiving</h2>
-      <div class="card">
-        <h3 class="subsection-title">Checklist d'archivage</h3>
-        <p style="font-size:.88rem;margin-bottom:.6rem;">Une checklist de 18 items doit être complétée avant l'archivage :</p>
-        <ul class="doc-list">
-          <li>Vérification de la présence de tous les documents obligatoires</li>
-          <li>Chaque item peut être coché comme complété</li>
-          <li>Sauvegarde automatique de la progression</li>
-        </ul>
-
-        <h3 class="subsection-title">Documents d'archivage</h3>
-        <ul class="doc-list">
-          <li>Soumettre les documents physiques archivés avec type et date</li>
-          <li>Supprimer un document si nécessaire</li>
-        </ul>
-
-        <h3 class="subsection-title">Archivage du projet</h3>
-        <ol class="doc-list">
-          <li>Toutes les phases doivent être complètes</li>
-          <li>Cliquer sur <strong>Archiver le projet</strong></li>
-          <li>Le projet passe en lecture seule (<code>archived_at</code> est défini)</li>
-          <li>Le statut change à <strong>Archived</strong></li>
-        </ol>
-
-        <div class="info-box warn">
-          <span class="info-icon">⚠️</span>
-          <div>Un projet archivé désactive tous les boutons de modification. Le bouton "Désarchiver" reste disponible pour <span class="badge badge-super_admin">super_admin</span> et <span class="badge badge-facility_manager">facility_manager</span> si nécessaire.</div>
-        </div>
-        <p style="font-size:.82rem;margin-top:.5rem;"><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span> <span class="badge badge-archivist">archivist</span></p>
-      </div>
-
-      <!-- COMPLETION -->
-      <h2 class="section-title" id="completion">✅ Complétion des phases</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Chaque phase peut être marquée comme <strong>complète</strong> de deux façons :</p>
-        <div class="card-grid" style="margin-bottom:0;">
-          <div class="card-sm">
-            <div class="card-sm-icon">🤖</div>
-            <div>
-              <h4>Automatique</h4>
-              <p>Basé sur des critères définis (ex. : toutes les activités complètes, tous les documents soumis).</p>
-            </div>
-          </div>
-          <div class="card-sm">
-            <div class="card-sm-icon">✋</div>
-            <div>
-              <h4>Manuelle</h4>
-              <p>Via le bouton "Compléter la phase" pour forcer le statut même si les critères ne sont pas tous remplis.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PROJECT OVERVIEW -->
-      <h2 class="section-title" id="overview">🔍 Vue détaillée du projet (Project Overview)</h2>
-      <div class="card">
-        <p style="font-size:.88rem;margin-bottom:.8rem;">Accessible depuis la carte du projet sur le tableau de bord, cette vue récapitule :</p>
-        <ul class="doc-list">
-          <li>Toutes les phases et leur statut de complétion</li>
-          <li>Liste des inspections QA et leurs constatations</li>
-          <li>Documents téléchargeables (selon les droits)</li>
-          <li>Score global d'avancement calculé</li>
-          <li>Équipe du projet</li>
-        </ul>
-        <h3 class="subsection-title">Droits de téléchargement</h3>
-        <table class="feature-table">
-          <thead><tr><th>Rôle</th><th>Documents accessibles</th></tr></thead>
-          <tbody>
-            <tr><td><span class="badge badge-super_admin">super_admin</span> <span class="badge badge-facility_manager">facility_manager</span></td><td>Tous les documents</td></tr>
-            <tr><td><span class="badge badge-qa_manager">qa_manager</span></td><td>Documents QA uniquement</td></tr>
-            <tr><td><span class="badge badge-study_director">study_director</span></td><td>Documents de ses projets uniquement</td></tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
-    <div class="doc-footer">Documentation — Project Tracking Sheet &copy; AIRID &nbsp;|&nbsp; Version 2025</div>
-  </div>
+
+    <!-- ── Étape 2 ── -->
+    <div class="section">
+      <h2>Étape 2 — Protocol Details</h2>
+      <p><strong>Qui :</strong> Facility Manager, Study Director, Project Manager, Super Admin</p>
+      <p>Cette étape centralise toutes les informations détaillées du protocole d'étude :</p>
+      <ul>
+        <li><strong>Type(s) d'étude</strong> — avec possibilité d'en ajouter ou retirer</li>
+        <li><strong>Nature du projet</strong> (terrain, labo, etc.)</li>
+        <li><strong>Produit(s) testé(s)</strong> — types de produits évalués</li>
+        <li><strong>Tests de laboratoire</strong> concernés</li>
+        <li><strong>Durée estimée</strong> — date de début et de fin prévues</li>
+        <li><strong>Description générale</strong> de l'étude</li>
+      </ul>
+      <p>Ces informations alimentent le Gantt, le Master Schedule et les rapports PDF.</p>
+    </div>
+
+    <!-- ── Étape 3 ── -->
+    <div class="section">
+      <h2>Étape 3 — Protocol Development</h2>
+      <p><strong>Qui :</strong> Facility Manager, Study Director, Project Manager, Super Admin</p>
+      <p>Suivi des activités de développement du protocole. Cette étape liste les tâches standards du développement (définies par le système) et permet de :</p>
+      <ul>
+        <li>Marquer chaque activité comme <strong>complétée</strong></li>
+        <li>Joindre un <strong>document</strong> (preuve de complétion)</li>
+        <li>Ajouter des <strong>entrées manuelles</strong> si besoin</li>
+      </ul>
+      <p>La progression est calculée automatiquement en pourcentage d'activités complètes.</p>
+    </div>
+
+    <!-- ── Étape 4 ── -->
+    <div class="section">
+      <h2>Étape 4 — Planning Phase <span style="font-size:.8rem;color:#6f42c1;">(GLP uniquement)</span></h2>
+      <p><strong>Qui :</strong> Facility Manager, QA Manager, Super Admin</p>
+      <p>Cette étape n'est disponible que pour les études GLP. Elle couvre :</p>
+
+      <h3>📌 Réunion d'initiation (Study Initiation Meeting)</h3>
+      <p>Planification et enregistrement de la réunion d'initiation entre le Study Director, le QA Manager et les parties prenantes clés. Contient : date, lieu, lien de visio, ordre du jour, liste des participants.</p>
+      <ul>
+        <li>Cette réunion est un <strong>prérequis</strong> pour accéder à la CPIA (étape 4bis)</li>
+        <li>Un email de notification est envoyé aux participants à la planification</li>
+      </ul>
+
+      <h3>📌 Activités planifiées (Gantt)</h3>
+      <p>Liste de toutes les activités de l'étude avec dates estimées et réelles, statut, responsable. On peut :</p>
+      <ul>
+        <li>Ajouter / modifier / supprimer des activités</li>
+        <li>Marquer une activité comme <strong>Phase Critique</strong> (obligatoire pour la CPIA)</li>
+        <li>Exécuter une activité (enregistrer la date réelle de réalisation)</li>
+      </ul>
+
+      <h3>📌 CPIA — Critical Phase Impact Assessment</h3>
+      <p>Évaluation de l'impact des phases critiques par le QA Manager. Accessible depuis un bouton dédié dans la fiche projet. <a href="cpia.html">→ Voir la documentation CPIA</a></p>
+    </div>
+
+    <!-- ── Étape 5 ── -->
+    <div class="section">
+      <h2>Étape 5 — Experimental Phase</h2>
+      <p><strong>Qui :</strong> Facility Manager, Study Director, Project Manager, Super Admin</p>
+      <p>Suivi de la réalisation concrète de l'étude sur le terrain ou en laboratoire.</p>
+      <ul>
+        <li><strong>Activités en cours</strong> — liste des activités planifiées avec suivi d'exécution</li>
+        <li><strong>Dates réelles</strong> — enregistrement des dates effectives de réalisation</li>
+        <li>Indicateurs de progression par type d'étude</li>
+        <li>Vue sur les phases critiques et leur statut</li>
+      </ul>
+      <div class="info-box">
+        Pour les études Non-GLP, cette étape est numérotée <strong>Étape 4</strong>.
+      </div>
+    </div>
+
+    <!-- ── Étape 6 ── -->
+    <div class="section">
+      <h2>Étape 6 — Quality Assurance <span style="font-size:.8rem;color:#6f42c1;">(GLP uniquement)</span></h2>
+      <p><strong>Qui :</strong> QA Manager (écriture), Facility Manager (lecture + QA Statement), Super Admin</p>
+      <p>Module complet de suivi qualité :</p>
+
+      <h3>📌 Inspections QA</h3>
+      <p>Planification et suivi des inspections de qualité. Pour chaque inspection :</p>
+      <ul>
+        <li>Type d'inspection (process, facility, study protocol, study report, amendment, data quality)</li>
+        <li>Activité concernée (liée au planning)</li>
+        <li>Date prévue et date réelle de réalisation</li>
+        <li><strong>Checklist d'inspection</strong> — formulaire structuré avec réponses Oui/Non/N/A et observations <a href="checklists.html">→ voir</a></li>
+        <li><strong>Findings (NC)</strong> — non-conformités documentées avec gravité, description, recommandation</li>
+        <li>Résolution des findings avec preuve de correction</li>
+      </ul>
+
+      <h3>📌 Finalisation d'une inspection</h3>
+      <p>Le QA Manager clique sur <strong>"Marquer comme terminée"</strong> une fois tous les findings documentés. Ce bouton est disponible dès que la date de réalisation est renseignée.</p>
+
+      <h3>📌 QA Statement</h3>
+      <p>Document récapitulatif généré en PDF une fois toutes les inspections terminées. Il liste les inspections réalisées, les findings, les résolutions et les signatures. Signable électroniquement par le QA Manager, le Study Director et le Facility Manager.</p>
+
+      <div class="warning-box">
+        Pour les études Non-GLP, l'étape QA est désactivée (onglet grisé).
+      </div>
+    </div>
+
+    <!-- ── Étape 7 ── -->
+    <div class="section">
+      <h2>Étape 7 — Report Phase</h2>
+      <p><strong>Qui :</strong> Facility Manager, Study Director, Project Manager, Super Admin</p>
+      <p>Dépôt et suivi des documents du rapport final :</p>
+      <ul>
+        <li>Upload de documents (brouillon, version finale, amendements)</li>
+        <li>Statut de chaque document (en attente, soumis, approuvé)</li>
+        <li>Date de soumission et commentaires</li>
+      </ul>
+      <p>Cette étape est complète lorsqu'au moins un document de rapport est marqué soumis.</p>
+    </div>
+
+    <!-- ── Étape 8 ── -->
+    <div class="section">
+      <h2>Étape 8 — Archiving Phase</h2>
+      <p><strong>Qui :</strong> Archivist, Facility Manager, Super Admin</p>
+      <p>Clôture officielle de l'étude :</p>
+
+      <h3>📌 Checklist d'archivage</h3>
+      <p>Liste de vérification à cocher avant de finaliser l'archivage (vérification des documents, des signatures, du dossier physique, etc.).</p>
+
+      <h3>📌 Documents d'archivage</h3>
+      <p>Upload des documents finaux destinés à l'archive : rapport final, annexes, autorisation d'archivage, etc.</p>
+
+      <h3>📌 Archiver le projet</h3>
+      <p>Une fois tous les éléments en place, le bouton <strong>"Archiver l'étude"</strong> verrouille définitivement la fiche. Tous les onglets 1–7 passent en lecture seule. La fiche peut être désarchivée si nécessaire (Facility Manager / Super Admin uniquement).</p>
+
+      <div class="info-box">
+        <strong>Pour les études Non-GLP :</strong> cette étape est numérotée <strong>Étape 6</strong>.
+      </div>
+    </div>
+
+    <!-- ── Navigation entre étapes ── -->
+    <div class="section">
+      <h2>Progresser entre les étapes</h2>
+      <p>Chaque étape dispose d'une barre en bas (<strong>Phase Complete Bar</strong>) qui indique :</p>
+      <ul>
+        <li>Le statut de l'étape courante (complète ou non)</li>
+        <li>Un bouton pour marquer l'étape comme complète (ou incomplète)</li>
+        <li>Les prérequis manquants si l'étape n'est pas complémentable</li>
+      </ul>
+      <p>Le bandeau en haut de la fiche affiche la <strong>phase courante</strong>, le <strong>taux d'avancement global</strong>, et un bouton "Go to step →" pour naviguer rapidement vers l'onglet correspondant.</p>
+    </div>
+
+    <div class="footer">© AIRID — African Institute for Research in Infectious Diseases | Version 2025</div>
+  </main>
 </div>
 </body>
 </html>
