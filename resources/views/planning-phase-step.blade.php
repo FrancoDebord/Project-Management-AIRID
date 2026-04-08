@@ -12,7 +12,23 @@
         $all_phases_critiques = $project->allPhasesCritiques;
     @endphp
 
-    @if (!$study_initiation_meeting)
+    @if($project && $project->is_legacy)
+    <div class="alert d-flex align-items-center gap-3 py-3 px-4 mb-4"
+         style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
+        <i class="bi bi-archive-fill fs-4 flex-shrink-0" style="color:#92400e;"></i>
+        <div>
+            <div class="fw-semibold" style="color:#78350f;">Legacy project — Planning Phase pré-validée</div>
+            <div class="small text-muted mt-1">
+                Cette étude étant un ancien projet déjà terminé, la réunion d'initiation, l'identification des phases critiques et la CPIA ne sont pas requises.<br>
+                @if($project->legacy_protocol_signed_all_date)
+                    <strong>Dates enregistrées :</strong>
+                    Planning du <strong>{{ $project->legacy_protocol_signed_all_date->format('d/m/Y') }}</strong>
+                    au <strong>{{ $project->legacy_first_experiment_date?->format('d/m/Y') ?? '—' }}</strong>
+                @endif
+            </div>
+        </div>
+    </div>
+    @elseif (!$study_initiation_meeting)
         <h4>Planning Phase</h4>
         <!-- Bouton principal -->
         <button type="button" class="btn btn-primary mb-4 study_qa_initiation" data-project-id="{{ $project_id }}"
@@ -137,7 +153,9 @@
                 <th>Date End </th>
                 <th>Parent Activity</th>
                 <th>Assigned to</th>
-                <th>Mark</th>
+                @if($project && $project->is_glp)
+                <th>Mark as Critical</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -162,6 +180,7 @@
                         </td>
                         <td>{{ $activite->personneResponsable ? $activite->personneResponsable->prenom . ' ' . $activite->personneResponsable->nom : 'N/A' }}
                         </td>
+                        @if($project && $project->is_glp)
                         <td>
                             @if ($activite->phase_critique == false)
                                 <button class="btn btn-outline-danger btn-sm marquer-critique" data-bs-toggle="modal"
@@ -184,8 +203,8 @@
                                         data-ajaxroute="{{ route('marquerActiviteNonPhaseCritique') }}">Unmark</button>
                                 @endif
                             @endif
-
                         </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
@@ -204,7 +223,8 @@
         </tbody>
     </table>
 
-    {{-- ── Critical Phase Impact Assessment ── --}}
+    {{-- ── Critical Phase Impact Assessment (GLP only) ── --}}
+    @if($project && $project->is_glp)
     @php
         $cpiaEnabled    = $study_initiation_meeting && $all_phases_critiques && $all_phases_critiques->where('phase_critique', true)->count() > 0;
         $existingCpia   = \App\Models\CpiaAssessment::where('project_id', $project_id)->first();
@@ -251,11 +271,11 @@
             </div>
         </div>
     </div>
+    @endif {{-- /is_glp CPIA --}}
 
     {{-- <h2 class="mb-4 text-center">📅 Mon Agenda avec FullCalendar</h2> --}}
 
     <div id="calendar" class="shadow rounded p-3 bg-white"></div>
-
 
 </div>
 

@@ -185,6 +185,38 @@
             </div>
         </div>
 
+        {{-- Search bar --}}
+        <form method="GET" action="{{ route('indexPage') }}" class="mb-3" id="proj-search-form">
+            @if($stageFilter !== 'all')
+                <input type="hidden" name="stage" value="{{ $stageFilter }}">
+            @endif
+            <div class="input-group" style="max-width:480px;">
+                <span class="input-group-text bg-white border-end-0" style="border-radius:9px 0 0 9px;">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" name="q" id="proj-search-input"
+                       class="form-control border-start-0 ps-0"
+                       style="border-radius:0 9px 9px 0;font-size:.88rem;"
+                       placeholder="Rechercher par code ou titre…"
+                       value="{{ $search ?? '' }}"
+                       autocomplete="off">
+                @if(!empty($search))
+                <a href="{{ route('indexPage', array_filter(['stage' => $stageFilter !== 'all' ? $stageFilter : null])) }}"
+                   class="btn btn-outline-secondary btn-sm" title="Effacer la recherche"
+                   style="border-radius:0 9px 9px 0;font-size:.8rem;">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                @endif
+            </div>
+            @if(!empty($search))
+            <div class="text-muted mt-1" style="font-size:.78rem;">
+                <i class="bi bi-funnel me-1"></i>
+                {{ $all_projects->total() }} résultat{{ $all_projects->total() !== 1 ? 's' : '' }} pour
+                "<strong>{{ $search }}</strong>"
+            </div>
+            @endif
+        </form>
+
         {{-- Project grid --}}
         <div class="row g-3">
             @forelse ($all_projects as $project)
@@ -342,6 +374,19 @@
         @endif
 
     </div>
+
+    <script>
+    (function () {
+        const input = document.getElementById('proj-search-input');
+        const form  = document.getElementById('proj-search-form');
+        if (!input || !form) return;
+        let timer;
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () { form.submit(); }, 400);
+        });
+    })();
+    </script>
 
     @if(Auth::user()->canCreateProject())
         @include('partials.dialog-create-project')

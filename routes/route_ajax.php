@@ -6,7 +6,7 @@ use App\Http\Controllers\SignatureController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::prefix('ajax')->group(function () {
+Route::middleware('auth')->prefix('ajax')->group(function () {
     // Define other AJAX routes here
     Route::get('/check-project-study-phase', [RequeteAjaxController::class,"checkStudyPhaseCompleted"])->name("checkStudyPhaseCompleted");
     Route::post('/store-project', [ProjectAjaxController::class,"storeProject"])->name("storeProject");
@@ -55,7 +55,8 @@ Route::prefix('ajax')->group(function () {
     Route::post('/delete-report-document', [ProjectAjaxController::class, 'deleteReportDocument'])->name('deleteReportDocument');
 
     // Project stage
-    Route::patch('/project/{project}/stage',  [ProjectAjaxController::class, 'updateProjectStage'])->name('project.updateStage');
+    Route::patch('/project/{project}/stage',        [ProjectAjaxController::class, 'updateProjectStage'])->name('project.updateStage');
+    Route::post('/project/{project}/legacy-dates',  [ProjectAjaxController::class, 'saveLegacyDates'])->name('project.saveLegacyDates');
 
     // Archiving Phase
     Route::post('/archive-project',           [ProjectAjaxController::class, 'archiveProject'])->name('archiveProject');

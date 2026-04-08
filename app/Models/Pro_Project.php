@@ -18,7 +18,22 @@ class Pro_Project extends Model
         'phases_completed'  => 'array',
         'archive_checklist' => 'array',
         'archived_at'       => 'datetime',
+        'is_legacy'         => 'boolean',
+        'legacy_sd_appointment_date'         => 'date',
+        'legacy_protocol_signed_sd_date'     => 'date',
+        'legacy_protocol_signed_all_date'    => 'date',
+        'legacy_first_experiment_date'       => 'date',
+        'legacy_last_experiment_date'        => 'date',
+        'legacy_final_report_signed_sd_date' => 'date',
+        'legacy_final_report_signed_all_date'=> 'date',
+        'legacy_archive_submission_date'     => 'date',
+        'legacy_master_schedule_review_date' => 'date',
     ];
+
+    public function isLegacy(): bool
+    {
+        return (bool) $this->is_legacy;
+    }
 
     /**
      * Get the studyDirector that owns the Pro_Project

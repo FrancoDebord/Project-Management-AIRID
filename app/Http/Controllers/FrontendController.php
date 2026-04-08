@@ -52,12 +52,15 @@ class FrontendController extends Controller
         $totalProjects = (clone $baseQuery)->count();
         $kpiInProgress = (clone $baseQuery)->where('project_stage', 'in progress')->count();
 
-        $kpiOpenNc = DB::table('pro_qa_inspections_findings')
+        $kpiOpenNc = empty($glpProjectIds) ? 0 : DB::table('pro_qa_inspections_findings')
+            ->whereIn('project_id', $glpProjectIds)
             ->where('is_conformity', 0)
             ->where('status', '!=', 'complete')
             ->count();
 
-        $kpiPendingInspections = DB::table('pro_qa_inspections')
+        $glpProjectIds = (clone $baseQuery)->where('is_glp', true)->pluck('id')->toArray();
+        $kpiPendingInspections = empty($glpProjectIds) ? 0 : DB::table('pro_qa_inspections')
+            ->whereIn('project_id', $glpProjectIds)
             ->whereNull('date_performed')
             ->count();
 
@@ -80,15 +83,22 @@ class FrontendController extends Controller
             : 0;
 
         // ── Paginated projects for display (6 per page) ────────────────
+        $search = trim($request->get('q', ''));
         $query = (clone $baseQuery)->orderBy("date_debut_effective", "desc");
         if ($dbStage) {
             $query->where('project_stage', $dbStage);
         }
-        $all_projects  = $query->paginate(6)->withQueryString();
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('project_code',  'like', '%' . $search . '%')
+                  ->orWhere('project_title', 'like', '%' . $search . '%');
+            });
+        }
+        $all_projects  = $query->paginate(12)->withQueryString();
         $projectScores = $allScores; // scores pre-computed for all, view filters by id
 
         return view("accueil", compact(
-            "all_projects", "totalProjects", "stageFilter",
+            "all_projects", "totalProjects", "stageFilter", "search",
             "kpiInProgress", "kpiOpenNc", "kpiPendingInspections", "kpiAvgCompletion", "kpiByStage",
             'projectsNeedingInspection', 'projectScores'
         ));
@@ -323,14 +333,15 @@ class FrontendController extends Controller
             ->whereIn('status', ['submitted', 'published'])
             ->pluck('project_id')->unique()->toArray();
 
-        // "Needing inspection" alert: critical activity completed but not yet inspected
-        $criticalRows = DB::table('pro_studies_activities')
+        // "Needing inspection" alert: critical activity completed but not yet inspected (GLP projects only)
+        $glpIds = $projects->where('is_glp', true)->pluck('id')->toArray();
+        $criticalRows = empty($glpIds) ? collect() : DB::table('pro_studies_activities')
             ->select('id', 'project_id', 'status')
             ->where('phase_critique', 1)
-            ->whereIn('project_id', $ids)
+            ->whereIn('project_id', $glpIds)
             ->get();
 
-        $inspectedActivityIds = DB::table('pro_qa_inspections')
+        $inspectedActivityIds = $criticalRows->isEmpty() ? [] : DB::table('pro_qa_inspections')
             ->whereNotNull('activity_id')
             ->whereNotNull('date_performed')
             ->pluck('activity_id')

@@ -68,11 +68,19 @@ class ProjectAjaxController extends Controller
             return response()->json(['message' => 'The project title has already been taken.', "code_erreur" => 1], 201);
         }
 
+        $isLegacy = (bool) $request->is_legacy;
+
+        // For legacy projects, all phases pre-completed
+        $allPhases = ['study_creation','protocol_details','protocol_development','planning','experimental','quality_assurance','reporting','archiving'];
+
         $project = Pro_Project::create([
-            'project_code'   => $request->code,
-            'project_title'  => $request->title,
-            'is_glp'         => (bool) $request->is_glp,
-            'study_director' => $request->study_director_id ?: null,
+            'project_code'    => $request->code,
+            'project_title'   => $request->title,
+            'is_glp'          => (bool) $request->is_glp,
+            'study_director'  => $request->study_director_id ?: null,
+            'is_legacy'       => $isLegacy,
+            'project_stage'   => $isLegacy ? 'completed' : 'not_started',
+            'phases_completed'=> $isLegacy ? $allPhases : [],
         ]);
 
         if ($project) {
@@ -193,9 +201,13 @@ class ProjectAjaxController extends Controller
         }
 
         // Update project with provided data
+        $wasLegacy = (bool) $project->is_legacy;
+        $isNowLegacy = $request->boolean('is_legacy');
+
         $project->project_code = $request->input('project_code');
         $project->project_title = $request->input('project_title');
         $project->is_glp = (bool)$request->input('is_glp');
+        $project->is_legacy = $isNowLegacy;
         $project->project_nature = $request->input('project_nature');
         $project->protocol_code = $request->input('protocol_code');
         $project->test_system = $request->input('test_system');
@@ -205,6 +217,14 @@ class ProjectAjaxController extends Controller
         $project->date_fin_previsionnelle = $request->input('date_fin_previsionnelle');
         $project->date_fin_effective = $request->input('date_fin_effective');
         $project->description_project = $request->input('description_project');
+
+        // If newly marked as legacy, pre-complete all phases and set stage to completed
+        if ($isNowLegacy && !$wasLegacy) {
+            $allPhases = ['study_creation','protocol_details','protocol_development','planning','experimental','quality_assurance','reporting','archiving'];
+            $project->phases_completed = $allPhases;
+            $project->project_stage   = 'completed';
+        }
+
         $project->save();
 
 
@@ -1258,6 +1278,12 @@ class ProjectAjaxController extends Controller
             return response()->json(['message' => "You activity record does not exist", "code_erreur" => 1], 200);
         }
 
+        // Only GLP projects can have critical phases
+        $project = Pro_Project::find($activity->project_id);
+        if ($project && !$project->is_glp) {
+            return response()->json(['message' => "Critical phases only apply to GLP projects.", "code_erreur" => 1], 200);
+        }
+
 
         $activity->phase_critique = true;
         $activity->meeting_id = $meeting_id;
@@ -1450,6 +1476,12 @@ class ProjectAjaxController extends Controller
      */
     function scheduleQaInspection(Request $request)
     {
+        // Only GLP projects require QA inspections
+        $proj = Pro_Project::find($request->project_id);
+        if ($proj && !$proj->is_glp) {
+            return response()->json(['success' => false, 'message' => 'QA inspections are only applicable to GLP projects.'], 422);
+        }
+
         $isCritical = $request->type_inspection === 'Critical Phase Inspection';
         $rules = [
             'project_id'       => $isCritical ? 'required|integer|exists:pro_projects,id' : 'nullable|integer|exists:pro_projects,id',
@@ -2340,7 +2372,70 @@ class ProjectAjaxController extends Controller
             'completed'   => 'Completed',
         ][$stage] ?? $stage;
 
-        return redirect()->back()->with('success', "Study status updated to "{$label}".");
+        return redirect()->back()->with('success', "Study status updated to \"{$label}\".");
+    }
+
+    /**
+     * Save (or update) key dates for a legacy project and regenerate synthetic activities.
+     */
+    public function saveLegacyDates(Request $request, int $project)
+    {
+        $p = Pro_Project::findOrFail($project);
+
+        if (!$p->is_legacy) {
+            return response()->json(['success' => false, 'message' => 'This project is not a legacy project.'], 422);
+        }
+
+        $validated = $request->validate([
+            'legacy_sd_appointment_date'          => 'nullable|date',
+            'legacy_protocol_signed_sd_date'      => 'nullable|date',
+            'legacy_protocol_signed_all_date'     => 'nullable|date',
+            'legacy_first_experiment_date'        => 'nullable|date',
+            'legacy_last_experiment_date'         => 'nullable|date',
+            'legacy_final_report_signed_sd_date'  => 'nullable|date',
+            'legacy_final_report_signed_all_date' => 'nullable|date',
+            'legacy_archive_submission_date'      => 'nullable|date',
+        ]);
+
+        // Update effective date range
+        $validated['date_debut_effective'] = $validated['legacy_sd_appointment_date'] ?? null;
+        $validated['date_fin_effective']   = $validated['legacy_archive_submission_date'] ?? null;
+
+        $p->update($validated);
+
+        // Regenerate synthetic activities (delete existing ones first)
+        Pro_StudyActivities::where('project_id', $p->id)
+            ->whereIn('study_activity_name', [
+                'Study Start Phase', 'Planning Phase', 'Experimental Phase',
+                'Report Phase', 'Archiving Phase',
+            ])
+            ->delete();
+
+        $d = $validated;
+        $userId = FacadesAuth::id();
+        $legacyActivities = [
+            ['name' => 'Study Start Phase',  'start' => $d['legacy_sd_appointment_date'] ?? null,         'end' => $d['legacy_protocol_signed_sd_date'] ?? null],
+            ['name' => 'Planning Phase',     'start' => $d['legacy_protocol_signed_all_date'] ?? null,    'end' => $d['legacy_first_experiment_date'] ?? null],
+            ['name' => 'Experimental Phase', 'start' => $d['legacy_first_experiment_date'] ?? null,       'end' => $d['legacy_last_experiment_date'] ?? null],
+            ['name' => 'Report Phase',       'start' => $d['legacy_last_experiment_date'] ?? null,        'end' => $d['legacy_final_report_signed_sd_date'] ?? null],
+            ['name' => 'Archiving Phase',    'start' => $d['legacy_final_report_signed_all_date'] ?? null,'end' => $d['legacy_archive_submission_date'] ?? null],
+        ];
+
+        foreach ($legacyActivities as $act) {
+            if (empty($act['start']) && empty($act['end'])) continue;
+            Pro_StudyActivities::create([
+                'study_activity_name'         => $act['name'],
+                'project_id'                  => $p->id,
+                'estimated_activity_date'     => $act['start'],
+                'estimated_activity_end_date' => $act['end'],
+                'actual_activity_date'        => $act['start'],
+                'status'                      => 'completed',
+                'phase_critique'              => false,
+                'created_by'                  => $userId,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Legacy dates saved and activities updated.']);
     }
 
     /**

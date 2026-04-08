@@ -288,6 +288,16 @@
                     </div>
                 @endif
 
+                @if($project && $project->is_legacy)
+                <div class="alert mb-3 mt-2 d-flex align-items-center gap-3 py-2 px-3" style="background:linear-gradient(90deg,#856404,#a16207);color:#fff;border-radius:.6rem;border:none;">
+                    <i class="bi bi-archive-fill fs-5 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong>Legacy project — ancien projet enregistré.</strong>
+                        Les étapes de planification, activités et inspections sont pré-validées. Vous pouvez consulter et compléter les informations documentaires.
+                    </div>
+                </div>
+                @endif
+
                 @if($project && $project->archived_at)
                 <div class="alert mb-3 mt-2 d-flex align-items-center gap-3 py-2 px-3" style="background:linear-gradient(90deg,#1a3a6b 0%,#c41230 100%);color:#fff;border-radius:.6rem;border:none;">
                     <i class="bi bi-lock-fill fs-5 flex-shrink-0"></i>
@@ -572,8 +582,8 @@
                                 el.disabled = true;
                             });
 
-                            // Disable all buttons
-                            pane.querySelectorAll('button').forEach(function(el) {
+                            // Disable all buttons (except no-lock ones)
+                            pane.querySelectorAll('button:not([data-no-lock])').forEach(function(el) {
                                 el.disabled = true;
                                 el.style.opacity = '0.45';
                                 el.style.cursor  = 'not-allowed';
@@ -634,7 +644,7 @@
                             const pane = document.getElementById(stepId);
                             if (!pane) return;
                             pane.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
-                            pane.querySelectorAll('button').forEach(el => {
+                            pane.querySelectorAll('button:not([data-no-lock])').forEach(el => {
                                 el.disabled = true;
                                 el.style.opacity = '0.45';
                                 el.style.cursor  = 'not-allowed';

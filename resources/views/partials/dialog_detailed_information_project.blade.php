@@ -123,6 +123,26 @@
                         </div>
                     </div>
 
+                    {{-- ── Legacy flag ─────────────────────────────────────── --}}
+                    <div class="mb-3 p-3 rounded-3 d-flex align-items-start gap-3"
+                         style="background:#fffbeb;border:1px solid #fde68a;">
+                        <div class="form-check form-switch mt-1 mb-0 flex-shrink-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   name="is_legacy" id="edit_is_legacy" value="1"
+                                   {{ isset($project) && $project->is_legacy ? 'checked' : '' }}>
+                        </div>
+                        <div>
+                            <label class="form-check-label fw-semibold small d-block mb-1" for="edit_is_legacy"
+                                   style="color:#78350f;">
+                                <i class="bi bi-archive me-1"></i>Ancien projet déjà terminé (Legacy)
+                            </label>
+                            <div class="text-muted" style="font-size:.75rem;">
+                                Si activé, toutes les phases seront pré-validées et le statut passera à <em>Completed</em>.
+                                Désactiver cette option ne réinitialise pas les phases automatiquement.
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- ── Dates ───────────────────────────────────────────── --}}
                     <p class="fw-bold text-uppercase small text-muted mb-2" style="letter-spacing:.06em;">
                         <i class="bi bi-calendar3 me-1"></i>Dates

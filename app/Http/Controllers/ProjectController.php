@@ -138,6 +138,21 @@ class ProjectController extends Controller
             return $statuses;
         }
 
+        // ── Legacy projects: all phases auto-validated ──────────────────────
+        if ($project->is_legacy) {
+            $phases = ['study_creation','protocol_details','protocol_development','planning','experimental','quality_assurance','reporting','archiving'];
+            foreach ($phases as $phase) {
+                $statuses[$phase] = [
+                    'can_complete' => true,
+                    'items' => [
+                        ['label' => 'Legacy project — phase pre-validated', 'done' => true],
+                    ],
+                    'next' => 'Legacy project — all phases are pre-validated.',
+                ];
+            }
+            return $statuses;
+        }
+
         $pid = $project->id;
 
         // ── Study Creation ──────────────────────────────────────────────────

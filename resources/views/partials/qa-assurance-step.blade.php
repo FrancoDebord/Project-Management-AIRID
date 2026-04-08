@@ -225,6 +225,43 @@
 
 <div class="row airid-qa">
 
+    {{-- ── Legacy notice ── --}}
+    @if($project && $project->is_legacy)
+    <div class="col-12 mb-3">
+        <div class="alert d-flex align-items-center gap-3 py-3 px-4"
+             style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
+            <i class="bi bi-archive-fill fs-4 flex-shrink-0" style="color:#92400e;"></i>
+            <div>
+                <div class="fw-semibold" style="color:#78350f;">Legacy project — Quality Assurance pré-validée</div>
+                <div class="small text-muted mt-1">
+                    Les inspections QA ne sont pas requises pour un ancien projet déjà terminé.
+                    Vous pouvez néanmoins consulter et ajouter des documents de référence si nécessaire.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Non-GLP notice ── --}}
+    @if($project && !$project->is_glp)
+    <div class="col-12 mb-3">
+        <div class="alert d-flex align-items-center gap-3 py-3 px-4"
+             style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;">
+            <i class="bi bi-info-circle-fill fs-4 flex-shrink-0" style="color:#0369a1;"></i>
+            <div>
+                <div class="fw-semibold" style="color:#075985;">Non-GLP project — No QA inspections required</div>
+                <div class="small text-muted mt-1">
+                    Quality Assurance inspections (critical phase, protocol, data quality, report) apply only to GLP studies.
+                    This project is classified as Non-GLP — all inspection steps are not applicable.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── GLP-only section ── --}}
+    @if($project && $project->is_glp)
+
     {{-- ── ALERTE : activités critiques sans inspection ── --}}
     @if($activitesSansInspection->isNotEmpty())
     <div class="col-12 mb-3">
@@ -2379,6 +2416,8 @@ function saveEditInspection() {
         });
 }
 </script>
+
+    @endif {{-- /is_glp --}}
 
 {{-- ══════════════════════════════════════════════════════════════
      QA Activities Checklist button (GLP only)

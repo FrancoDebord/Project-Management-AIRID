@@ -18,6 +18,8 @@ use App\Http\Controllers\WizardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware('auth')->group(function () {
+
 Route::get('/', [FrontendController::class,"indexPage"])->name("indexPage");
 Route::get('/master-schedule',      [ProjectActivityScheduleController::class, 'masterSchedule'])->name('masterSchedule');
 Route::get('/master-schedule/pdf',  [ProjectActivityScheduleController::class, 'masterSchedulePdf'])->name('masterSchedule.pdf');
@@ -33,10 +35,6 @@ Route::get('/project/{id}/qa-activities-checklist', [FrontendController::class, 
 
 Route::get('/manage-project', [WizardController::class, 'index'])->name('index');
 Route::get('/manage-project2', [ProjectManagementController::class, 'afficherManageProjectPage'])->name('afficherManageProjectPage');
-
-
-// Route::get('/wizard', function(){ return view('study_management_design'); });
-// Route::post('/wizard/submit', [WizardController::class, 'submit'])->name('wizard.submit');
 
 // ── QA Dashboard ──
 Route::get('/qa-dashboard', [QaDashboardController::class, 'index'])->name('qaDashboard');
@@ -55,6 +53,8 @@ Route::get('/checklist/{inspection_id}/data-quality-print', [ChecklistController
 Route::get('/checklist/{inspection_id}/{slug}', [ChecklistController::class, 'show'])->name('checklist.show');
 Route::post('/checklist/{inspection_id}/{slug}',[ChecklistController::class, 'save'])->name('checklist.save');
 Route::get('/ajax/get-checklist-statuses',      [ChecklistController::class, 'statuses'])->name('getChecklistStatuses');
+
+}); // end auth middleware
 
 // ── Notifications ──
 Route::middleware('auth')->prefix('notifications')->group(function () {

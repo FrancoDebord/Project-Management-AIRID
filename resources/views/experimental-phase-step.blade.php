@@ -80,6 +80,32 @@
 </style>
 
 <div class="row airid-exper">
+
+    @php
+        $_exp_project_id = request('project_id');
+        $_exp_project    = App\Models\Pro_Project::find($_exp_project_id);
+    @endphp
+
+    @if($_exp_project && $_exp_project->is_legacy)
+    <div class="col-12">
+        <div class="alert d-flex align-items-center gap-3 py-3 px-4 mb-3"
+             style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
+            <i class="bi bi-archive-fill fs-4 flex-shrink-0" style="color:#92400e;"></i>
+            <div>
+                <div class="fw-semibold" style="color:#78350f;">Legacy project — Experimental Phase pré-validée</div>
+                <div class="small text-muted mt-1">
+                    Les activités de terrain ont été générées automatiquement à partir des dates clés.
+                    @if($_exp_project->legacy_first_experiment_date)
+                        <strong>Période expérimentale :</strong>
+                        du <strong>{{ $_exp_project->legacy_first_experiment_date->format('d/m/Y') }}</strong>
+                        au <strong>{{ $_exp_project->legacy_last_experiment_date?->format('d/m/Y') ?? '—' }}</strong>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="col-12 mt-2 mb-3">
         <div class="card  rounded-4">
             <div class="card-header bg-light text-center fw-bold">
@@ -127,12 +153,14 @@
                     ];
                 }
 
-                // IDs of critical-phase activities that already have an inspection performed
-                $inspectedCriticalIds = \DB::table('pro_qa_inspections')
-                    ->whereNotNull('activity_id')
-                    ->whereNotNull('date_performed')
-                    ->pluck('activity_id')
-                    ->toArray();
+                // IDs of critical-phase activities that already have an inspection performed (GLP only)
+                $inspectedCriticalIds = ($project && $project->is_glp)
+                    ? \DB::table('pro_qa_inspections')
+                        ->whereNotNull('activity_id')
+                        ->whereNotNull('date_performed')
+                        ->pluck('activity_id')
+                        ->toArray()
+                    : [];
 
                 // Whether the experimental phase has been manually marked as completed
                 $experimentalPhaseDone = in_array('experimental', $project->phases_completed ?? []);
@@ -204,7 +232,7 @@
                                                 <span class="text-muted" style="font-size:.72rem;">
                                                     <i class="bi bi-lock me-1"></i>Phase complétée
                                                 </span>
-                                            @else
+                                            @elseif($project && $project->is_glp)
                                                 <span class="text-muted" style="font-size:.72rem;">
                                                     <i class="bi bi-shield-check me-1"></i>Inspection réalisée
                                                 </span>

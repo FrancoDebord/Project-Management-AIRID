@@ -29,6 +29,8 @@
 .sc-action-btn.teal   { background: #0d7377; color: #fff; }
 .sc-action-btn.slate  { background: #475569; color: #fff; }
 .sc-action-btn.violet { background: #5c6bc0; color: #fff; }
+.sc-action-btn.amber  { background: #d97706; color: #fff; }
+.sc-action-btn.amber:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
 /* Info cards */
 .sc-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; height: 100%; }
@@ -133,6 +135,20 @@
                     data-bs-toggle="modal" data-bs-target="#keyPersonnelModal">
                 <i class="bi bi-people-fill"></i>Manage Key Personnel
             </button>
+            @if($project->is_legacy)
+            <button class="sc-action-btn amber"
+                    data-bs-toggle="modal" data-bs-target="#legacyDatesModal"
+                    data-no-lock="1"
+                    title="Set key dates for the Master Schedule">
+                <i class="bi bi-calendar3-range"></i>Legacy Key Dates
+            </button>
+            @else
+            <button class="sc-action-btn amber" disabled
+                    data-no-lock="1"
+                    title="Only available for legacy (already-completed) projects">
+                <i class="bi bi-calendar3-range"></i>Legacy Key Dates
+            </button>
+            @endif
         </div>
     </div>
     @endif
@@ -655,3 +671,178 @@
 @include('partials.study_director_appointment_form')
 @include('partials.study_director_replacement_form')
 @include('partials.other_documents_project')
+
+{{-- ── Legacy Key Dates Modal ─────────────────────────────────────── --}}
+@if($project->is_legacy)
+<div class="modal fade" id="legacyDatesModal" tabindex="-1" aria-labelledby="legacyDatesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <div class="modal-header border-0 py-3 px-4"
+                 style="background:linear-gradient(135deg,#92400e 0%,#d97706 100%);">
+                <div>
+                    <h5 class="modal-title text-white fw-bold mb-0" id="legacyDatesModalLabel">
+                        <i class="bi bi-calendar3-range me-2"></i>Legacy Key Dates
+                    </h5>
+                    <p class="text-white-50 small mb-0">These dates generate the Master Schedule automatically.</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div id="legacy-dates-msg"></div>
+                <div class="p-3 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
+
+                    {{-- Phase 1: Study Start --}}
+                    <div class="mb-3">
+                        <div class="fw-semibold" style="font-size:.78rem;color:#1a3a6b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
+                            <i class="bi bi-1-circle me-1"></i>Study Start Phase
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Start — Appointment of SD</label>
+                                <input type="date" id="ld_sd_appointment_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_sd_appointment_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">End — Protocol signed by SD</label>
+                                <input type="date" id="ld_protocol_signed_sd_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_protocol_signed_sd_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Phase 2: Planning --}}
+                    <div class="mb-3">
+                        <div class="fw-semibold" style="font-size:.78rem;color:#1a3a6b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
+                            <i class="bi bi-2-circle me-1"></i>Planning Phase
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Start — Protocol signed by all parties</label>
+                                <input type="date" id="ld_protocol_signed_all_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_protocol_signed_all_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">End — Date of first experiment</label>
+                                <input type="date" id="ld_first_experiment_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_first_experiment_date?->format('Y-m-d') ?? '' }}"
+                                       oninput="document.getElementById('ld_first_experiment_date_exp').value=this.value">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Phase 3: Experimental --}}
+                    <div class="mb-3">
+                        <div class="fw-semibold" style="font-size:.78rem;color:#1a3a6b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
+                            <i class="bi bi-3-circle me-1"></i>Experimental Phase
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Start — Date of first experiment</label>
+                                <input type="date" id="ld_first_experiment_date_exp" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_first_experiment_date?->format('Y-m-d') ?? '' }}"
+                                       readonly style="background:#f3f4f6;">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">End — Date of last experiment</label>
+                                <input type="date" id="ld_last_experiment_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_last_experiment_date?->format('Y-m-d') ?? '' }}"
+                                       oninput="document.getElementById('ld_last_experiment_date_report').value=this.value">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Phase 4: Report --}}
+                    <div class="mb-3">
+                        <div class="fw-semibold" style="font-size:.78rem;color:#1a3a6b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
+                            <i class="bi bi-4-circle me-1"></i>Report Phase
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Start — Date of last experiment</label>
+                                <input type="date" id="ld_last_experiment_date_report" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_last_experiment_date?->format('Y-m-d') ?? '' }}"
+                                       readonly style="background:#f3f4f6;">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">End — Final report signed by SD</label>
+                                <input type="date" id="ld_final_report_signed_sd_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_final_report_signed_sd_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Phase 5: Archiving --}}
+                    <div class="mb-1">
+                        <div class="fw-semibold" style="font-size:.78rem;color:#1a3a6b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">
+                            <i class="bi bi-5-circle me-1"></i>Archiving Phase
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Start — Final report signed by all parties</label>
+                                <input type="date" id="ld_final_report_signed_all_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_final_report_signed_all_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">End — Documents submitted to archivist</label>
+                                <input type="date" id="ld_archive_submission_date" class="form-control form-control-sm"
+                                       value="{{ $project->legacy_archive_submission_date?->format('Y-m-d') ?? '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>{{-- /amber panel --}}
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-3" style="background:#f8f9fa;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm fw-semibold text-white"
+                        style="background:#d97706;border:none;border-radius:8px;"
+                        onclick="saveLegacyDates()">
+                    <i class="bi bi-check2-circle me-1"></i>Save Dates
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const PROJECT_ID = {{ $project->id }};
+    const SAVE_URL   = '{{ route('project.saveLegacyDates', $project->id) }}';
+    const CSRF       = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    window.saveLegacyDates = function () {
+        const msgEl = document.getElementById('legacy-dates-msg');
+        msgEl.innerHTML = '';
+
+        const body = new URLSearchParams({
+            _token:                              CSRF,
+            legacy_sd_appointment_date:          document.getElementById('ld_sd_appointment_date').value,
+            legacy_protocol_signed_sd_date:      document.getElementById('ld_protocol_signed_sd_date').value,
+            legacy_protocol_signed_all_date:     document.getElementById('ld_protocol_signed_all_date').value,
+            legacy_first_experiment_date:        document.getElementById('ld_first_experiment_date').value,
+            legacy_last_experiment_date:         document.getElementById('ld_last_experiment_date').value,
+            legacy_final_report_signed_sd_date:  document.getElementById('ld_final_report_signed_sd_date').value,
+            legacy_final_report_signed_all_date: document.getElementById('ld_final_report_signed_all_date').value,
+            legacy_archive_submission_date:      document.getElementById('ld_archive_submission_date').value,
+        });
+
+        fetch(SAVE_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    msgEl.innerHTML = '<div class="alert alert-success py-2 px-3 mb-3" style="font-size:.82rem;"><i class="bi bi-check-circle me-1"></i>' + data.message + '</div>';
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('legacyDatesModal'));
+                        if (modal) modal.hide();
+                    }, 1500);
+                } else {
+                    msgEl.innerHTML = '<div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.82rem;"><i class="bi bi-exclamation-triangle me-1"></i>' + (data.message ?? 'An error occurred.') + '</div>';
+                }
+            })
+            .catch(() => {
+                msgEl.innerHTML = '<div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.82rem;"><i class="bi bi-wifi-off me-1"></i>Network error. Please try again.</div>';
+            });
+    };
+})();
+</script>
+@endif

@@ -21,7 +21,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AIRID Projects">
-    <link rel="apple-touch-icon" href="/storage/assets/logo/airid.png">
+    <link rel="apple-touch-icon" href="/storage/assets/logo/airid.jpg">
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -117,12 +117,12 @@
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
                     @auth
-                        @if (Auth::user()->canCreateProject())
+                        @if (Auth::user()?->canCreateProject())
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('project.create') }}">Study Management</a>
                             </li>
                         @endif
-                        @if (Auth::user()->canManageQA())
+                        @if (Auth::user()?->canManageQA())
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('qaDashboard') }}">Quality Assurance</a>
                             </li>
@@ -130,7 +130,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('masterSchedule') }}">Master Schedule</a>
                         </li>
-                        @if (Auth::user()->hasRole(['super_admin', 'facility_manager']))
+                        @if (Auth::user()?->hasRole(['super_admin', 'facility_manager']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-badge me-1"></i>Facility Manager
@@ -144,7 +144,7 @@
                                 </ul>
                             </li>
                         @endif
-                        @if (Auth::user()->canManageQA() || Auth::user()->canManageUsers())
+                        @if (Auth::user()?->canManageQA() || Auth::user()?->canManageUsers())
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="bi bi-gear me-1"></i>Settings
@@ -155,7 +155,7 @@
                                             <i class="bi bi-sliders me-2"></i>Paramètres
                                         </a>
                                     </li>
-                                    @if (Auth::user()->canManageUsers())
+                                    @if (Auth::user()?->canManageUsers())
                                         <li>
                                             <a class="dropdown-item" href="{{ route('admin.users') }}">
                                                 <i class="bi bi-people me-2"></i>Gestion utilisateurs
@@ -223,28 +223,28 @@
                         'archivist' => '#fd7e14',
                         'read_only' => '#6c757d',
                     ];
-                    $userRole = Auth::user()->role;
+                    $userRole = Auth::user()?->role ?? '';
                 @endphp
                 <span class="badge rounded-pill px-2 py-1 d-none d-lg-inline-flex align-items-center"
                     style="background:{{ $roleColors[$userRole] ?? '#6c757d' }};font-size:.7rem;opacity:.9;">
-                    {{ Auth::user()->roleLabel() }}
+                    {{ Auth::user()?->roleLabel() ?? '' }}
                 </span>
                 <div class="dropdown">
                     <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                         href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle fs-4 me-2"></i>
-                        {{ Auth::user()->name }}
+                        {{ Auth::user()?->name }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
                         <li>
                             <span class="dropdown-item-text small text-muted">
-                                {{ Auth::user()->roleLabel() }}
+                                {{ Auth::user()?->roleLabel() ?? '' }}
                             </span>
                         </li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        @if (Auth::user()->canManageUsers())
+                        @if (Auth::user()?->canManageUsers())
                             <li>
                                 <a class="dropdown-item" href="{{ route('admin.settings') }}">
                                     <i class="bi bi-gear me-2"></i>Paramètres

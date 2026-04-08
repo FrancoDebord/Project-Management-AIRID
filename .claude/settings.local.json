@@ -71,7 +71,13 @@
       "Bash(sed -i 's/protected \\\\$table = '\\\\''cpia_assessments'\\\\''/protected $table = '\\\\''pro_cpia_assessments'\\\\''/' app/Models/CpiaAssessment.php)",
       "Bash(sed -i 's/protected \\\\$table = '\\\\''cpia_items'\\\\''/protected $table = '\\\\''pro_cpia_items'\\\\''/' app/Models/CpiaItem.php)",
       "Bash(grep -rn 'protected $table' 'app/Models/*.php')",
-      "Bash(php -r ':*)"
+      "Bash(php -r ':*)",
+      "Bash(grep -n \"formDetailedInformationProject\\\\|saveOtherBasic\\\\|basic.*information\\\\|An error occurred while saving\" public/storage/assets/css/custom_style.css public/storage/assets/js/*.js)",
+      "Bash(grep -A5 \"CREATE TABLE IF NOT EXISTS \\\\`pro_projects_related_study_types\\\\`\" projects_management_sans_donnees.sql)",
+      "Bash(grep -A20 \"CREATE TABLE IF NOT EXISTS \\\\`pro_studies_activities\\\\`\" projects_management_sans_donnees.sql)",
+      "Bash(php -l app/Http/Controllers/ProjectController.php)",
+      "Bash(php -l app/Models/Pro_Project.php)",
+      "Bash(php -l app/Http/Controllers/FrontendController.php)"
     ]
   }
 }

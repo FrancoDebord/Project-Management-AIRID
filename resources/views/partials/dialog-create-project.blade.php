@@ -5,7 +5,7 @@
 
 <div class="modal fade" id="ModalformCreateNewProject" tabindex="-1"
      aria-labelledby="ModalformCreateNewProjectLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
 
             {{-- Header --}}
@@ -65,7 +65,7 @@
                         </div>
                     </div>
 
-                    {{-- Row 4: Study Director --}}
+                    {{-- Study Director --}}
                     <div class="mb-3">
                         <label class="form-label small fw-semibold mb-1">
                             Study Director
@@ -87,8 +87,25 @@
                         </div>
                     </div>
 
+                    {{-- Legacy toggle --}}
+                    <div class="mb-3 p-3 rounded-3" style="background:#f8f9fa;border:1px solid #e5e7eb;">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   name="is_legacy" id="cp_is_legacy" value="1">
+                            <label class="form-check-label fw-semibold small" for="cp_is_legacy">
+                                <i class="bi bi-archive me-1" style="color:#856404;"></i>
+                                Ancien projet déjà terminé (Legacy)
+                            </label>
+                        </div>
+                        <div class="text-muted" style="font-size:.75rem;margin-top:.3rem;margin-left:2.2rem;">
+                            Cochez si cette étude est déjà terminée et que vous l'enregistrez à des fins d'archivage.
+                            Les étapes seront pré-validées automatiquement. Les dates clés du Master Schedule pourront
+                            être saisies depuis l'onglet <strong>Study Creation</strong> après création.
+                        </div>
+                    </div>
+
                     {{-- Submit --}}
-                    <div class="d-grid mt-1">
+                    <div class="d-grid mt-2">
                         <button type="submit" class="btn fw-semibold text-white"
                                 style="background:linear-gradient(90deg,#1a3a6b,#c41230);border:none;border-radius:8px;padding:10px;">
                             <i class="bi bi-check2-circle me-2"></i>Create Study
@@ -132,14 +149,12 @@
             callback();
             return;
         }
-        // Load CSS if not already present
         if (!document.querySelector('link[href*="tom-select"]')) {
             const link = document.createElement('link');
             link.rel  = 'stylesheet';
             link.href = 'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css';
             document.head.appendChild(link);
         }
-        // Load JS then call back
         const script  = document.createElement('script');
         script.src    = 'https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js';
         script.onload = callback;
@@ -151,5 +166,6 @@
             ensureTomSelect(initCreateProjectSelects);
         }
     });
+
 })();
 </script>
