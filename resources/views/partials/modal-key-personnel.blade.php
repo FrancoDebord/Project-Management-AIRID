@@ -4,7 +4,7 @@
     $kpCurrent    = $kpProject
         ? $kpProject->keyPersonnelProject->pluck('id')->toArray()
         : [];
-    $kpAllPersonnels = \App\Models\Pro_Personnel::orderBy('nom')->get();
+    $kpAllPersonnels = \App\Models\Pro_Personnel::where('sous_contrat', 1)->orderBy('nom')->get();
 @endphp
 
 <div class="modal fade" id="keyPersonnelModal" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -134,7 +134,7 @@
                     alertEl.innerHTML = '<div class="alert alert-success py-2">Personnel enregistré avec succès.</div>';
                     setTimeout(function () {
                         bootstrap.Modal.getInstance(document.getElementById('keyPersonnelModal')).hide();
-                        alertEl.innerHTML = '';
+                        window.location.reload();
                     }, 1200);
                 } else {
                     alertEl.innerHTML = '<div class="alert alert-danger py-2">' + (data.message || 'Erreur.') + '</div>';

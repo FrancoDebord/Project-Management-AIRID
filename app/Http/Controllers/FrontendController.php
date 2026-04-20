@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_Project;
 use App\Models\Pro_QaInspection;
 use App\Models\Pro_QaInspectionFinding;
 use App\Models\Pro_StudyActivities;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -400,5 +402,108 @@ class FrontendController extends Controller
         }
 
         return ['scores' => $scores, 'needingInspection' => $needingInspection];
+    }
+
+    public function projectsList(Request $request)
+    {
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+
+        $query = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'studyDirectorReplacementHistory',
+        ]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('project_code',  'like', "%{$search}%")
+                  ->orWhere('project_title','like', "%{$search}%")
+                  ->orWhere('protocol_code','like', "%{$search}%")
+                  ->orWhere('sponsor_name', 'like', "%{$search}%")
+                  ->orWhere('manufacturer_name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($status) {
+            $query->where('project_stage', $status);
+        }
+
+        $projects = $query->orderBy('created_at', 'desc')->get();
+
+        $statuses = [
+            'not_started' => 'Not Started',
+            'in progress' => 'In Progress',
+            'suspended'   => 'Suspended',
+            'completed'   => 'Completed',
+            'archived'    => 'Archived',
+        ];
+
+        return view('projects-list', compact('projects', 'search', 'status', 'statuses'));
+    }
+
+    /**
+     * Generate and stream the Projects List as a PDF with AIRID header.
+     */
+    public function projectsListPdf(Request $request)
+    {
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+
+        $query = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'studyDirectorReplacementHistory',
+            'projectManager',
+        ]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('project_code',      'like', "%{$search}%")
+                  ->orWhere('project_title',   'like', "%{$search}%")
+                  ->orWhere('protocol_code',   'like', "%{$search}%")
+                  ->orWhere('sponsor_name',    'like', "%{$search}%")
+                  ->orWhere('manufacturer_name','like',"%{$search}%");
+            });
+        }
+
+        if ($status) {
+            $query->where('project_stage', $status);
+        }
+
+        $projects = $query->orderBy('created_at', 'desc')->get();
+
+        $statuses = [
+            'not_started' => 'Not Started',
+            'in progress' => 'In Progress',
+            'suspended'   => 'Suspended',
+            'completed'   => 'Completed',
+            'archived'    => 'Archived',
+        ];
+
+        $pdf = Pdf::loadView('pdf.projects-list', compact('projects', 'search', 'status', 'statuses'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('AIRID-Projects-List-' . now()->format('Ymd') . '.pdf');
+    }
+
+    /**
+     * Generate and stream the Study Director Appointment Form as PDF.
+     */
+    public function sdAppointmentFormPdf(Request $request)
+    {
+        $projectId = $request->get('project_id');
+        $project   = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+        ])->findOrFail($projectId);
+
+        $form = $project->studyDirectorAppointmentForm;
+        $sd   = $form?->studyDirector;
+
+        $pdf = Pdf::loadView('pdf.sd-appointment-form', compact('project', 'form', 'sd'))
+            ->setPaper('a4', 'portrait');
+
+        $safeCode = str_replace(['/', '\\', ' '], '-', $project->project_code ?? $projectId);
+        $filename = 'SD-Appointment-' . $safeCode . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

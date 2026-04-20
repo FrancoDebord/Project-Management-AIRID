@@ -87,6 +87,27 @@
                         </div>
                     </div>
 
+                    {{-- Sponsor & Manufacturer --}}
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold mb-1">Sponsor Name</label>
+                            <input type="text" name="sponsor_name" id="cp_sponsor_name" class="form-control form-control-sm"
+                                   placeholder="Sponsor organization…">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold mb-1">Sponsor Email</label>
+                            <input type="email" name="sponsor_email" id="cp_sponsor_email" class="form-control form-control-sm"
+                                   placeholder="sponsor@example.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold mb-1">Manufacturer
+                                <span class="text-muted fw-normal">(leave blank if same as Sponsor)</span>
+                            </label>
+                            <input type="text" name="manufacturer_name" id="cp_manufacturer_name" class="form-control form-control-sm"
+                                   placeholder="Manufacturer name…">
+                        </div>
+                    </div>
+
                     {{-- Legacy toggle --}}
                     <div class="mb-3 p-3 rounded-3" style="background:#f8f9fa;border:1px solid #e5e7eb;">
                         <div class="form-check form-switch mb-0">

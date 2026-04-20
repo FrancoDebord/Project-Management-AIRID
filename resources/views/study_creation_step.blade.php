@@ -160,6 +160,26 @@
         $projectManager  = $study_director_appointment->projectManager ?? null;
         $isGlp = $project->is_glp ?? null;
         $isGlpLabel = is_bool($isGlp) ? ($isGlp ? 'Yes' : 'No') : ($isGlp ?? 'N/A');
+
+        // Signature state
+        $currentUserPersonnelId = auth()->user()->personnel?->id;
+        $sdSigned  = $study_director_appointment?->sd_signed_at;
+        $fmSigned  = $study_director_appointment?->fm_signed_at;
+        $fmRecord  = \App\Models\Pro_KeyFacilityPersonnel::where('active', 1)->with('personnel')->first();
+        $fmPerson  = $fmRecord?->personnel;
+
+        // Can the current user sign as SD?
+        $canSignAsSd = $study_director_appointment
+            && !$sdSigned
+            && $currentUserPersonnelId
+            && (int)$study_director_appointment->study_director === (int)$currentUserPersonnelId;
+
+        // Can the current user sign as FM?
+        $canSignAsFm = $study_director_appointment
+            && !$fmSigned
+            && $currentUserPersonnelId
+            && $fmRecord
+            && (int)$fmRecord->personnel_id === (int)$currentUserPersonnelId;
     @endphp
 
     {{-- Project Basic Information --}}
@@ -293,6 +313,60 @@
                         <i class="bi bi-award sc-field-icon"></i>
                         <span class="sc-field-label">Manager Qualification</span>
                         <span class="sc-field-value">{{ $projectManager->titre_qualitification ?? '—' }}</span>
+                    </div>
+                    {{-- ── Signature status ─────────────────────────── --}}
+                    <div class="mt-2 pt-2 border-top">
+                        <div class="small fw-semibold text-muted mb-1">État des signatures</div>
+
+                        {{-- Study Director signature --}}
+                        <div class="d-flex align-items-center justify-content-between mb-1 gap-2">
+                            <div class="d-flex align-items-center gap-2 small">
+                                @if($sdSigned)
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Signé</span>
+                                    <span class="text-muted">Study Director — {{ \Carbon\Carbon::parse($sdSigned)->format('d/m/Y H:i') }}</span>
+                                @else
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                                    <span class="text-muted">Study Director —
+                                        {{ $studyDirector ? trim(($studyDirector->titre_personnel ?? '') . ' ' . $studyDirector->prenom . ' ' . $studyDirector->nom) : '—' }}
+                                    </span>
+                                @endif
+                            </div>
+                            @if($canSignAsSd)
+                                <button class="btn btn-sm btn-success py-0 px-2 sign-btn"
+                                        data-project="{{ $project->id }}" data-role="sd">
+                                    <i class="bi bi-pen me-1"></i>Signer
+                                </button>
+                            @endif
+                        </div>
+
+                        {{-- Facility Manager signature --}}
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center gap-2 small">
+                                @if($fmSigned)
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Signé</span>
+                                    <span class="text-muted">Facility Manager — {{ \Carbon\Carbon::parse($fmSigned)->format('d/m/Y H:i') }}</span>
+                                @else
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                                    <span class="text-muted">Facility Manager —
+                                        {{ $fmPerson ? trim(($fmPerson->titre_personnel ?? '') . ' ' . $fmPerson->prenom . ' ' . $fmPerson->nom) : '—' }}
+                                    </span>
+                                @endif
+                            </div>
+                            @if($canSignAsFm)
+                                <button class="btn btn-sm btn-success py-0 px-2 sign-btn"
+                                        data-project="{{ $project->id }}" data-role="fm">
+                                    <i class="bi bi-pen me-1"></i>Signer
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-top text-end">
+                        <a href="{{ route('pdf.sd-appointment-form', ['project_id' => $project->id]) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-danger fw-semibold">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Télécharger le formulaire
+                        </a>
                     </div>
                 @else
                     <p class="sc-empty">No appointment form submitted yet.</p>
@@ -843,6 +917,48 @@
                 msgEl.innerHTML = '<div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.82rem;"><i class="bi bi-wifi-off me-1"></i>Network error. Please try again.</div>';
             });
     };
+})();
+</script>
+@endif
+
+{{-- ── Appointment Form — Electronic Signature ─────────────────────── --}}
+@if($study_director_appointment ?? false)
+<script>
+(function () {
+    document.querySelectorAll('.sign-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var projectId = btn.dataset.project;
+            var role      = btn.dataset.role;
+            var label     = role === 'sd' ? 'Study Director' : 'Facility Manager';
+
+            if (!confirm('Confirmer votre signature électronique en tant que ' + label + ' ?')) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            var fd = new FormData();
+            fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            fd.append('project_id', projectId);
+            fd.append('role', role);
+
+            fetch('{{ route("signAppointmentForm") }}', { method: 'POST', body: fd })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.code_erreur === 0) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Erreur.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-pen me-1"></i>Signer';
+                    }
+                })
+                .catch(function () {
+                    alert('Erreur réseau.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-pen me-1"></i>Signer';
+                });
+        });
+    });
 })();
 </script>
 @endif

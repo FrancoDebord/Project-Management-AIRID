@@ -21,7 +21,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AIRID Projects">
-    <link rel="apple-touch-icon" href="/storage/assets/logo/airid.jpg">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -127,8 +129,25 @@
                                 <a class="nav-link" href="{{ route('qaDashboard') }}">Quality Assurance</a>
                             </li>
                         @endif
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('masterSchedule') }}">Master Schedule</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('projects.list') || request()->routeIs('masterSchedule') ? 'active' : '' }}"
+                               href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-folder2 me-1"></i>Projects' Infos
+                            </a>
+                            <ul class="dropdown-menu shadow">
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('projects.list') ? 'active' : '' }}"
+                                       href="{{ route('projects.list') }}">
+                                        <i class="bi bi-table me-2"></i>List of Projects
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('masterSchedule') ? 'active' : '' }}"
+                                       href="{{ route('masterSchedule') }}">
+                                        <i class="bi bi-calendar3-range me-2"></i>Master Schedule
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                         @if (Auth::user()?->hasRole(['super_admin', 'facility_manager']))
                             <li class="nav-item dropdown">
@@ -438,6 +457,90 @@
         {{-- Signature modal (included globally so any page can use it) --}}
         @include('partials.signature-modal')
     @endauth
+
+    {{-- ── PWA Install Banner ─────────────────────────────────────── --}}
+    <div id="pwaInstallBanner" style="
+        display: none;
+        position: fixed;
+        bottom: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 6px 28px rgba(26,58,107,.18);
+        padding: .85rem 1.25rem;
+        display: none;
+        align-items: center;
+        gap: .85rem;
+        max-width: 420px;
+        width: calc(100% - 2rem);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    ">
+        <img src="/icons/icon-192.png" alt="AIRID" width="40" height="40"
+             style="border-radius:10px;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.9rem;color:#1a3a6b;line-height:1.2;">
+                Installer AIRID PMS
+            </div>
+            <div style="font-size:.77rem;color:#6b7280;margin-top:2px;">
+                Accès rapide depuis votre écran d'accueil
+            </div>
+        </div>
+        <button id="pwaInstallBtn" style="
+            background: linear-gradient(135deg, #1a3a6b, #c41230);
+            color:#fff;border:none;border-radius:8px;
+            padding:.45rem .9rem;font-size:.82rem;font-weight:600;
+            cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            Installer
+        </button>
+        <button id="pwaInstallDismiss" style="
+            background:none;border:none;color:#9ca3af;
+            cursor:pointer;font-size:1.1rem;line-height:1;
+            padding:0 .2rem;flex-shrink:0;" aria-label="Fermer">
+            &times;
+        </button>
+    </div>
+    <script>
+    (function () {
+        let deferredPrompt = null;
+        const banner   = document.getElementById('pwaInstallBanner');
+        const installBtn = document.getElementById('pwaInstallBtn');
+        const dismissBtn = document.getElementById('pwaInstallDismiss');
+
+        // Show banner when browser fires beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Only show if not dismissed before
+            if (!sessionStorage.getItem('pwaDismissed')) {
+                banner.style.display = 'flex';
+            }
+        });
+
+        installBtn?.addEventListener('click', function () {
+            banner.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function () {
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        dismissBtn?.addEventListener('click', function () {
+            banner.style.display = 'none';
+            sessionStorage.setItem('pwaDismissed', '1');
+        });
+
+        // Hide banner after successful install
+        window.addEventListener('appinstalled', function () {
+            banner.style.display = 'none';
+            deferredPrompt = null;
+        });
+    })();
+    </script>
 </body>
 
 </html>

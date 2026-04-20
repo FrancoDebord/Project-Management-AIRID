@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pro_Personnel;
 use App\Models\Pro_Project;
 use App\Models\Pro_Project_Team;
+use App\Models\Pro_StudyDirector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -35,7 +36,11 @@ class ProjectController extends Controller
     {
         $project = new Pro_Project();
 
-        $all_personnels = Pro_Personnel::all();
+        // Only active contractors for PM / key-personnel selects
+        $all_personnels = Pro_Personnel::where('sous_contrat', 1)->orderBy('prenom')->get();
+        // Only designated Study Directors for the SD select
+        $sd_personnels = Pro_StudyDirector::where('active', true)
+            ->with('personnel')->get()->pluck('personnel')->filter()->sortBy('nom');
         $all_projects = Pro_Project::all();
 
         $project_id =  $request->project_id;
@@ -126,7 +131,7 @@ class ProjectController extends Controller
             $phaseStatuses = $this->computePhaseStatuses($project);
         }
 
-        return view("study_management_design", compact("project", "all_personnels", "all_projects", "total_filled_percentage_projects", "total_filled_percentage_study_director_appointment", "execution_rate", "phase_metrics", "project_phase", "phaseStatuses"));
+        return view("study_management_design", compact("project", "all_personnels", "sd_personnels", "all_projects", "total_filled_percentage_projects", "total_filled_percentage_study_director_appointment", "execution_rate", "phase_metrics", "project_phase", "phaseStatuses"));
     }
 
     // Compute per-phase completion status
@@ -407,8 +412,10 @@ class ProjectController extends Controller
     {
         $project = Pro_Project::find($project_id);
 
-        $all_personnels = Pro_Personnel::all();
-        return view("create-project", compact("project", "all_personnels"));
+        $all_personnels = Pro_Personnel::where('sous_contrat', 1)->orderBy('prenom')->get();
+        $sd_personnels = Pro_StudyDirector::where('active', true)
+            ->with('personnel')->get()->pluck('personnel')->filter()->sortBy('nom');
+        return view("create-project", compact("project", "all_personnels", "sd_personnels"));
     }
 
     /**
@@ -460,9 +467,11 @@ class ProjectController extends Controller
         }
 
         $message = "The new Project is updated successfully...";
-        $all_personnels = Pro_Personnel::all();
+        $all_personnels = Pro_Personnel::where('sous_contrat', 1)->orderBy('prenom')->get();
+        $sd_personnels = Pro_StudyDirector::where('active', true)
+            ->with('personnel')->get()->pluck('personnel')->filter()->sortBy('nom');
 
-        return view("create-project", compact("project", "all_personnels"))->with("message", $message);
+        return view("create-project", compact("project", "all_personnels", "sd_personnels"))->with("message", $message);
     }
 
     /**

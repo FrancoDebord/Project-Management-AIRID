@@ -187,5 +187,7 @@
             _meetingTomSelect.setValue(ids.map(String));
         }
     };
+
+    // Submit handled by javascript_ajax.js (#meetingForm jQuery handler)
 })();
 </script>

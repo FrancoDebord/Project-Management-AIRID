@@ -222,6 +222,33 @@
                         Hold <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd> on Mac) to select multiple items.
                     </p>
 
+                    {{-- ── Sponsor & Manufacturer ──────────────────────────── --}}
+                    <p class="fw-bold text-uppercase small text-muted mb-2" style="letter-spacing:.06em;">
+                        <i class="bi bi-building me-1"></i>Sponsor & Manufacturer
+                    </p>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Sponsor Name</label>
+                            <input type="text" class="form-control" name="sponsor_name"
+                                   value="{{ $project->sponsor_name ?? '' }}"
+                                   placeholder="Sponsor organization…">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Sponsor Email</label>
+                            <input type="email" class="form-control" name="sponsor_email"
+                                   value="{{ $project->sponsor_email ?? '' }}"
+                                   placeholder="sponsor@example.com">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Manufacturer
+                                <span class="text-muted fw-normal small">(blank = same as Sponsor)</span>
+                            </label>
+                            <input type="text" class="form-control" name="manufacturer_name"
+                                   value="{{ $project->manufacturer_name ?? '' }}"
+                                   placeholder="Manufacturer name…">
+                        </div>
+                    </div>
+
                     {{-- ── Description ─────────────────────────────────────── --}}
                     <div class="mb-2">
                         <label class="form-label fw-semibold small">
@@ -260,6 +287,8 @@ document.getElementById('detailedInformationProjectModal').addEventListener('sho
     if (warning) { warning.classList.add('d-none'); }
     if (btn)     { btn.classList.remove('btn-warning'); btn.classList.add('btn-outline-secondary'); }
 });
+
+// Submit handled by javascript_ajax.js (#formDetailedInformationProject jQuery handler)
 
 function toggleProjectCodeEdit() {
     var input   = document.getElementById('project_code');

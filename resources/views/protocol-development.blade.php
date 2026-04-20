@@ -1,5 +1,13 @@
 @php
-    $protocol_dev_activities_project = $project ? $project->protocolDeveloppementActivitiesProject()->with(['protocolDevActivity','protocolDevDocuments.qaInspection','protocolDevDocuments.staffPerformed','assignedTo'])->get() : collect();
+    // Exclude QA-managed activities (levels 2 & 4 = "QA Inspection of Draft/Final") — these are
+    // now handled automatically when a protocol document is uploaded (auto-inspection creation).
+    $qaLevels = [2, 4];
+    $protocol_dev_activities_project = $project
+        ? $project->protocolDeveloppementActivitiesProject()
+            ->with(['protocolDevActivity','protocolDevDocuments.qaInspection.findings','protocolDevDocuments.staffPerformed','assignedTo'])
+            ->whereHas('protocolDevActivity', fn($q) => $q->whereNotIn('level_activite', $qaLevels))
+            ->get()
+        : collect();
     $totalPd    = $protocol_dev_activities_project->where('applicable', true)->count();
     $completePd = $protocol_dev_activities_project->where('applicable', true)->where('complete', true)->count();
 @endphp
@@ -216,10 +224,29 @@
                                     </td>
                                     <td class="text-center">
                                         @if($insp)
-                                            <span class="badge bg-primary pd-insp-badge" title="{{ $insp->inspection_name }}">
-                                                <i class="bi bi-clipboard2-check me-1"></i>
-                                                {{ $insp->date_scheduled ? \Carbon\Carbon::parse($insp->date_scheduled)->format('d/m/Y') : 'Planifiée' }}
-                                            </span>
+                                            @php
+                                                $inspDone     = !is_null($insp->date_performed);
+                                                $findingsCount = $insp->findings->count();
+                                                $inspSlug     = \App\Services\ChecklistSnapshotService::templateCode($insp) ?? 'study_protocol';
+                                            @endphp
+                                            <div class="d-flex flex-column align-items-center gap-1">
+                                                <span class="badge {{ $inspDone ? 'bg-success' : 'bg-warning text-dark' }} pd-insp-badge">
+                                                    <i class="bi bi-clipboard2-{{ $inspDone ? 'check' : 'pulse' }} me-1"></i>
+                                                    {{ $inspDone ? 'Done' : 'Planned' }}
+                                                </span>
+                                                <a href="{{ route('checklist.show', ['inspection_id' => $insp->id, 'slug' => $inspSlug]) }}"
+                                                   target="_blank"
+                                                   class="btn btn-outline-secondary btn-sm py-0 px-1"
+                                                   title="Open inspection checklist"
+                                                   style="font-size:.68rem;">
+                                                    <i class="bi bi-box-arrow-up-right me-1"></i>Checklist
+                                                </a>
+                                                @if($findingsCount > 0)
+                                                    <span class="badge bg-danger pd-insp-badge" title="{{ $findingsCount }} finding(s)">
+                                                        <i class="bi bi-exclamation-circle me-1"></i>{{ $findingsCount }} finding{{ $findingsCount > 1 ? 's' : '' }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="text-muted small">—</span>
                                         @endif

@@ -107,5 +107,7 @@
         });
     }
     document.getElementById('replacementModal').addEventListener('show.bs.modal', initReplTomSelects);
+
+    // Submit handled by javascript_ajax.js (#form_study_director_replacement jQuery handler)
 })();
 </script>

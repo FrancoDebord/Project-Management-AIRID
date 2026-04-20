@@ -68,3 +68,5 @@
          </div>
      </div>
  </div>
+
+{{-- Submit handled by javascript_ajax.js (#supprimerActivite jQuery handler with alertify confirm) --}}

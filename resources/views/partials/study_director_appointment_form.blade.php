@@ -14,6 +14,19 @@
                     }
                 }
                 $isUpdate = $sda && $sda->sd_appointment_file;
+
+                // Only personnel with an active Study Director designation
+                $sd_personnels = \App\Models\Pro_StudyDirector::where('active', true)
+                    ->with('personnel')
+                    ->get()
+                    ->pluck('personnel')
+                    ->filter()
+                    ->sortBy('nom');
+
+                // Only personnel currently under contract for the Project Manager select
+                $pm_personnels = \App\Models\Pro_Personnel::where('sous_contrat', 1)
+                    ->orderBy('prenom')
+                    ->get();
             @endphp
 
             <!-- Header -->
@@ -46,22 +59,30 @@
                             </label>
                             <select name="study_director" id="study_director" class="form-select">
                                 <option value="">— Select —</option>
-                                @foreach ($all_personnels as $p)
+                                @foreach ($sd_personnels as $p)
                                     <option value="{{ $p->id }}"
                                         {{ ($sda && $sda->study_director == $p->id) || (!$sda && $project && $project->study_director == $p->id) ? 'selected' : '' }}>
-                                        {{ $p->titre }} {{ $p->prenom }} {{ $p->nom }}
+                                        {{ $p->titre_personnel }} {{ $p->prenom }} {{ $p->nom }}
                                     </option>
                                 @endforeach
+                                @if($sd_personnels->isEmpty())
+                                    <option disabled>— Aucun Study Director désigné —</option>
+                                @endif
                             </select>
+                            <div class="form-text text-muted" style="font-size:.72rem;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Seuls les personnels désignés Study Director apparaissent ici.
+                                <a href="{{ route('admin.users') }}" target="_blank" class="ms-1">Gérer les désignations</a>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small">Project Manager</label>
                             <select name="project_manager" id="project_manager" class="form-select">
                                 <option value="">— Select —</option>
-                                @foreach ($all_personnels as $p)
+                                @foreach ($pm_personnels as $p)
                                     <option value="{{ $p->id }}"
                                         {{ ($sda && $sda->project_manager == $p->id) || (!$sda && $project && $project->project_manager == $p->id) ? 'selected' : '' }}>
-                                        {{ $p->titre }} {{ $p->prenom }} {{ $p->nom }}
+                                        {{ $p->titre_personnel }} {{ $p->prenom }} {{ $p->nom }}
                                     </option>
                                 @endforeach
                             </select>
@@ -132,11 +153,23 @@
                     </div>
 
                     {{-- ── Actions ─────────────────────────────────────────── --}}
-                    <div class="d-flex justify-content-end gap-2 pt-2 border-top mt-2">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger fw-semibold px-4">
-                            <i class="bi bi-save me-1"></i>Save
-                        </button>
+                    <div class="d-flex justify-content-between align-items-center gap-2 pt-2 border-top mt-2">
+                        @if($sda)
+                        <a href="{{ route('pdf.sd-appointment-form', ['project_id' => $project_id]) }}"
+                           target="_blank"
+                           class="btn btn-outline-primary btn-sm fw-semibold"
+                           data-no-lock>
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                        </a>
+                        @else
+                        <div></div>
+                        @endif
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger fw-semibold px-4">
+                                <i class="bi bi-save me-1"></i>Save
+                            </button>
+                        </div>
                     </div>
 
                 </form>
@@ -145,3 +178,5 @@
         </div>
     </div>
 </div>
+
+{{-- Submit handled by javascript_ajax.js (#form_study_director_appointment jQuery handler) --}}

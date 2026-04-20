@@ -67,3 +67,5 @@
         </div>
     </div>
 </div>
+
+{{-- Submit handled by javascript_ajax.js (#form_other_basic_documents jQuery handler) --}}

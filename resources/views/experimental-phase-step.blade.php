@@ -218,7 +218,7 @@
                                             && !($activite->phase_critique && in_array($activite->id, $inspectedCriticalIds));
                                     @endphp
                                     @if ($activite->status !== 'completed')
-                                        <button class="btn btn-success btn-sm" onclick="openExecuteActivityModal({{ $activite->id }}, '{{ addslashes($activite->study_activity_name) }}')">
+                                        <button class="btn btn-success btn-sm" onclick="openExecuteActivityModal({{ $activite->id }}, '{{ addslashes($activite->study_activity_name) }}', {{ $activite->should_be_performed_by ?? 'null' }})">
                                             <i class="bi bi-play-circle"></i> Exécuter
                                         </button>
                                     @else
@@ -428,11 +428,11 @@
         });
     }
 
-    function openExecuteActivityModal(activityId, activityName) {
+    function openExecuteActivityModal(activityId, activityName, responsibleId) {
         document.getElementById('activityIdHidden').value = activityId;
         document.getElementById('activityNameDisplay').textContent = activityName;
         document.getElementById('actualActivityDate').value = '';
-        document.getElementById('performedBySelect').value = '';
+        document.getElementById('performedBySelect').value = responsibleId || '';
         document.getElementById('activityComments').value = '';
 
         const el = document.getElementById('executeActivityModal');

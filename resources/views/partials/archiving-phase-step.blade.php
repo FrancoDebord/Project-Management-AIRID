@@ -38,6 +38,8 @@
     $savedChecklist = $project && $project->archive_checklist ? $project->archive_checklist : [];
     $isArchived     = $project && $project->archived_at;
     $archivedByUser = $isArchived && $project->archived_by ? \App\Models\User::find($project->archived_by) : null;
+    // Legacy projects always keep forms editable even when archived
+    $editLocked     = $isArchived && !($project && $project->is_legacy);
 @endphp
 
 <style>
@@ -174,7 +176,7 @@
                     <input type="checkbox"
                            class="manual-check form-check-input flex-shrink-0"
                            data-key="{{ $key }}"
-                           {{ $isArchived ? 'disabled' : '' }}
+                           {{ $editLocked ? 'disabled' : '' }}
                            {{ $checked ? 'checked' : '' }}
                            style="width:1.1rem;height:1.1rem;">
                     <span>{{ $label }}</span>
@@ -190,7 +192,7 @@
                     <label class="form-label fw-semibold small">Date — all study documents submitted to archivist</label>
                     <input type="date" class="form-control form-control-sm" id="archSubmissionDate"
                            value="{{ $project->archive_submission_date ?? '' }}"
-                           {{ $isArchived ? 'disabled' : '' }}>
+                           {{ $editLocked ? 'disabled' : '' }}>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold small">Archive Deposition Form &amp; Study Checklist</label>
@@ -202,13 +204,13 @@
                             </a>
                         </div>
                     @endif
-                    @if(!$isArchived)
+                    @if(!$editLocked)
                         <input type="file" class="form-control form-control-sm" id="archDepositionFile"
                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
                         <div class="form-text">PDF, Word, Excel, Image, ZIP — max 30 MB</div>
                     @endif
                 </div>
-                @if(!$isArchived)
+                @if(!$editLocked)
                 <div class="col-12">
                     <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="saveArchiveDeposition()" id="archDepositionSaveBtn">
                         <i class="bi bi-save me-1"></i>Save Deposition Info
@@ -234,7 +236,7 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="arch-card-header d-flex align-items-center justify-content-between">
             <span><i class="bi bi-folder2-open me-2"></i>Archiving Documents</span>
-            @if(!$isArchived)
+            @if(!$editLocked)
             <button class="btn btn-sm btn-light fw-semibold" onclick="openArchDocModal()">
                 <i class="bi bi-plus-circle me-1"></i>Add Document
             </button>
@@ -252,7 +254,7 @@
                         <th>Physical Location</th>
                         <th>Archive Date</th>
                         <th>File</th>
-                        @if(!$isArchived)<th></th>@endif
+                        @if(!$editLocked)<th></th>@endif
                     </tr>
                 </thead>
                 <tbody id="archDocTbody">
@@ -271,7 +273,7 @@
                                 <span class="text-muted small">—</span>
                             @endif
                         </td>
-                        @if(!$isArchived)
+                        @if(!$editLocked)
                         <td class="align-middle">
                             <button class="btn btn-xs btn-outline-danger btn-sm py-0 px-2" onclick="deleteArchDoc({{ $doc->id }}, this)">
                                 <i class="bi bi-trash"></i>

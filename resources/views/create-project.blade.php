@@ -187,12 +187,13 @@
                                     data-live-search="true">
                                     <option value=""></option>
 
-                                    @forelse ($all_personnels as $personnel)
+                                    @forelse ($sd_personnels ?? [] as $personnel)
                                         <option value="{{ $personnel->id }}"
                                             {{ $study_director == $personnel->id ? 'selected' : '' }}>
                                             {{ $personnel->titre_personnel . ' ' . $personnel->prenom . ' ' . $personnel->nom }}
                                         </option>
                                     @empty
+                                        <option disabled>— Aucun Study Director désigné —</option>
                                     @endforelse
                                 </select>
 

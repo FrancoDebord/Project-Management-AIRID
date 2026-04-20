@@ -143,6 +143,133 @@
     </div>
 
 
+    {{-- ── Study Initiation Meeting Report ── --}}
+    @if($study_initiation_meeting)
+    <div class="mt-4 p-3 rounded-3 border" id="meeting-report-section" style="background:#f8f9ff;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <div>
+                <strong style="color:#1a3a6b;"><i class="bi bi-file-earmark-text me-1"></i>Study Initiation Meeting Report</strong>
+                <div class="text-muted small">Upload a PDF or draft a text report for this meeting.</div>
+            </div>
+            <button class="btn btn-sm fw-semibold"
+                    style="background:#1a3a6b;color:#fff;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#meetingReportModal">
+                <i class="bi bi-pencil me-1"></i>
+                {{ ($study_initiation_meeting->report_file_path || $study_initiation_meeting->report_content) ? 'Edit Report' : 'Add Report' }}
+            </button>
+        </div>
+
+        @if($study_initiation_meeting->report_file_path || $study_initiation_meeting->report_content)
+        <div class="mt-2">
+            @if($study_initiation_meeting->report_date)
+                <div class="text-muted small mb-1">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    Report date: <strong>{{ \Carbon\Carbon::parse($study_initiation_meeting->report_date)->format('d/m/Y') }}</strong>
+                </div>
+            @endif
+            @if($study_initiation_meeting->report_file_path)
+                <a href="{{ asset('storage/' . $study_initiation_meeting->report_file_path) }}"
+                   target="_blank"
+                   class="btn btn-sm btn-outline-primary me-2">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>View PDF Report
+                </a>
+            @endif
+            @if($study_initiation_meeting->report_content)
+                <div class="mt-2 p-2 rounded border bg-white small"
+                     style="max-height:120px;overflow-y:auto;white-space:pre-wrap;">{{ $study_initiation_meeting->report_content }}</div>
+            @endif
+        </div>
+        @else
+            <div class="text-muted small mt-1"><i class="bi bi-info-circle me-1"></i>No report yet.</div>
+        @endif
+    </div>
+
+    {{-- Meeting Report Modal --}}
+    <div class="modal fade" id="meetingReportModal" tabindex="-1" aria-labelledby="meetingReportModalLabel" aria-hidden="true"
+         data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#1a3a6b;color:#fff;">
+                    <h5 class="modal-title" id="meetingReportModalLabel">
+                        <i class="bi bi-file-earmark-text me-2"></i>Study Initiation Meeting Report
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 py-3">
+                    <div id="meeting-report-messages" class="mb-3"></div>
+                    <form id="form_meeting_report" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="meeting_id" value="{{ $study_initiation_meeting->id }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Report Date</label>
+                            <input type="date" name="report_date" class="form-control"
+                                   value="{{ $study_initiation_meeting->report_date ?? '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Report PDF (upload)
+                                @if($study_initiation_meeting->report_file_path)
+                                    <a href="{{ asset('storage/' . $study_initiation_meeting->report_file_path) }}"
+                                       target="_blank" class="ms-2 small text-success">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Current file
+                                    </a>
+                                @endif
+                            </label>
+                            <input type="file" name="report_file" class="form-control" accept="application/pdf">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Drafted Text Report</label>
+                            <textarea name="report_content" class="form-control" rows="8"
+                                      placeholder="Write the meeting report here…">{{ $study_initiation_meeting->report_content ?? '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-1">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary fw-semibold px-4">
+                                <i class="bi bi-save me-1"></i>Save Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        const reportForm = document.getElementById('form_meeting_report');
+        if (!reportForm) return;
+        reportForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const msgBox = document.getElementById('meeting-report-messages');
+            msgBox.innerHTML = '';
+            const fd = new FormData(this);
+            fetch('{{ route("saveMeetingReport") }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: fd,
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.code_erreur === 0) {
+                    bootstrap.Modal.getInstance(document.getElementById('meetingReportModal')).hide();
+                    location.reload();
+                } else {
+                    msgBox.innerHTML = '<div class="alert alert-danger py-2">' + (data.message || 'Error saving report') + '</div>';
+                }
+            })
+            .catch(() => {
+                msgBox.innerHTML = '<div class="alert alert-danger py-2">Network error.</div>';
+            });
+        });
+    })();
+    </script>
+    @endif
+
     <!-- Tableau des activités -->
     <h4 class="mt-5 mb-3">Activities</h4>
     <table class="table table-bordered align-middle table-hover table-striped">

@@ -74,13 +74,16 @@ class ProjectAjaxController extends Controller
         $allPhases = ['study_creation','protocol_details','protocol_development','planning','experimental','quality_assurance','reporting','archiving'];
 
         $project = Pro_Project::create([
-            'project_code'    => $request->code,
-            'project_title'   => $request->title,
-            'is_glp'          => (bool) $request->is_glp,
-            'study_director'  => $request->study_director_id ?: null,
-            'is_legacy'       => $isLegacy,
-            'project_stage'   => $isLegacy ? 'completed' : 'not_started',
-            'phases_completed'=> $isLegacy ? $allPhases : [],
+            'project_code'      => $request->code,
+            'project_title'     => $request->title,
+            'is_glp'            => (bool) $request->is_glp,
+            'study_director'    => $request->study_director_id ?: null,
+            'is_legacy'         => $isLegacy,
+            'project_stage'     => $isLegacy ? 'completed' : 'not_started',
+            'phases_completed'  => $isLegacy ? $allPhases : [],
+            'sponsor_name'      => $request->sponsor_name ?: null,
+            'sponsor_email'     => $request->sponsor_email ?: null,
+            'manufacturer_name' => $request->manufacturer_name ?: null,
         ]);
 
         if ($project) {
@@ -217,6 +220,9 @@ class ProjectAjaxController extends Controller
         $project->date_fin_previsionnelle = $request->input('date_fin_previsionnelle');
         $project->date_fin_effective = $request->input('date_fin_effective');
         $project->description_project = $request->input('description_project');
+        $project->sponsor_name        = $request->input('sponsor_name') ?: null;
+        $project->sponsor_email       = $request->input('sponsor_email') ?: null;
+        $project->manufacturer_name   = $request->input('manufacturer_name') ?: null;
 
         // If newly marked as legacy, pre-complete all phases and set stage to completed
         if ($isNowLegacy && !$wasLegacy) {
@@ -401,8 +407,6 @@ class ProjectAjaxController extends Controller
             if (!$file->isValid()) {
                 return response()->json(['message' => 'The uploaded file is not valid.', "code_erreur" => 1], 200);
             }
-        } elseif (!$existingFormCheck || !$existingFormCheck->sd_appointment_file) {
-            return response()->json(['message' => 'The signed Study Director Appointment Form (PDF) is required.', "code_erreur" => 1], 200);
         }
 
 
@@ -433,17 +437,86 @@ class ProjectAjaxController extends Controller
         }
 
         // Check if an appointment form already exists for this project
+        $isNew = !$existingFormCheck;
         if ($existingFormCheck) {
-            // Update existing form
+            $sdChanged = (int)$existingFormCheck->study_director !== (int)$request->input('study_director');
             $existingFormCheck->update($dataToUpdate);
+            $form = $existingFormCheck->fresh();
         } else {
-            // Create new form
             $dataToUpdate['project_id'] = $project->id;
-            \App\Models\Pro_StudyDirectorAppointmentForm::create($dataToUpdate);
+            $form = \App\Models\Pro_StudyDirectorAppointmentForm::create($dataToUpdate);
+            $sdChanged = true;
+        }
+
+        // Notify SD and FM to sign when form is newly created or SD changed
+        if ($isNew || $sdChanged) {
+            $projectUrl = url("/project/{$project->id}/overview?tab=study_creation");
+
+            // Notify Study Director
+            $sdPersonnel = \App\Models\Pro_Personnel::find($form->study_director);
+            if ($sdPersonnel && $sdPersonnel->user_id) {
+                $sdTitle = "Signature requise — Formulaire de désignation ({$project->project_code})";
+                $sdBody  = "Vous avez été désigné(e) Study Director du projet {$project->project_code}.\n\nMerci de vous connecter pour signer électroniquement votre formulaire de désignation.";
+                \App\Models\AppNotification::send($sdPersonnel->user_id, $sdTitle, $sdBody, $projectUrl);
+            }
+
+            // Notify Facility Manager
+            $fm = \App\Models\Pro_KeyFacilityPersonnel::where('active', 1)->with('personnel')->first();
+            if ($fm && $fm->personnel && $fm->personnel->user_id) {
+                $fmTitle = "Signature requise — Formulaire de désignation SD ({$project->project_code})";
+                $fmBody  = "Un formulaire de désignation Study Director pour le projet {$project->project_code} requiert votre signature en tant que Facility Manager.\n\nMerci de vous connecter pour signer.";
+                \App\Models\AppNotification::send($fm->personnel->user_id, $fmTitle, $fmBody, $projectUrl);
+            }
         }
 
         session()->flash('success', 'Study Director Appointment Form saved successfully.');
         return response()->json(['message' => 'Study Director Appointment Form saved successfully.', "code_erreur" => 0], 200);
+    }
+
+    /**
+     * Electronically sign the Study Director Appointment Form.
+     * The current user must be either the Study Director or the Facility Manager.
+     */
+    public function signAppointmentForm(Request $request)
+    {
+        $projectId = $request->input('project_id');
+        $role      = $request->input('role'); // 'sd' or 'fm'
+
+        $project = Pro_Project::with(['studyDirectorAppointmentForm'])->findOrFail($projectId);
+        $form    = $project->studyDirectorAppointmentForm;
+
+        if (!$form) {
+            return response()->json(['message' => 'Aucun formulaire de désignation trouvé.', 'code_erreur' => 1]);
+        }
+
+        $user        = auth()->user();
+        $personnel   = $user->personnel;
+        $personnelId = $personnel?->id;
+
+        if ($role === 'sd') {
+            if (!$personnelId || (int)$form->study_director !== (int)$personnelId) {
+                return response()->json(['message' => 'Vous n\'êtes pas le Study Director désigné sur ce projet.', 'code_erreur' => 1]);
+            }
+            if ($form->sd_signed_at) {
+                return response()->json(['message' => 'Vous avez déjà signé ce document.', 'code_erreur' => 1]);
+            }
+            $form->update(['sd_signed_at' => now()]);
+
+        } elseif ($role === 'fm') {
+            $fm = \App\Models\Pro_KeyFacilityPersonnel::where('active', 1)->first();
+            if (!$fm || !$personnelId || (int)$fm->personnel_id !== (int)$personnelId) {
+                return response()->json(['message' => 'Vous n\'êtes pas le Facility Manager actif.', 'code_erreur' => 1]);
+            }
+            if ($form->fm_signed_at) {
+                return response()->json(['message' => 'Vous avez déjà signé ce document.', 'code_erreur' => 1]);
+            }
+            $form->update(['fm_signed_at' => now()]);
+
+        } else {
+            return response()->json(['message' => 'Rôle invalide.', 'code_erreur' => 1]);
+        }
+
+        return response()->json(['message' => 'Document signé avec succès.', 'code_erreur' => 0]);
     }
 
 
@@ -634,9 +707,10 @@ class ProjectAjaxController extends Controller
 
         $all_activities = $project->allActivitiesProject($study_type_id)->get();
 
-        $all_personnels = Pro_Personnel::orderBy("prenom", "asc")->get();
+        // Only personnel currently under contract for activity assignment
+        $all_personnels = Pro_Personnel::where('sous_contrat', 1)->orderBy("prenom", "asc")->get();
 
-        return response()->json(['message' => 'Study type retrieved successfully.', 'study_type' => $study_type, 'sub_categories' => $all_sub_categories, 'all_activities' => $all_activities, "all_personnels" => $all_personnels,  "code_erreur" => 0], 200);
+        return response()->json(['message' => 'Study type retrieved successfully.', 'study_type' => $study_type, 'sub_categories' => $all_sub_categories, 'all_activities' => $all_activities, "all_personnels" => $all_personnels, 'study_director_id' => $project->study_director, "code_erreur" => 0], 200);
     }
 
 
@@ -1001,10 +1075,9 @@ class ProjectAjaxController extends Controller
         ];
 
         $project   = Pro_Project::find($record_activity->project_id);
-        $isGlp     = $project && $project->is_glp;
 
         $inspection = null;
-        if ($isGlp && isset($inspectionTypeMap[$level])) {
+        if (isset($inspectionTypeMap[$level])) {
             $inspType    = $inspectionTypeMap[$level];
             $inspName    = ($activity?->nom_activite ?? 'Protocol Dev') . ' – QA Inspection';
             $scheduledAt = $request->input('date_performed');
@@ -1259,6 +1332,43 @@ class ProjectAjaxController extends Controller
         }
     }
 
+    /**
+     * Save the Study Initiation Meeting report (PDF upload or text draft).
+     */
+    function saveMeetingReport(Request $request)
+    {
+        $meeting = Pro_StudyQualityAssuranceMeeting::find($request->input('meeting_id'));
+        if (!$meeting) {
+            return response()->json(['message' => 'Meeting not found.', 'code_erreur' => 1], 200);
+        }
+
+        $data = [];
+
+        if ($request->input('report_date')) {
+            $data['report_date'] = $request->input('report_date');
+        }
+
+        if ($request->has('report_content')) {
+            $data['report_content'] = $request->input('report_content') ?: null;
+        }
+
+        if ($request->hasFile('report_file') && $request->file('report_file')->isValid()) {
+            // Delete old file if it exists
+            if ($meeting->report_file_path) {
+                \Storage::disk('public')->delete($meeting->report_file_path);
+            }
+            $data['report_file_path'] = $request->file('report_file')->store('meeting_reports', 'public');
+        }
+
+        $staffId = FacadesAuth::user()?->personnel?->id;
+        if ($staffId) {
+            $data['report_redacted_by'] = $staffId;
+        }
+
+        $meeting->update($data);
+
+        return response()->json(['message' => 'Meeting report saved successfully.', 'code_erreur' => 0], 200);
+    }
 
     /**
      * Marquer une activité comme une phase critique

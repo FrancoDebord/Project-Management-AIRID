@@ -570,7 +570,11 @@
                 @if($project && ($project->archived_at || in_array($project->project_stage, ['not_started', 'suspended'])))
                 <script>
                 (function () {
-                    const LOCKED_STEPS = ['step1','step2','step3','step4','step5','step6','step7'];
+                    // Legacy projects always keep Report Phase (step7) and Archiving (step8) accessible
+                    const IS_LEGACY = {{ $project->is_legacy ? 'true' : 'false' }};
+                    const LOCKED_STEPS = IS_LEGACY
+                        ? ['step1','step2','step3','step4','step5','step6']
+                        : ['step1','step2','step3','step4','step5','step6','step7'];
 
                     function lockSteps() {
                         LOCKED_STEPS.forEach(function(stepId) {
@@ -633,6 +637,12 @@
                         $lockedByRole = ['step6','step8'];
                     }
                     // facility_manager and super_admin: no extra lock
+
+                    // Legacy projects: Report Phase (step7) and Archiving (step8) must always be
+                    // accessible regardless of role (except read_only which locks everything)
+                    if ($project->is_legacy && !$authUser->hasRole('read_only')) {
+                        $lockedByRole = array_values(array_diff($lockedByRole, ['step7', 'step8']));
+                    }
                 @endphp
                 @if(!empty($lockedByRole))
                 <script>

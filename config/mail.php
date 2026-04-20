@@ -48,17 +48,16 @@ return [
         //     'timeout' => null,
         //     'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         // ],
-         'smtp' => [
-            'transport' => 'smtp',
-            'url' => env('MAIL_URL'),
-            'host' => 'mail.airid-africa.com',
-            'port' => 465,
-            'encryption' =>  'ssl',
-            'username' => "web_secretariat@airid-africa.com",
-            'password' => "7P_IONovZC~%",
-            'username' => "web_secretariat@airid-africa.com",
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+        'smtp' => [
+            'transport'   => 'smtp',
+            'url'         => env('MAIL_URL'),
+            'host'        => env('MAIL_HOST', 'smtp.gmail.com'),
+            'port'        => env('MAIL_PORT', 587),
+            'encryption'  => env('MAIL_SCHEME', 'tls'),
+            'username'    => env('MAIL_USERNAME'),
+            'password'    => env('MAIL_PASSWORD'),
+            'timeout'     => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
         'ses' => [

@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Pro_StudyDirectorAppointmentForm extends Model
 {
-    //
-
     protected $table = "pro_study_director_appointment_forms";
-    protected $guarded = [
-        'created_at',
-        'updated_at'
+    protected $guarded = ['created_at', 'updated_at'];
+
+    protected $casts = [
+        'sd_signed_at' => 'datetime',
+        'fm_signed_at' => 'datetime',
     ];
 
     /**

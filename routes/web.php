@@ -30,6 +30,8 @@ Route::resource("project",ProjectController::class);
 Route::post("/save-project-tracking-sheet",[ProjectActivityScheduleController::class,"saveProjectTrackingSheet"])->name("saveProjectTrackingSheet");
 
 Route::get('/project/{id}/overview', [FrontendController::class, 'projectOverview'])->name('projectOverview');
+Route::get('/projects/list',         [FrontendController::class, 'projectsList'])->name('projects.list');
+Route::get('/projects/list/pdf',     [FrontendController::class, 'projectsListPdf'])->name('projects.list.pdf');
 Route::get('/project/{projectId}/activities/pdf', [ProjectActivityScheduleController::class, 'projectActivitiesPdf'])->name('project.activities.pdf');
 Route::get('/project/{id}/qa-activities-checklist', [FrontendController::class, 'qaActivitiesChecklist'])->name('project.qa-checklist');
 
@@ -90,6 +92,10 @@ Route::prefix('admin')->middleware(['auth', 'role:super_admin'])->group(function
     Route::get('/users',              [AdminController::class, 'users'])->name('admin.users');
     Route::put('/users/{user}/role',  [AdminController::class, 'updateRole'])->name('admin.users.updateRole');
 
+    // Study Director designation (distinct from the user role)
+    Route::post('/study-directors/promote', [AdminController::class, 'promoteStudyDirector'])->name('admin.sd.promote');
+    Route::post('/study-directors/demote',  [AdminController::class, 'demoteStudyDirector'])->name('admin.sd.demote');
+
     // CPIA Section/Item Management
     Route::get('/cpia',                                   [AdminCpiaController::class, 'index'])->name('admin.cpia.index');
     Route::get('/cpia/sections/{section}',                [AdminCpiaController::class, 'show'])->name('admin.cpia.show');
@@ -124,7 +130,11 @@ Route::prefix('settings')->middleware(['auth', 'role:super_admin,facility_manage
     Route::post('/',   [SettingsController::class, 'update'])->name('admin.settings.update');
 });
 
-require_once("route_ajax.php");
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// ── PDF export ───────────────────────────────────────────────────────────────
+Route::get('/pdf/sd-appointment-form', [FrontendController::class, 'sdAppointmentFormPdf'])
+    ->middleware('auth')
+    ->name('pdf.sd-appointment-form');

@@ -106,4 +106,6 @@ document.getElementById('ModalAddActivity').addEventListener('show.bs.modal', fu
         });
     }
 });
+
+// Submit handled by javascript_ajax.js (#formAddActivity jQuery handler)
 </script>

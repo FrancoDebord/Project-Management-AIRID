@@ -12,6 +12,7 @@ Route::middleware('auth')->prefix('ajax')->group(function () {
     Route::post('/store-project', [ProjectAjaxController::class,"storeProject"])->name("storeProject");
     Route::post('/store-detailed-information-project', [ProjectAjaxController::class,"saveOtherBasicInformationOnProject"])->name("saveOtherBasicInformationOnProject");
     Route::post('/store-study-director-appointment-form', [ProjectAjaxController::class,"saveStudyDirectorAppointmentForm"])->name("saveStudyDirectorAppointmentForm");
+    Route::post('/sign-appointment-form',                 [ProjectAjaxController::class, 'signAppointmentForm'])->name('signAppointmentForm');
     Route::post('/store-study-director-replacement-form', [ProjectAjaxController::class,"saveStudyDirectorReplacementForm"])->name("saveStudyDirectorReplacementForm");
     Route::post('/store-other-basic-documents', [ProjectAjaxController::class,"saveOtherBasicDocuments"])->name("saveOtherBasicDocuments");
     Route::post('/save-key-personnel',   [ProjectAjaxController::class, 'saveKeyPersonnel'])->name('saveKeyPersonnel');
@@ -34,6 +35,7 @@ Route::middleware('auth')->prefix('ajax')->group(function () {
     
     Route::get('/get-meeting-info', [ProjectAjaxController::class,"getMeetingInfoById"])->name("getMeetingInfoById");
     Route::post('/delete-meeting', [ProjectAjaxController::class,"deleteQAMeeting"])->name("deleteQAMeeting");
+    Route::post('/save-meeting-report', [ProjectAjaxController::class,"saveMeetingReport"])->name("saveMeetingReport");
     Route::post('/marquer-critique', [ProjectAjaxController::class,"marquerActivitePhaseCritique"])->name("marquerActivitePhaseCritique");
     Route::post('/marquer-non-critique', [ProjectAjaxController::class,"marquerActiviteNonPhaseCritique"])->name("marquerActiviteNonPhaseCritique");
     Route::post('/schedule-qa-inspection', [ProjectAjaxController::class,"scheduleQaInspection"])->name("scheduleQaInspection");

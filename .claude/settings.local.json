@@ -77,7 +77,29 @@
       "Bash(grep -A20 \"CREATE TABLE IF NOT EXISTS \\\\`pro_studies_activities\\\\`\" projects_management_sans_donnees.sql)",
       "Bash(php -l app/Http/Controllers/ProjectController.php)",
       "Bash(php -l app/Models/Pro_Project.php)",
-      "Bash(php -l app/Http/Controllers/FrontendController.php)"
+      "Bash(php -l app/Http/Controllers/FrontendController.php)",
+      "Bash(cat database/migrations/*add_legacy_fields_to_pro_projects*)",
+      "Bash(find \"c:\\\\Users\\\\HP USER\\\\Documents\\\\PROJETS\\\\project-tracking-sheet\\\\Project-Management-AIRID\\\\resources\\\\views\" -name \"*.blade.php\" -type f -exec grep -l \"<form\" {} \\\\;)",
+      "Bash(php public/generate-icons.php)",
+      "Bash(sed -i 's/^MAIL_MAILER=.*/MAIL_MAILER=smtp/' .env)",
+      "Bash(sed -i 's/^MAIL_SCHEME=.*/MAIL_SCHEME=tls/' .env)",
+      "Bash(sed -i 's/^MAIL_HOST=.*/MAIL_HOST=smtp.gmail.com/' .env)",
+      "Bash(sed -i 's/^MAIL_PORT=.*/MAIL_PORT=587/' .env)",
+      "Bash(sed -i 's/^MAIL_USERNAME=.*/MAIL_USERNAME=airidafrica@gmail.com/' .env)",
+      "Bash(ls -1 database/migrations/*.php)",
+      "Bash(grep -r \"nom.*prenom\\\\|prenom.*nom\" database/migrations/*.php)",
+      "Bash(grep -A 50 \"CREATE TABLE \\\\`personnels\\\\`\" projects_management.sql)",
+      "Bash(grep \"CREATE TABLE.*\\\\`personnels\\\\`\" projects_management.sql)",
+      "Bash(grep -r '$all_personnels\\\\|$kpAllPersonnels' resources/views '--include=*.blade.php' -B 5)",
+      "Bash(grep -A 20 \"all_personnels.*orderBy\" app/Http/Controllers/*.php)",
+      "Bash(grep -n \"CREATE TABLE.*\\\\`personnels\\\\`\" projects_management.sql)",
+      "Bash(grep -A 30 \"CREATE TABLE IF NOT EXISTS \\\\`users\\\\`\" projects_management.sql)",
+      "Bash(grep -A 20 \"CREATE TABLE IF NOT EXISTS \\\\`pro_projects\\\\`\" projects_management.sql)",
+      "Bash(grep -A 30 \"CREATE TABLE.*\\\\`personnels\\\\`\" projects_management_sans_donnees.sql)",
+      "Bash(grep -r '$p->' resources/views/partials/modal-key-personnel.blade.php)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(grep -r '$p\\\\|$personnel\\\\|$staff' resources/views/create-project.blade.php)",
+      "Bash(del test_sd.pdf)"
     ]
   }
 }

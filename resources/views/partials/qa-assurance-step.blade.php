@@ -2,7 +2,7 @@
     $project_id           = request('project_id');
     $project              = App\Models\Pro_Project::find($project_id);
     $all_phases_critiques = $project ? $project->allPhasesCritiques : collect();
-    $all_personnels       = App\Models\Pro_Personnel::orderBy('prenom', 'asc')->get();
+    $all_personnels       = App\Models\Pro_Personnel::where('sous_contrat', 1)->orderBy('prenom', 'asc')->get();
     $qa_inspections       = App\Models\Pro_QaInspection::where('project_id', $project_id)
                                 ->with(['inspector', 'activity'])
                                 ->withCount('findings')

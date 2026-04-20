@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Mail\AppNotificationMail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Mail;
 
 class AppNotification extends Model
 {
@@ -61,6 +63,19 @@ class AppNotification extends Model
                 'icon'    => $icon,
                 'data'    => $data ?: null,
             ]);
+
+            // Also send by email if the user has an email address
+            try {
+                $user = \App\Models\User::find($userId);
+                if ($user && $user->email) {
+                    $recipientName = $user->name ?? '';
+                    Mail::to($user->email)
+                        ->queue(new AppNotificationMail($title, $body, $url, $recipientName));
+                }
+            } catch (\Throwable $e) {
+                // Never let email failure break the notification flow
+                \Illuminate\Support\Facades\Log::warning('[AppNotification] Email send failed for user '.$userId.': '.$e->getMessage());
+            }
         }
     }
 }
