@@ -9,7 +9,7 @@ class SettingsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'role:super_admin,facility_manager']);
+        // Middleware applied per-method so userSettings is accessible to everyone
     }
 
     public function index()
@@ -33,5 +33,23 @@ class SettingsController extends Controller
         }
 
         return redirect()->route('admin.settings')->with('success', 'Paramètres enregistrés avec succès.');
+    }
+
+    /** User-level settings (push notification opt-in). Accessible to all authenticated users. */
+    public function userSettings()
+    {
+        return view('settings.user');
+    }
+
+    public function updateUserSettings(Request $request)
+    {
+        // Push notification preference is stored client-side (browser Notification API).
+        // Server-side: we store whether the user wants email notifications.
+        $user = auth()->user();
+        $user->update([
+            'email_notifications' => (bool) $request->input('email_notifications', true),
+        ]);
+
+        return redirect()->route('user.settings')->with('success', 'Préférences enregistrées.');
     }
 }

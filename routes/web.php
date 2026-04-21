@@ -125,9 +125,21 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Settings ──
+// General settings (FM + super_admin only)
 Route::prefix('settings')->middleware(['auth', 'role:super_admin,facility_manager'])->group(function () {
     Route::get('/',    [SettingsController::class, 'index'])->name('admin.settings');
     Route::post('/',   [SettingsController::class, 'update'])->name('admin.settings.update');
+});
+// User settings (all authenticated users)
+Route::middleware('auth')->group(function () {
+    Route::get('/settings/user',  [SettingsController::class, 'userSettings'])->name('user.settings');
+    Route::post('/settings/user', [SettingsController::class, 'updateUserSettings'])->name('user.settings.update');
+});
+
+// ── Features ──
+Route::middleware('auth')->prefix('features')->name('features.')->group(function () {
+    Route::get('/search',      [\App\Http\Controllers\FeaturesController::class, 'search'])->name('search');
+    Route::get('/diagnostics', [\App\Http\Controllers\FeaturesController::class, 'diagnostics'])->name('diagnostics');
 });
 
 Auth::routes();
@@ -138,3 +150,11 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/pdf/sd-appointment-form', [FrontendController::class, 'sdAppointmentFormPdf'])
     ->middleware('auth')
     ->name('pdf.sd-appointment-form');
+
+Route::get('/pdf/meeting-report', [FrontendController::class, 'meetingReportPdf'])
+    ->middleware('auth')
+    ->name('pdf.meeting-report');
+
+Route::get('/pdf/dm/software-validation/{id}', [\App\Http\Controllers\DataManagementController::class, 'softwareValidationPdf'])
+    ->middleware('auth')
+    ->name('pdf.dm.software-validation');

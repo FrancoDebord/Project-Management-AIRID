@@ -176,6 +176,33 @@ class Pro_Project extends Model
 
 
          return $activites;
-        
+
+    }
+
+    // ── Data Management relationships ──────────────────────────────────────
+
+    public function dmDatabases(): HasMany
+    {
+        return $this->hasMany(Pro_DmDatabase::class, 'project_id');
+    }
+
+    public function dmPcAssignments(): HasMany
+    {
+        return $this->hasMany(Pro_DmPcAssignment::class, 'project_id')->orderBy('assigned_at', 'desc');
+    }
+
+    public function dmSoftwareValidations(): HasMany
+    {
+        return $this->hasMany(Pro_DmSoftwareValidation::class, 'project_id');
+    }
+
+    public function dmDataloggerValidations(): HasMany
+    {
+        return $this->hasMany(Pro_DmDataloggerValidation::class, 'project_id');
+    }
+
+    public function dmDoubleEntries(): HasMany
+    {
+        return $this->hasMany(Pro_DmDoubleEntry::class, 'project_id')->orderBy('first_entry_date', 'desc');
     }
 }

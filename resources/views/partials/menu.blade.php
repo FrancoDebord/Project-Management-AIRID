@@ -1,31 +1,79 @@
  <nav class="sidebar sidebar-offcanvas" id="sidebar">
                 <ul class="nav">
-                    <li class="nav-item nav-category">Main</li>
+                    <li class="nav-item nav-category">Principal</li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route("indexPage") }}">
-                            <span class="icon-bg"><i class="mdi mdi-cube menu-icon"></i></span>
+                            <span class="icon-bg"><i class="mdi mdi-view-dashboard menu-icon"></i></span>
                             <span class="menu-title">Dashboard</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route("project.index") }}">
-                            <span class="icon-bg"><i class="mdi mdi-cube menu-icon"></i></span>
-                            <span class="menu-title">Manage Project Info</span>
+                            <span class="icon-bg"><i class="mdi mdi-folder-multiple menu-icon"></i></span>
+                            <span class="menu-title">Projets</span>
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("projects.list") }}">
+                            <span class="icon-bg"><i class="mdi mdi-table menu-icon"></i></span>
+                            <span class="menu-title">Liste des projets</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route("masterSchedule") }}">
-                            <span class="icon-bg"><i class="mdi mdi-cube menu-icon"></i></span>
-                            <span class="menu-title">Master schedule</span>
+                            <span class="icon-bg"><i class="mdi mdi-calendar-multiselect menu-icon"></i></span>
+                            <span class="menu-title">Master Schedule</span>
                         </a>
                     </li>
 
+                    <li class="nav-item nav-category">Features</li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route("scheduleActivityForProject") }}">
-                            <span class="icon-bg"><i class="mdi mdi-cube menu-icon"></i></span>
-                            <span class="menu-title">Schedule Activity for Project</span>
+                        <a class="nav-link" href="{{ route("features.search") }}">
+                            <span class="icon-bg"><i class="mdi mdi-magnify menu-icon"></i></span>
+                            <span class="menu-title">Moteur de recherche</span>
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("features.diagnostics") }}">
+                            <span class="icon-bg"><i class="mdi mdi-clipboard-pulse menu-icon"></i></span>
+                            <span class="menu-title">Diagnostic des projets</span>
+                        </a>
+                    </li>
+
+                    @if(auth()->user()->hasRole(['super_admin','facility_manager','qa_manager']))
+                    <li class="nav-item nav-category">Administration</li>
+                    @if(auth()->user()->hasRole(['super_admin','facility_manager']))
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("admin.settings") }}">
+                            <span class="icon-bg"><i class="mdi mdi-cog menu-icon"></i></span>
+                            <span class="menu-title">Paramètres généraux</span>
+                        </a>
+                    </li>
+                    @endif
+                    @if(auth()->user()->hasRole('super_admin'))
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("admin.users") }}">
+                            <span class="icon-bg"><i class="mdi mdi-account-multiple menu-icon"></i></span>
+                            <span class="menu-title">Utilisateurs</span>
+                        </a>
+                    </li>
+                    @endif
+                    @endif
+
+                    <li class="nav-item nav-category">Mon compte</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("user.settings") }}">
+                            <span class="icon-bg"><i class="mdi mdi-account-cog menu-icon"></i></span>
+                            <span class="menu-title">Mes paramètres</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route("logout") }}"
+                           onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                            <span class="icon-bg"><i class="mdi mdi-logout menu-icon"></i></span>
+                            <span class="menu-title">Déconnexion</span>
+                        </a>
+                        <form id="logout-form" action="{{ route("logout") }}" method="POST" class="d-none">@csrf</form>
                     </li>
 
                     {{-- <li class="nav-item nav-category">UI Features</li>

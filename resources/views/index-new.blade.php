@@ -149,6 +149,27 @@
                                 </li>
                             </ul>
                         </li>
+                        {{-- Features --}}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('features.*') ? 'active' : '' }}"
+                               href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-stars me-1"></i>Features
+                            </a>
+                            <ul class="dropdown-menu shadow">
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('features.search') ? 'active' : '' }}"
+                                       href="{{ route('features.search') }}">
+                                        <i class="bi bi-search me-2"></i>Moteur de recherche
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('features.diagnostics') ? 'active' : '' }}"
+                                       href="{{ route('features.diagnostics') }}">
+                                        <i class="bi bi-clipboard-pulse me-2"></i>Diagnostic des projets
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         @if (Auth::user()?->hasRole(['super_admin', 'facility_manager']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">

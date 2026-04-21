@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DataManagementController;
 use App\Http\Controllers\ProjectAjaxController;
 use App\Http\Controllers\RequeteAjaxController;
 use App\Http\Controllers\SignatureController;
@@ -79,4 +80,25 @@ Route::middleware('auth')->prefix('ajax')->group(function () {
     // Electronic signatures
     Route::get('/signatures',           [SignatureController::class, 'getSignatures'])->name('ajax.signatures.get');
     Route::post('/save-signature',      [SignatureController::class, 'save'])->name('ajax.signatures.save');
+
+    // ── Data Management ──────────────────────────────────────────────────
+    Route::post('/dm/database/save',                [DataManagementController::class, 'saveDatabase'])->name('dm.database.save');
+    Route::post('/dm/database/delete',              [DataManagementController::class, 'deleteDatabase'])->name('dm.database.delete');
+
+    Route::post('/dm/pc/save',                      [DataManagementController::class, 'savePcAssignment'])->name('dm.pc.save');
+    Route::post('/dm/pc/return',                    [DataManagementController::class, 'returnPc'])->name('dm.pc.return');
+    Route::post('/dm/pc/delete',                    [DataManagementController::class, 'deletePcAssignment'])->name('dm.pc.delete');
+
+    Route::post('/dm/software-validation/save',             [DataManagementController::class, 'saveSoftwareValidation'])->name('dm.softval.save');
+    Route::post('/dm/software-validation/delete',           [DataManagementController::class, 'deleteSoftwareValidation'])->name('dm.softval.delete');
+    Route::post('/dm/software-validation/upload-file',      [DataManagementController::class, 'uploadSoftwareValidationFile'])->name('dm.softval.uploadFile');
+    Route::post('/dm/software-validation/delete-file',      [DataManagementController::class, 'deleteSoftwareValidationFile'])->name('dm.softval.deleteFile');
+
+    Route::post('/dm/datalogger/save',              [DataManagementController::class, 'saveDataloggerValidation'])->name('dm.datalogger.save');
+    Route::post('/dm/datalogger/delete',            [DataManagementController::class, 'deleteDataloggerValidation'])->name('dm.datalogger.delete');
+    Route::post('/dm/datalogger/upload-file',       [DataManagementController::class, 'uploadDataloggerFile'])->name('dm.datalogger.uploadFile');
+    Route::post('/dm/datalogger/delete-file',       [DataManagementController::class, 'deleteDataloggerFile'])->name('dm.datalogger.deleteFile');
+
+    Route::post('/dm/double-entry/save',            [DataManagementController::class, 'saveDoubleEntry'])->name('dm.doubleEntry.save');
+    Route::post('/dm/double-entry/delete',          [DataManagementController::class, 'deleteDoubleEntry'])->name('dm.doubleEntry.delete');
 });

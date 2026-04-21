@@ -623,6 +623,268 @@
     </div>
     @endif
 
+    {{-- ══ DATA MANAGEMENT ═══════════════════════════════════ --}}
+    @php
+        $dmDbs  = $project->dmDatabases;
+        $dmPcs  = $project->dmPcAssignments;
+        $dmSvs  = $project->dmSoftwareValidations;
+        $dmDlvs = $project->dmDataloggerValidations;
+        $dmDes  = $project->dmDoubleEntries;
+        $dmTotal = $dmDbs->count() + $dmPcs->count() + $dmDes->count();
+    @endphp
+    <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed fw-semibold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#colDM">
+                <i class="bi bi-database me-2" style="color:#0d6efd;"></i>
+                Data Management
+                <span class="ms-2 badge" style="background:#0d6efd;">
+                    {{ $dmDbs->count() }} DB · {{ $dmPcs->count() }} PC · {{ $dmDes->count() }} Sessions
+                </span>
+                @if($dmTotal > 0)
+                    <span class="ms-2 badge bg-success">Active</span>
+                @else
+                    <span class="ms-2 badge bg-secondary">Not started</span>
+                @endif
+                <a href="{{ route('project.create', ['project_id' => $project->id]) }}#step7"
+                   class="ms-auto btn btn-sm btn-outline-light"
+                   style="font-size:.72rem;padding:2px 8px;white-space:nowrap;"
+                   onclick="event.stopPropagation();">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+            </button>
+        </h2>
+        <div id="colDM" class="accordion-collapse collapse" data-bs-parent="#ovAccordion">
+            <div class="accordion-body pt-3 pb-2 px-3">
+
+                {{-- ── Databases ── --}}
+                <h6 class="fw-semibold mb-2" style="color:#0d6efd;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="bi bi-server me-1"></i>Bases de données ({{ $dmDbs->count() }})
+                </h6>
+                @if($dmDbs->isNotEmpty())
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($dmDbs as $db)
+                            <tr>
+                                <td class="fw-semibold">{{ $db->name }}</td>
+                                <td><span class="badge bg-info text-dark">{{ ucfirst(str_replace('_',' ',$db->type)) }}</span></td>
+                                <td class="text-muted">{{ $db->description ?: '—' }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                    <p class="text-muted small mb-3">Aucune base de données enregistrée.</p>
+                @endif
+
+                {{-- ── PC Assignments ── --}}
+                <h6 class="fw-semibold mb-2" style="color:#0d6efd;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="bi bi-pc-display me-1"></i>PC de saisie ({{ $dmPcs->count() }})
+                </h6>
+                @if($dmPcs->isNotEmpty())
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>PC</th>
+                                <th>Numéro de série</th>
+                                <th class="text-center">GLP</th>
+                                <th>Attribué le</th>
+                                <th>Retourné le</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($dmPcs as $pc)
+                            <tr>
+                                <td class="fw-semibold">{{ $pc->pc_name }}</td>
+                                <td class="text-muted">{{ $pc->pc_serial ?: '—' }}</td>
+                                <td class="text-center">
+                                    @if($pc->is_glp)
+                                        <span class="badge bg-success" style="font-size:.68rem;">GLP</span>
+                                    @else
+                                        <span class="badge bg-secondary" style="font-size:.68rem;">Non-GLP</span>
+                                    @endif
+                                </td>
+                                <td>{{ $pc->assigned_at ? \Carbon\Carbon::parse($pc->assigned_at)->format('d/m/Y') : '—' }}</td>
+                                <td>{{ $pc->returned_at ? \Carbon\Carbon::parse($pc->returned_at)->format('d/m/Y') : '—' }}</td>
+                                <td>
+                                    @if($pc->returned_at)
+                                        <span class="badge bg-secondary" style="font-size:.68rem;">Retourné</span>
+                                    @else
+                                        <span class="badge bg-success" style="font-size:.68rem;">En cours</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                    <p class="text-muted small mb-3">Aucun PC attribué.</p>
+                @endif
+
+                {{-- ── Software Validations (GLP only) ── --}}
+                @if($project->is_glp && $dmSvs->isNotEmpty())
+                <h6 class="fw-semibold mb-2" style="color:#0d6efd;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="bi bi-shield-check me-1"></i>Validations logicielles ({{ $dmSvs->count() }})
+                </h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Logiciel</th>
+                                <th>Version</th>
+                                <th>Date</th>
+                                <th>Validé par</th>
+                                <th>Statut</th>
+                                <th>PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($dmSvs as $sv)
+                            <tr>
+                                <td class="fw-semibold">{{ $sv->software_name }}</td>
+                                <td>{{ $sv->current_software_version ?: '—' }}</td>
+                                <td>{{ $sv->validation_date ? \Carbon\Carbon::parse($sv->validation_date)->format('d/m/Y') : '—' }}</td>
+                                <td>{{ $sv->validation_done_by ?: '—' }}</td>
+                                <td>
+                                    @php $svBadge = match($sv->status){ 'validated'=>'bg-success','in_progress'=>'bg-warning text-dark', default=>'bg-secondary' }; @endphp
+                                    <span class="badge {{ $svBadge }}" style="font-size:.68rem;">{{ ucfirst(str_replace('_',' ',$sv->status)) }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('pdf.dm.software-validation', $sv->id) }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-danger py-0 px-2"
+                                       style="font-size:.72rem;">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+
+                {{-- ── Datalogger Validations (GLP only) ── --}}
+                @if($project->is_glp && $dmDlvs->isNotEmpty())
+                <h6 class="fw-semibold mb-2" style="color:#0d6efd;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="bi bi-thermometer me-1"></i>Validations data loggers ({{ $dmDlvs->count() }})
+                </h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>N° série</th>
+                                <th>Localisation</th>
+                                <th>Date</th>
+                                <th>Validé par</th>
+                                <th>Statut</th>
+                                <th>Fichiers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($dmDlvs as $dlv)
+                            <tr>
+                                <td class="fw-semibold">{{ $dlv->name }}</td>
+                                <td>{{ $dlv->serial_number ?: '—' }}</td>
+                                <td>{{ $dlv->location ?: '—' }}</td>
+                                <td>{{ $dlv->validation_date ? \Carbon\Carbon::parse($dlv->validation_date)->format('d/m/Y') : '—' }}</td>
+                                <td>{{ $dlv->validated_by ?: '—' }}</td>
+                                <td>
+                                    @php $dlBadge = match($dlv->status){ 'validated'=>'bg-success','in_progress'=>'bg-warning text-dark', default=>'bg-secondary' }; @endphp
+                                    <span class="badge {{ $dlBadge }}" style="font-size:.68rem;">{{ ucfirst(str_replace('_',' ',$dlv->status)) }}</span>
+                                </td>
+                                <td>
+                                    @if($dlv->files->isNotEmpty())
+                                        @foreach($dlv->files as $dlf)
+                                            <a href="{{ asset('storage/'.$dlf->file_path) }}" target="_blank"
+                                               class="d-block text-truncate text-primary" style="font-size:.72rem;max-width:120px;"
+                                               title="{{ $dlf->original_name }}">
+                                                <i class="bi bi-paperclip me-1"></i>{{ $dlf->original_name }}
+                                            </a>
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
+
+                {{-- ── Double Data Entry Sessions ── --}}
+                <h6 class="fw-semibold mb-2" style="color:#0d6efd;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="bi bi-input-cursor-text me-1"></i>Sessions de double saisie ({{ $dmDes->count() }})
+                </h6>
+                @if($dmDes->isNotEmpty())
+                <div class="table-responsive mb-2">
+                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Base de données</th>
+                                <th>1ère saisie</th>
+                                <th>Opérateur 1</th>
+                                <th>2ème saisie</th>
+                                <th>Opérateur 2</th>
+                                <th class="text-center">Conformité</th>
+                                <th>Fichier comparaison</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($dmDes as $de)
+                            <tr>
+                                <td>{{ $de->database?->name ?: '—' }}</td>
+                                <td>{{ $de->first_entry_date ? \Carbon\Carbon::parse($de->first_entry_date)->format('d/m/Y') : '—' }}</td>
+                                <td>{{ $de->first_entry_by ?: '—' }}</td>
+                                <td>{{ $de->second_entry_date ? \Carbon\Carbon::parse($de->second_entry_date)->format('d/m/Y') : '—' }}</td>
+                                <td>{{ $de->second_entry_by ?: '—' }}</td>
+                                <td class="text-center">
+                                    @if(is_null($de->is_compliant))
+                                        <span class="badge bg-secondary" style="font-size:.68rem;">—</span>
+                                    @elseif($de->is_compliant)
+                                        <span class="badge bg-success" style="font-size:.68rem;"><i class="bi bi-check2 me-1"></i>Conforme</span>
+                                    @else
+                                        <span class="badge bg-danger" style="font-size:.68rem;"><i class="bi bi-x me-1"></i>Non conforme</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($de->comparison_file_path)
+                                        <a href="{{ asset('storage/'.$de->comparison_file_path) }}" target="_blank"
+                                           class="text-primary text-truncate d-inline-block" style="max-width:120px;font-size:.72rem;"
+                                           title="{{ $de->comparison_file_name }}">
+                                            <i class="bi bi-paperclip me-1"></i>{{ $de->comparison_file_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                    <p class="text-muted small mb-2">Aucune session de double saisie enregistrée.</p>
+                @endif
+
+            </div>
+        </div>
+    </div>
+
     {{-- ══ 4. REPORT PHASE ════════════════════════════════════ --}}
     <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden">
         <h2 class="accordion-header">

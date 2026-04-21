@@ -468,13 +468,13 @@
 
                 <ul class="wizard" id="myTab" role="tablist">
                     <li><a class="active" id="step1-tab" data-bs-toggle="tab" href="#step1" role="tab">1. Study Creation @if(in_array('study_creation',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Protocol Details @if(in_array('protocol_details',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Protocol Dev. @if(in_array('protocol_development',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step2-tab" data-bs-toggle="tab" href="#step2" role="tab">2. Prot. Details @if(in_array('protocol_details',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step3-tab" data-bs-toggle="tab" href="#step3" role="tab">3. Prot. Dev. @if(in_array('protocol_development',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                     <li>
                         <a id="step4-tab" {{ $isGlp ? 'data-bs-toggle=tab' : '' }} href="{{ $isGlp ? '#step4' : '#' }}" role="tab"
                            class="{{ !$isGlp ? 'tab-disabled' : '' }}"
                            title="{{ !$isGlp ? 'Not applicable for Non-GLP studies' : '' }}">
-                            4. Planning Phase
+                            4. Plan. Phase
                             @if($isGlp && in_array('planning',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif
                             @if(!$isGlp)<i class="bi bi-slash-circle ms-1" style="font-size:.75rem;"></i>@endif
                         </a>
@@ -484,13 +484,14 @@
                         <a id="step6-tab" {{ $isGlp ? 'data-bs-toggle=tab' : '' }} href="{{ $isGlp ? '#step6' : '#' }}" role="tab"
                            class="{{ !$isGlp ? 'tab-disabled' : '' }}"
                            title="{{ !$isGlp ? 'Not applicable for Non-GLP studies' : '' }}">
-                            {{ $isGlp ? '6.' : '5.' }} Qual. Assurance
+                            {{ $isGlp ? '6.' : '5.' }} Qual. Assur.
                             @if($isGlp && in_array('quality_assurance',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif
                             @if(!$isGlp)<i class="bi bi-slash-circle ms-1" style="font-size:.75rem;"></i>@endif
                         </a>
                     </li>
-                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">{{ $isGlp ? '7.' : '5.' }} Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
-                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">{{ $isGlp ? '8.' : '6.' }} Archiving @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step7-tab" data-bs-toggle="tab" href="#step7" role="tab">{{ $isGlp ? '7.' : '5.' }} Data Mgmt. @if(in_array('data_management',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step8-tab" data-bs-toggle="tab" href="#step8" role="tab">{{ $isGlp ? '8.' : '6.' }} Report Phase @if(in_array('reporting',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
+                    <li><a id="step9-tab" data-bs-toggle="tab" href="#step9" role="tab">{{ $isGlp ? '9.' : '7.' }} Archiving @if(in_array('archiving',$phasesCompleted))<i class="bi bi-check-circle-fill text-success ms-1" style="font-size:.8rem;"></i>@endif</a></li>
                 </ul>
 
                    <div class="tab-content" id="myTabContent">
@@ -558,10 +559,14 @@
                         @include('partials.phase-complete-bar', ['phase' => 'quality_assurance', 'phaseStatuses' => $phaseStatuses])
                     </div>
                     <div class="tab-pane fade" id="step7" role="tabpanel">
+                        @include('partials.data-management-step')
+                        @include('partials.phase-complete-bar', ['phase' => 'data_management', 'phaseStatuses' => $phaseStatuses])
+                    </div>
+                    <div class="tab-pane fade" id="step8" role="tabpanel">
                         @include('partials.report-phase-step')
                         @include('partials.phase-complete-bar', ['phase' => 'reporting', 'phaseStatuses' => $phaseStatuses])
                     </div>
-                    <div class="tab-pane fade" id="step8" role="tabpanel">
+                    <div class="tab-pane fade" id="step9" role="tabpanel">
                         @include('partials.archiving-phase-step')
                         @include('partials.phase-complete-bar', ['phase' => 'archiving', 'phaseStatuses' => $phaseStatuses])
                     </div>
@@ -573,8 +578,8 @@
                     // Legacy projects always keep Report Phase (step7) and Archiving (step8) accessible
                     const IS_LEGACY = {{ $project->is_legacy ? 'true' : 'false' }};
                     const LOCKED_STEPS = IS_LEGACY
-                        ? ['step1','step2','step3','step4','step5','step6']
-                        : ['step1','step2','step3','step4','step5','step6','step7'];
+                        ? ['step1','step2','step3','step4','step5','step6','step7']
+                        : ['step1','step2','step3','step4','step5','step6','step7','step8','step9'];
 
                     function lockSteps() {
                         LOCKED_STEPS.forEach(function(stepId) {
@@ -623,25 +628,31 @@
                     $authUser       = auth()->user();
                     $lockedByRole   = [];
 
+                    // Steps: 1=StudyCreation 2=ProtocolDetails 3=ProtocolDev 4=Planning
+                    //        5=Experimental  6=QA  7=DataMgmt  8=Report  9=Archiving
                     if ($authUser->hasRole('read_only')) {
                         // Read-only: lock everything
-                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7','step8'];
+                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7','step8','step9'];
                     } elseif ($authUser->hasRole('archivist')) {
-                        // Archivist: can only act on step8 (Archiving)
-                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7'];
+                        // Archivist: only step9 (Archiving) writable; DM locked
+                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step7','step8'];
                     } elseif ($authUser->hasRole('qa_manager')) {
-                        // QA Manager: QA tab (step6) + Planning (step4) writable
-                        $lockedByRole = ['step1','step2','step3','step5','step7','step8'];
+                        // QA Manager: step4 (Planning) + step6 (QA) writable; DM locked
+                        $lockedByRole = ['step1','step2','step3','step5','step7','step8','step9'];
                     } elseif ($authUser->hasRole(['study_director','project_manager'])) {
-                        // SD / PM: cannot touch QA (step6) or Archiving (step8)
-                        $lockedByRole = ['step6','step8'];
+                        // SD / PM: can touch study setup, protocol, planning, experimental, report
+                        // Cannot touch QA (step6), Data Mgmt (step7), Archiving (step9)
+                        $lockedByRole = ['step6','step7','step9'];
+                    } elseif ($authUser->hasRole(['data_manager','it_technician'])) {
+                        // Data Manager / IT: only Data Management (step7) writable
+                        $lockedByRole = ['step1','step2','step3','step4','step5','step6','step8','step9'];
                     }
                     // facility_manager and super_admin: no extra lock
 
-                    // Legacy projects: Report Phase (step7) and Archiving (step8) must always be
-                    // accessible regardless of role (except read_only which locks everything)
+                    // Legacy projects: Report Phase (step8) and Archiving (step9) always accessible
+                    // regardless of role (except read_only which locks everything)
                     if ($project->is_legacy && !$authUser->hasRole('read_only')) {
-                        $lockedByRole = array_values(array_diff($lockedByRole, ['step7', 'step8']));
+                        $lockedByRole = array_values(array_diff($lockedByRole, ['step8', 'step9']));
                     }
                 @endphp
                 @if(!empty($lockedByRole))

@@ -19,6 +19,8 @@ class User extends Authenticatable
         'qa_manager'       => 'QA Manager',
         'study_director'   => 'Study Director',
         'project_manager'  => 'Project Manager',
+        'data_manager'     => 'Data Manager',
+        'it_technician'    => 'IT Technician',
         'archivist'        => 'Archivist',
         'read_only'        => 'Read Only',
     ];
@@ -92,6 +94,12 @@ class User extends Authenticatable
     public function canManageArchiving(): bool
     {
         return $this->hasRole(['super_admin', 'facility_manager', 'archivist']);
+    }
+
+    /** Can act on the Data Management Phase. */
+    public function canManageDataManagement(): bool
+    {
+        return $this->hasRole(['super_admin', 'facility_manager', 'data_manager', 'it_technician']);
     }
 
     /** Manage platform users (admin panel). */

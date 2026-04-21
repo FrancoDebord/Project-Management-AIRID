@@ -294,6 +294,27 @@ class ProjectController extends Controller
                     : 'All criteria met — ready to mark as completed.'),
         ];
 
+        // ── Data Management ─────────────────────────────────────────────────────
+        $dbCount = DB::table('pro_dm_databases')->where('project_id', $pid)->count();
+        $pcCount = DB::table('pro_dm_pc_assignments')->where('project_id', $pid)->count();
+        $deCount = DB::table('pro_dm_double_entries')->where('project_id', $pid)->count();
+        $dmOk    = $dbCount > 0 && $pcCount > 0 && $deCount > 0;
+        $statuses['data_management'] = [
+            'can_complete' => $dmOk,
+            'items' => [
+                ['label' => "Bases de données enregistrées ({$dbCount})",          'done' => $dbCount > 0],
+                ['label' => "PC de saisie attribué ({$pcCount})",                  'done' => $pcCount > 0],
+                ['label' => "Sessions de double saisie enregistrées ({$deCount})", 'done' => $deCount > 0],
+            ],
+            'next' => $dbCount === 0
+                ? 'Enregistrez au moins une base de données.'
+                : ($pcCount === 0
+                    ? 'Attribuez au moins un PC de saisie.'
+                    : ($deCount === 0
+                        ? 'Enregistrez au moins une session de double saisie.'
+                        : 'Tous les critères sont remplis — prêt à marquer comme complété.')),
+        ];
+
         // ── Reporting ───────────────────────────────────────────────────────
         $reportCount = DB::table('pro_report_phase_documents')->where('project_id', $pid)->count();
         $reportOk    = $reportCount > 0;

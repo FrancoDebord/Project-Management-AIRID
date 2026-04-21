@@ -355,6 +355,7 @@
     @php
         $cpiaEnabled    = $study_initiation_meeting && $all_phases_critiques && $all_phases_critiques->where('phase_critique', true)->count() > 0;
         $existingCpia   = \App\Models\CpiaAssessment::where('project_id', $project_id)->first();
+        $cpiaCompleted  = $existingCpia && $existingCpia->isCompleted();
     @endphp
     <div class="mt-4 p-3 rounded-3 border" style="background:#fff7f7;">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -399,6 +400,48 @@
         </div>
     </div>
     @endif {{-- /is_glp CPIA --}}
+
+    {{-- ── Generate Meeting Report PDF ── --}}
+    @if($study_initiation_meeting)
+    @php
+        $hasCriticalPhases = $all_phases_critiques && $all_phases_critiques->where('phase_critique', true)->count() > 0;
+
+        if ($project && $project->is_glp) {
+            // GLP: need critical phases + CPIA completed
+            $reportPdfReady = $hasCriticalPhases && ($cpiaCompleted ?? false);
+            $reportBlockReason = !$hasCriticalPhases
+                ? 'Identifiez au moins une phase critique avant de générer le rapport.'
+                : 'Le Critical Phase Impact Assessment doit être complété avant de générer le rapport.';
+        } else {
+            // Non-GLP: need at least one critical phase marked
+            $reportPdfReady   = $hasCriticalPhases;
+            $reportBlockReason = 'Identifiez au moins une phase critique avant de générer le rapport.';
+        }
+    @endphp
+    <div class="mt-4 p-3 rounded-3 border" style="background:#f0fff4;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <strong style="color:#155724;"><i class="bi bi-file-earmark-pdf me-1"></i>Critical Phase Agreement Meeting Minutes</strong>
+                <div class="text-muted small">
+                    @if($reportPdfReady)
+                        Le rapport PDF peut être généré.
+                        @if($project && $project->is_glp && isset($cpiaCompleted) && $cpiaCompleted)
+                            CPIA complété &amp; phases critiques identifiées.
+                        @endif
+                    @else
+                        {{ $reportBlockReason }}
+                    @endif
+                </div>
+            </div>
+            <a href="{{ $reportPdfReady ? route('pdf.meeting-report', ['project_id' => $project_id]) : '#' }}"
+               target="{{ $reportPdfReady ? '_blank' : '' }}"
+               class="btn btn-sm fw-semibold {{ $reportPdfReady ? '' : 'disabled' }}"
+               style="background:#198754;color:#fff;opacity:{{ $reportPdfReady ? '1' : '.45' }};">
+                <i class="bi bi-download me-1"></i>Télécharger le rapport PDF
+            </a>
+        </div>
+    </div>
+    @endif {{-- /study_initiation_meeting --}}
 
     {{-- <h2 class="mb-4 text-center">📅 Mon Agenda avec FullCalendar</h2> --}}
 

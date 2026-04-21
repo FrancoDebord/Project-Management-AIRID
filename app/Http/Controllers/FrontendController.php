@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CpiaAssessment;
 use App\Models\Pro_KeyFacilityPersonnel;
 use App\Models\Pro_Project;
 use App\Models\Pro_QaInspection;
 use App\Models\Pro_QaInspectionFinding;
 use App\Models\Pro_StudyActivities;
+use App\Models\Pro_StudyQualityAssuranceMeeting;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -127,6 +129,11 @@ class FrontendController extends Controller
             'allActivitiesProject.executedBy',
             'reportPhaseDocuments',
             'archivingDocuments',
+            'dmDatabases',
+            'dmPcAssignments',
+            'dmSoftwareValidations.files',
+            'dmDataloggerValidations.files',
+            'dmDoubleEntries.database',
         ])->findOrFail($id);
 
         // QA Inspections for this project with findings
@@ -503,6 +510,96 @@ class FrontendController extends Controller
 
         $safeCode = str_replace(['/', '\\', ' '], '-', $project->project_code ?? $projectId);
         $filename = 'SD-Appointment-' . $safeCode . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    //  MEETING REPORT PDF — Critical Phase Agreement Meeting Minutes
+    // ────────────────────────────────────────────────────────────────────────
+
+    public function meetingReportPdf(Request $request)
+    {
+        $projectId = $request->get('project_id');
+
+        $project = Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'projectManager',
+            'keyPersonnelProject',
+            'studyTypesApplied',
+            'allActivitiesProject.personneResponsable',
+        ])->findOrFail($projectId);
+
+        // Meeting
+        $meeting = Pro_StudyQualityAssuranceMeeting::with('participants')
+            ->where('project_id', $projectId)
+            ->where('meeting_type', 'study_initiation_meeting')
+            ->firstOrFail();
+
+        // Study Director name
+        $sda    = $project->studyDirectorAppointmentForm;
+        $sd     = $sda?->studyDirector;
+        $sdName = $sd
+            ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom)
+            : '—';
+
+        // SD signed_at (if applicable)
+        $sdSignedAt = $sda?->sd_signed_at ?? null;
+
+        // Project Manager name
+        $pm     = $project->projectManager;
+        $pmName = $pm ? trim($pm->prenom . ' ' . $pm->nom) : null;
+
+        // Sponsor
+        $sponsor = $project->sponsor_name ?: null;
+
+        // Key Personnel (load with pivot role if available)
+        $keyPersonnel = $project->keyPersonnelProject ?? collect();
+
+        // Participants
+        $participants = $meeting->participants ?? collect();
+
+        // Critical phases
+        $criticalPhases = $project->allActivitiesProject
+            ->where('phase_critique', true)
+            ->values();
+
+        // All activities count
+        $allActivitiesCount = $project->allActivitiesProject->count();
+
+        // QA inspections keyed by activity_id
+        $cpInspections = Pro_QaInspection::with('inspector')
+            ->where('project_id', $projectId)
+            ->whereNotNull('activity_id')
+            ->get()
+            ->keyBy('activity_id');
+
+        // Determine QA inspector name from the first relevant inspection
+        $qaInspector = $cpInspections->first()?->inspector;
+        if (!$qaInspector) {
+            // Fall back to first any inspection for this project
+            $qaInspector = Pro_QaInspection::where('project_id', $projectId)
+                ->with('inspector')
+                ->first()?->inspector;
+        }
+        $qaInspectorName = $qaInspector
+            ? trim(($qaInspector->titre_personnel ?? '') . ' ' . $qaInspector->prenom . ' ' . $qaInspector->nom)
+            : '—';
+
+        // CPIA assessment
+        $cpia = CpiaAssessment::where('project_id', $projectId)->first();
+
+        // Header image
+        $headerImagePath = 'file://' . str_replace('\\', '/', public_path('storage/assets/header/entete_airid.png'));
+
+        $pdf = Pdf::loadView('pdf.meeting-report', compact(
+            'project', 'meeting', 'sdName', 'sdSignedAt', 'pmName', 'sponsor',
+            'keyPersonnel', 'participants', 'criticalPhases', 'allActivitiesCount',
+            'cpInspections', 'qaInspectorName', 'cpia', 'headerImagePath'
+        ))->setPaper('a4', 'portrait');
+
+        $safeCode = str_replace(['/', '\\', ' '], '-', $project->project_code ?? $projectId);
+        $filename  = 'Meeting-Report-' . $safeCode . '.pdf';
 
         return $pdf->download($filename);
     }
