@@ -205,4 +205,9 @@ class Pro_Project extends Model
     {
         return $this->hasMany(Pro_DmDoubleEntry::class, 'project_id')->orderBy('first_entry_date', 'desc');
     }
+
+    public function qaInspections(): HasMany
+    {
+        return $this->hasMany(Pro_QaInspection::class, 'project_id');
+    }
 }

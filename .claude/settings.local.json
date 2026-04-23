@@ -99,7 +99,8 @@
       "Bash(grep -r '$p->' resources/views/partials/modal-key-personnel.blade.php)",
       "Bash(xargs -I {} basename {})",
       "Bash(grep -r '$p\\\\|$personnel\\\\|$staff' resources/views/create-project.blade.php)",
-      "Bash(del test_sd.pdf)"
+      "Bash(del test_sd.pdf)",
+      "Bash(php -l app/Http/Controllers/FeaturesController.php)"
     ]
   }
 }

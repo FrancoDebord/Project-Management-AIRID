@@ -106,7 +106,7 @@
     <nav class="navbar navbar-expand-lg custom-navbar">
         <div class="container-fluid">
             <!-- Logo -->
-            <a class="navbar-brand" href="#">Project Tracking Sheet</a>
+            <a class="navbar-brand" href="#">PTS</a>
 
             <!-- Menu burger -->
             <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
