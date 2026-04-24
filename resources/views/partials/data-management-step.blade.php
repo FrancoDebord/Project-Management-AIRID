@@ -8,6 +8,7 @@
         'dmDataloggerValidations.files',
         'dmDoubleEntries.database',
         'labTestsConcerned',
+        'keyPersonnelProject',
     ])->find($project_id);
 
     $labTests        = $project?->labTestsConcerned ?? collect();
@@ -17,6 +18,20 @@
     $dlValidations   = $project?->dmDataloggerValidations ?? collect();
     $doubleEntries   = $project?->dmDoubleEntries ?? collect();
     $isGlp           = $project?->is_glp ?? false;
+
+    // PC inventory
+    $pcInventory = App\Models\Pro_DmPc::orderBy('name')->get();
+
+    // Key personnel for 1st entry autocomplete
+    $keyPersonnel = $project?->keyPersonnelProject ?? collect();
+
+    // Personnel for 2nd entry: DM/IT roles first, then the rest
+    // DM/IT poste IDs: 22=Supervisor DM, 23=IT Technician, 40=Former DM Supervisor, 41=Assistant Data Manager
+    $dmItPosteIds = [22, 23, 40, 41];
+    $allActivePersonnel = App\Models\Pro_Personnel::where('sous_contrat', 1)
+        ->orderBy('nom')->get(['id','titre_personnel','nom','prenom','poste_id']);
+    $dmItPersonnel   = $allActivePersonnel->whereIn('poste_id', $dmItPosteIds)->values();
+    $otherPersonnel  = $allActivePersonnel->whereNotIn('poste_id', $dmItPosteIds)->values();
 
     $dbTypeLabels = [
         'lab_test'     => 'Lab Test DB',
@@ -39,7 +54,9 @@
 .dm-table tr:last-child td { border-bottom:none; }
 .dm-table tr:hover td { background:#f8f9ff; }
 .dm-add-btn { font-size:.78rem;padding:.25rem .7rem; }
-.dm-hero { background:linear-gradient(135deg,#1a3a6b 0%,#0d6efd 100%);border-radius:.75rem;padding:1rem 1.4rem;margin-bottom:1.2rem;color:#fff; }
+.dm-hero { background:linear-gradient(135deg,#1a3a6b 0%,#c41230 100%);border-radius:.75rem;padding:1rem 1.4rem;margin-bottom:1.2rem;color:#fff; }
+.dm-badge-mandatory { display:inline-flex;align-items:center;gap:.3rem;background:#fde8e8;color:#c41230;border:1px solid #f5c2c7;border-radius:20px;padding:.15rem .65rem;font-size:.72rem;font-weight:700; }
+.dm-badge-complete  { display:inline-flex;align-items:center;gap:.3rem;background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:20px;padding:.15rem .65rem;font-size:.72rem;font-weight:700; }
 </style>
 
 {{-- ── Hero ── --}}
@@ -101,7 +118,10 @@
 <div class="dm-section">
     <div class="dm-section-title">
         <i class="bi bi-pc-display"></i> Postes de saisie (PC attribués)
-        <button class="btn btn-primary dm-add-btn ms-auto" onclick="openPcModal()">
+        <button class="btn btn-outline-secondary dm-add-btn ms-auto me-2" onclick="openPcInventoryModal()" title="Gérer le parc PC">
+            <i class="bi bi-hdd-stack me-1"></i>Parc PC
+        </button>
+        <button class="btn btn-primary dm-add-btn" onclick="openPcModal()">
             <i class="bi bi-plus-circle me-1"></i>Attribuer un PC
         </button>
     </div>
@@ -153,6 +173,11 @@
 <div class="dm-section">
     <div class="dm-section-title">
         <i class="bi bi-patch-check"></i> Validation des logiciels / bases de données (GLP)
+        @if($softValidations->isEmpty())
+            <span class="dm-badge-mandatory ms-2"><i class="bi bi-exclamation-triangle-fill"></i>OBLIGATOIRE — Non rempli</span>
+        @else
+            <span class="dm-badge-complete ms-2"><i class="bi bi-check-circle-fill"></i>Complété ({{ $softValidations->count() }})</span>
+        @endif
         <button class="btn btn-primary dm-add-btn ms-auto" onclick="openSoftvalModal()">
             <i class="bi bi-plus-circle me-1"></i>Ajouter une validation
         </button>
@@ -203,6 +228,11 @@
 <div class="dm-section">
     <div class="dm-section-title">
         <i class="bi bi-thermometer-half"></i> Validation des Data Loggers (GLP)
+        @if($dlValidations->isEmpty())
+            <span class="dm-badge-mandatory ms-2"><i class="bi bi-exclamation-triangle-fill"></i>OBLIGATOIRE — Non rempli</span>
+        @else
+            <span class="dm-badge-complete ms-2"><i class="bi bi-check-circle-fill"></i>Complété ({{ $dlValidations->count() }})</span>
+        @endif
         <button class="btn btn-primary dm-add-btn ms-auto" onclick="openDlModal()">
             <i class="bi bi-plus-circle me-1"></i>Ajouter un Data Logger
         </button>
@@ -380,15 +410,22 @@
           @csrf
           <input type="hidden" name="id" id="dmPcId">
           <input type="hidden" name="project_id" value="{{ $project_id }}">
-          <div class="row g-2 mb-3">
-            <div class="col-8">
-              <label class="form-label fw-semibold small">Identifiant / Nom du PC *</label>
-              <input type="text" name="pc_name" id="dmPcName" class="form-control" required placeholder="ex: PC-LAB-001">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">PC (depuis l'inventaire) *</label>
+            <select name="pc_name" id="dmPcName" class="form-select" required>
+              <option value="">— Sélectionner un PC —</option>
+              @foreach($pcInventory as $pc)
+              <option value="{{ $pc->name }}" data-serial="{{ $pc->serial_number }}" data-glp="{{ $pc->is_glp ? 1 : 0 }}">
+                {{ $pc->name }}{{ $pc->serial_number ? ' — ' . $pc->serial_number : '' }}{{ $pc->is_glp ? ' [GLP]' : '' }}
+              </option>
+              @endforeach
+            </select>
+            <div class="mt-1">
+              <a href="#" class="small text-primary" onclick="openPcInventoryModal();return false;"><i class="bi bi-plus-circle me-1"></i>Ajouter un nouveau PC à l'inventaire</a>
             </div>
-            <div class="col-4">
-              <label class="form-label fw-semibold small">N° Série</label>
-              <input type="text" name="pc_serial" id="dmPcSerial" class="form-control">
-            </div>
+          </div>
+          <div class="mb-3" style="display:none;">
+            <input type="hidden" name="pc_serial" id="dmPcSerial" class="form-control">
           </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
@@ -443,6 +480,65 @@
             <button type="submit" class="btn btn-warning px-4">Enregistrer le retour</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- Modal: PC Inventory Management --}}
+<div class="modal fade" id="dmPcInventoryModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#1a3a6b;color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-hdd-stack me-2"></i>Inventaire du parc PC</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        {{-- Add/Edit form --}}
+        <div class="card border-0 bg-light mb-3 p-3">
+          <div class="fw-semibold small mb-2" id="dmPcInvFormTitle"><i class="bi bi-plus-circle me-1"></i>Ajouter un PC</div>
+          <div id="dmPcInvMessages"></div>
+          <form id="formDmPcInv">
+            @csrf
+            <input type="hidden" name="id" id="dmPcInvId">
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Nom / Identifiant *</label>
+                <input type="text" name="name" id="dmPcInvName" class="form-control form-control-sm" required placeholder="PC-LAB-001">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold small">N° Série</label>
+                <input type="text" name="serial_number" id="dmPcInvSerial" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold small">Marque / Modèle</label>
+                <input type="text" name="brand" id="dmPcInvBrand" class="form-control form-control-sm" placeholder="Dell OptiPlex…">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-semibold small">GLP</label>
+                <select name="is_glp" id="dmPcInvGlp" class="form-select form-select-sm">
+                  <option value="0">Non-GLP</option>
+                  <option value="1">GLP</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Notes</label>
+                <input type="text" name="notes" id="dmPcInvNotes" class="form-control form-control-sm">
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-check2 me-1"></i>Enregistrer</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetPcInvForm()">Annuler</button>
+            </div>
+          </form>
+        </div>
+        {{-- Inventory list --}}
+        <div id="dmPcInvList">
+          <div class="text-muted small text-center py-3"><i class="bi bi-hourglass-split me-1"></i>Chargement…</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
       </div>
     </div>
   </div>
@@ -716,8 +812,14 @@
               <input type="date" name="first_entry_date" id="dmDeDate1" class="form-control" required>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold small">Effectuée par *</label>
-              <input type="text" name="first_entry_by" id="dmDeBy1" class="form-control" required placeholder="Noms des opérateurs…">
+              <label class="form-label fw-semibold small">Effectuée par (Key Personnel) *</label>
+              <select name="first_entry_by" id="dmDeBy1" class="form-select" required>
+                <option value="">— Sélectionner —</option>
+                @foreach($keyPersonnel as $kp)
+                  @php $kpName = trim(($kp->titre_personnel ?? '') . ' ' . $kp->prenom . ' ' . $kp->nom); @endphp
+                  <option value="{{ $kpName }}">{{ $kpName }}</option>
+                @endforeach
+              </select>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Date de la 2ème saisie *</label>
@@ -725,7 +827,25 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Effectuée par *</label>
-              <input type="text" name="second_entry_by" id="dmDeBy2" class="form-control" required placeholder="Noms des opérateurs…">
+              <select name="second_entry_by" id="dmDeBy2" class="form-select" required>
+                <option value="">— Sélectionner —</option>
+                @if($dmItPersonnel->isNotEmpty())
+                <optgroup label="IT / Data Management">
+                  @foreach($dmItPersonnel as $p)
+                    @php $pName = trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom); @endphp
+                    <option value="{{ $pName }}">{{ $pName }}</option>
+                  @endforeach
+                </optgroup>
+                @endif
+                @if($otherPersonnel->isNotEmpty())
+                <optgroup label="Autre personnel">
+                  @foreach($otherPersonnel as $p)
+                    @php $pName = trim(($p->titre_personnel ?? '') . ' ' . $p->prenom . ' ' . $p->nom); @endphp
+                    <option value="{{ $pName }}">{{ $pName }}</option>
+                  @endforeach
+                </optgroup>
+                @endif
+              </select>
             </div>
           </div>
           <div class="mb-3">
@@ -800,10 +920,47 @@ document.getElementById('formDmDb').addEventListener('submit', function(e) {
 });
 window.deleteDb = function(id) { confirmDelete('Supprimer cette base de données ?', '{{ route("dm.database.delete") }}', {id}); };
 
-// ── PC ─────────────────────────────────────────────────────────────────────
+// ── PC Assignment ──────────────────────────────────────────────────────────
+(function() {
+    const $pcModal = $('#dmPcModal');
+    if ($pcModal.length && $.fn.select2) {
+        $pcModal.on('shown.bs.modal', function() {
+            if (!$('#dmPcName').hasClass('select2-hidden-accessible')) {
+                $('#dmPcName').select2({
+                    dropdownParent: $pcModal,
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: '— Sélectionner un PC —',
+                    allowClear: true,
+                });
+            }
+        });
+        // Auto-fill is_glp from selected PC data
+        $pcModal.on('change', '#dmPcName', function() {
+            const $opt = $(this).find('option:selected');
+            const glp  = $opt.data('glp');
+            if (glp !== undefined) {
+                document.getElementById('dmPcIsGlp').value = glp;
+            }
+        });
+    }
+})();
+
 window.openPcModal = function(id, name, serial, isGlp, assignedAt, notes) {
     document.getElementById('dmPcId').value = id || '';
-    document.getElementById('dmPcName').value = name || '';
+    if ($.fn.select2 && $('#dmPcName').hasClass('select2-hidden-accessible')) {
+        if (name) {
+            const $sel = $('#dmPcName');
+            if ($sel.find('option[value="'+name+'"]').length === 0) {
+                $sel.append(new Option(name, name, false, false));
+            }
+            $sel.val(name).trigger('change');
+        } else {
+            $('#dmPcName').val(null).trigger('change');
+        }
+    } else {
+        document.getElementById('dmPcName').value = name || '';
+    }
     document.getElementById('dmPcSerial').value = serial || '';
     document.getElementById('dmPcIsGlp').value = (isGlp !== undefined && isGlp !== null) ? isGlp : {{ $isGlp ? 1 : 0 }};
     document.getElementById('dmPcAssignedAt').value = assignedAt || '';
@@ -816,6 +973,81 @@ document.getElementById('formDmPc').addEventListener('submit', function(e) {
     dmPost('{{ route("dm.pc.save") }}', new FormData(this), 'dmPcMessages', () => location.reload());
 });
 window.deletePc = function(id) { confirmDelete('Supprimer cette attribution PC ?', '{{ route("dm.pc.delete") }}', {id}); };
+
+// ── PC Inventory ───────────────────────────────────────────────────────────
+function loadPcInvList() {
+    fetch('{{ route("dm.pcInventory.list") }}')
+        .then(r => r.json())
+        .then(d => {
+            const list = document.getElementById('dmPcInvList');
+            if (!d.data || d.data.length === 0) {
+                list.innerHTML = '<div class="text-muted small text-center py-3"><i class="bi bi-inbox me-1"></i>Aucun PC dans l\'inventaire.</div>';
+                return;
+            }
+            let html = '<table class="dm-table"><thead><tr><th>Nom</th><th>N° Série</th><th>Marque</th><th>GLP</th><th class="text-end">Actions</th></tr></thead><tbody>';
+            d.data.forEach(pc => {
+                html += `<tr>
+                    <td class="fw-semibold">${pc.name}</td>
+                    <td>${pc.serial_number||'—'}</td>
+                    <td>${pc.brand||'—'}</td>
+                    <td>${pc.is_glp ? '<span class="dm-badge-ok">GLP</span>' : '<span class="dm-badge-draft">Non-GLP</span>'}</td>
+                    <td class="text-end" style="white-space:nowrap;">
+                        <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="editPcInv(${pc.id},'${pc.name.replace(/'/g,"\\'")}','${(pc.serial_number||'').replace(/'/g,"\\'")}','${(pc.brand||'').replace(/'/g,"\\'")}',${pc.is_glp?1:0},'${(pc.notes||'').replace(/'/g,"\\'")}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deletePcInv(${pc.id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            list.innerHTML = html;
+        });
+}
+
+window.openPcInventoryModal = function() {
+    resetPcInvForm();
+    const modal = new bootstrap.Modal(document.getElementById('dmPcInventoryModal'));
+    modal.show();
+    loadPcInvList();
+};
+
+window.resetPcInvForm = function() {
+    document.getElementById('dmPcInvId').value = '';
+    document.getElementById('dmPcInvName').value = '';
+    document.getElementById('dmPcInvSerial').value = '';
+    document.getElementById('dmPcInvBrand').value = '';
+    document.getElementById('dmPcInvGlp').value = '0';
+    document.getElementById('dmPcInvNotes').value = '';
+    document.getElementById('dmPcInvFormTitle').innerHTML = '<i class="bi bi-plus-circle me-1"></i>Ajouter un PC';
+    document.getElementById('dmPcInvMessages').innerHTML = '';
+};
+
+window.editPcInv = function(id, name, serial, brand, isGlp, notes) {
+    document.getElementById('dmPcInvId').value = id;
+    document.getElementById('dmPcInvName').value = name;
+    document.getElementById('dmPcInvSerial').value = serial;
+    document.getElementById('dmPcInvBrand').value = brand;
+    document.getElementById('dmPcInvGlp').value = isGlp;
+    document.getElementById('dmPcInvNotes').value = notes;
+    document.getElementById('dmPcInvFormTitle').innerHTML = '<i class="bi bi-pencil me-1"></i>Modifier le PC : ' + name;
+    document.getElementById('dmPcInvMessages').innerHTML = '';
+};
+
+window.deletePcInv = function(id) {
+    if (!confirm('Supprimer ce PC de l\'inventaire ?')) return;
+    const fd = new FormData();
+    fd.append('_token', CSRF);
+    fd.append('id', id);
+    fetch('{{ route("dm.pcInventory.delete") }}', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF}, body:fd })
+        .then(r=>r.json())
+        .then(d=>{ if(d.code_erreur===0) loadPcInvList(); else alert(d.message||'Erreur'); });
+};
+
+document.getElementById('formDmPcInv').addEventListener('submit', function(e) {
+    e.preventDefault();
+    dmPost('{{ route("dm.pcInventory.save") }}', new FormData(this), 'dmPcInvMessages', () => {
+        resetPcInvForm();
+        loadPcInvList();
+    });
+});
 
 window.openReturnPcModal = function(id, name) {
     document.getElementById('dmReturnPcId').value = id;
@@ -929,26 +1161,65 @@ window.deleteDlFile = function(id, event) { event.preventDefault(); confirmDelet
 // ── Double Entry ───────────────────────────────────────────────────────────
 const _deData = @json($doubleEntries->keyBy('id'));
 
+// Initialize Select2 on the "effectué par" selects inside the modal
+(function() {
+    // Wait until modal is shown, then init Select2 (requires jQuery + Select2 loaded)
+    const $deModal = $('#dmDeModal');
+    if ($deModal.length) {
+        $deModal.on('shown.bs.modal', function() {
+            if ($.fn.select2) {
+                if (!$('#dmDeBy1').hasClass('select2-hidden-accessible')) {
+                    $('#dmDeBy1').select2({ dropdownParent: $deModal, theme:'bootstrap-5', width:'100%', placeholder:'Sélectionner un opérateur', allowClear:true });
+                }
+                if (!$('#dmDeBy2').hasClass('select2-hidden-accessible')) {
+                    $('#dmDeBy2').select2({ dropdownParent: $deModal, theme:'bootstrap-5', width:'100%', placeholder:'Sélectionner un opérateur', allowClear:true });
+                }
+            }
+        });
+    }
+})();
+
 document.getElementById('dmDeCompliant').addEventListener('change', function() {
     document.getElementById('dmDeCommentsBlock').style.display = (this.value === '0') ? '' : 'none';
 });
 
 window.openDeModal = function(id) {
     const el = (fId) => document.getElementById(fId);
-    ['dmDeId','dmDeDatabaseId','dmDeDate1','dmDeBy1','dmDeDate2','dmDeBy2','dmDeComments'].forEach(f => { if(el(f)) el(f).value=''; });
+    ['dmDeId','dmDeDatabaseId','dmDeDate1','dmDeDate2','dmDeComments'].forEach(f => { if(el(f)) el(f).value=''; });
     if(el('dmDeCompliant')) el('dmDeCompliant').value='';
     if(el('dmDeCommentsBlock')) el('dmDeCommentsBlock').style.display='none';
+    // Reset Select2 selects
+    if ($.fn.select2) { $('#dmDeBy1, #dmDeBy2').val(null).trigger('change'); }
+    else { ['dmDeBy1','dmDeBy2'].forEach(f => { if(el(f)) el(f).value=''; }); }
+
     if (id && _deData[id]) {
         const d = _deData[id];
         el('dmDeId').value = id;
         if(el('dmDeDatabaseId')) el('dmDeDatabaseId').value = d.database_id||'';
         if(el('dmDeDate1')) el('dmDeDate1').value = d.first_entry_date||'';
-        if(el('dmDeBy1')) el('dmDeBy1').value = d.first_entry_by||'';
         if(el('dmDeDate2')) el('dmDeDate2').value = d.second_entry_date||'';
-        if(el('dmDeBy2')) el('dmDeBy2').value = d.second_entry_by||'';
         if(el('dmDeCompliant')) el('dmDeCompliant').value = d.is_compliant===null?'':(d.is_compliant?'1':'0');
         if(el('dmDeComments')) el('dmDeComments').value = d.comments||'';
         if(d.is_compliant===false && el('dmDeCommentsBlock')) el('dmDeCommentsBlock').style.display='';
+        // Set Select2 values
+        if ($.fn.select2) {
+            const by1 = d.first_entry_by||'';
+            const by2 = d.second_entry_by||'';
+            // If value not in options, add it dynamically
+            function setOrAddOption(selectId, val) {
+                if (!val) return;
+                const $sel = $('#' + selectId);
+                if ($sel.find('option[value="' + val.replace(/"/g,'&quot;') + '"]').length === 0) {
+                    $sel.append(new Option(val, val, false, false));
+                }
+                $sel.val(val).trigger('change');
+            }
+            setOrAddOption('dmDeBy1', by1);
+            setOrAddOption('dmDeBy2', by2);
+        } else {
+            if(el('dmDeBy1')) el('dmDeBy1').value = d.first_entry_by||'';
+            if(el('dmDeBy2')) el('dmDeBy2').value = d.second_entry_by||'';
+        }
     }
     document.getElementById('dmDeMessages').innerHTML = '';
     new bootstrap.Modal(document.getElementById('dmDeModal')).show();

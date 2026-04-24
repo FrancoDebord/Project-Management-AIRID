@@ -89,6 +89,11 @@ Route::middleware('auth')->prefix('ajax')->group(function () {
     Route::post('/dm/pc/return',                    [DataManagementController::class, 'returnPc'])->name('dm.pc.return');
     Route::post('/dm/pc/delete',                    [DataManagementController::class, 'deletePcAssignment'])->name('dm.pc.delete');
 
+    // PC Inventory (central registry)
+    Route::post('/dm/pc-inventory/save',            [DataManagementController::class, 'savePcInventory'])->name('dm.pcInventory.save');
+    Route::post('/dm/pc-inventory/delete',          [DataManagementController::class, 'deletePcInventory'])->name('dm.pcInventory.delete');
+    Route::get('/dm/pc-inventory/list',             [DataManagementController::class, 'listPcInventory'])->name('dm.pcInventory.list');
+
     Route::post('/dm/software-validation/save',             [DataManagementController::class, 'saveSoftwareValidation'])->name('dm.softval.save');
     Route::post('/dm/software-validation/delete',           [DataManagementController::class, 'deleteSoftwareValidation'])->name('dm.softval.delete');
     Route::post('/dm/software-validation/upload-file',      [DataManagementController::class, 'uploadSoftwareValidationFile'])->name('dm.softval.uploadFile');

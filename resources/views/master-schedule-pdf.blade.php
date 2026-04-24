@@ -7,41 +7,66 @@
 
 @page {
     size: A4 landscape;
-    margin: 10mm 10mm 10mm 10mm;
+    margin: 12mm 20mm 14mm 20mm;
 }
 
 body {
     font-family: DejaVu Sans, Arial, sans-serif;
     font-size: 7.5pt;
     color: #222;
+    padding: 0;
 }
 
 /* ── Header ────────────────────────────────────────────── */
 .doc-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: table;
+    width: 100%;
+    border-bottom: 3pt solid #1a3a6b;
+    padding-bottom: 4px;
     margin-bottom: 6px;
-    border-bottom: 1.5px solid #1a3a6b;
-    padding-bottom: 5px;
 }
-
+.doc-header-logo  { display: table-cell; width: 52mm; vertical-align: middle; }
+.doc-header-logo img { max-width: 50mm; max-height: 18mm; }
 .doc-header-center {
+    display: table-cell;
+    vertical-align: middle;
     text-align: center;
-    flex: 1;
+    padding: 0 4mm;
 }
-.doc-header-center .doc-title { font-size: 12pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
-.doc-header-center .org-name  { font-size: 8pt; color:#1a3a6b; font-weight:600; }
-
+.doc-header-center .org-name {
+    font-size: 7.5pt;
+    font-weight: bold;
+    color: #1a3a6b;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 2px;
+}
+.doc-header-center .doc-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1a3a6b;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.doc-header-center .doc-subtitle {
+    font-size: 7pt;
+    color: #c41230;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 2px;
+}
 .doc-ref-box {
+    display: table-cell;
+    width: 42mm;
+    vertical-align: middle;
     font-size: 7pt;
     text-align: right;
     white-space: nowrap;
-    min-width: 130px;
+    color: #555;
+    line-height: 1.7;
 }
-.doc-ref-box .ref-num { font-weight: bold; font-size: 8pt; }
-.logo-box { min-width: 160px; max-width:160px; }
-.logo-box img { max-width:100%; max-height:50px; }
+.doc-ref-box .ref-num { font-weight: bold; font-size: 8.5pt; color: #1a3a6b; }
 
 /* ── Table ─────────────────────────────────────────────── */
 table.ms {
@@ -106,12 +131,13 @@ table.ms tbody tr:nth-child(even) td { background: #f7f7f7; }
 
 {{-- ── Document Header ───────────────────────────────────── --}}
 <div class="doc-header">
-    <div class="logo-box">
+    <div class="doc-header-logo">
         <img src="{{ $headerImagePath }}" alt="AIRID">
     </div>
     <div class="doc-header-center">
-        <div class="org-name">AIRID — African Institute for Research in Infectious Diseases</div>
+        <div class="org-name">African Institute for Research in Infectious Diseases</div>
         <div class="doc-title">Master Schedule</div>
+        <div class="doc-subtitle">GLP &amp; Non-GLP Studies — All Active Projects</div>
     </div>
     <div class="doc-ref-box">
         @php
@@ -124,9 +150,9 @@ table.ms tbody tr:nth-child(even) td { background: #f7f7f7; }
             <div>Issue date: {{ \Carbon\Carbon::parse($docIssueDate)->format('d/m/Y') }}</div>
         @endif
         @if($docNextReview)
-            <div>Next review date: {{ \Carbon\Carbon::parse($docNextReview)->format('d/m/Y') }}</div>
+            <div>Next review: {{ \Carbon\Carbon::parse($docNextReview)->format('d/m/Y') }}</div>
         @endif
-        <div style="margin-top:3px;color:#888;">Generated: {{ now()->format('d/m/Y') }}</div>
+        <div style="margin-top:3px;color:#888;">Generated: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 </div>
 

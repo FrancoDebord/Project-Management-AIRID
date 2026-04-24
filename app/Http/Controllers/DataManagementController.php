@@ -6,6 +6,7 @@ use App\Models\Pro_DmDatabase;
 use App\Models\Pro_DmDataloggerFile;
 use App\Models\Pro_DmDataloggerValidation;
 use App\Models\Pro_DmDoubleEntry;
+use App\Models\Pro_DmPc;
 use App\Models\Pro_DmPcAssignment;
 use App\Models\Pro_DmSoftwareValidation;
 use App\Models\Pro_DmSoftwareValidationFile;
@@ -96,6 +97,42 @@ class DataManagementController extends Controller
         $pc = Pro_DmPcAssignment::findOrFail($request->input('id'));
         $pc->delete();
         return response()->json(['code_erreur' => 0, 'message' => 'Attribution supprimée.']);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    //  PC INVENTORY (central registry)
+    // ────────────────────────────────────────────────────────────────────────
+
+    public function listPcInventory()
+    {
+        $pcs = Pro_DmPc::orderBy('name')->get();
+        return response()->json(['code_erreur' => 0, 'data' => $pcs]);
+    }
+
+    public function savePcInventory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $data = $request->only(['name', 'serial_number', 'brand', 'is_glp', 'notes']);
+        $data['is_glp'] = (bool) ($data['is_glp'] ?? false);
+
+        if ($request->filled('id')) {
+            $pc = Pro_DmPc::findOrFail($request->input('id'));
+            $pc->update($data);
+        } else {
+            $pc = Pro_DmPc::create($data);
+        }
+
+        return response()->json(['code_erreur' => 0, 'message' => 'PC enregistré.', 'data' => $pc]);
+    }
+
+    public function deletePcInventory(Request $request)
+    {
+        $pc = Pro_DmPc::findOrFail($request->input('id'));
+        $pc->delete();
+        return response()->json(['code_erreur' => 0, 'message' => 'PC supprimé de l\'inventaire.']);
     }
 
     // ────────────────────────────────────────────────────────────────────────

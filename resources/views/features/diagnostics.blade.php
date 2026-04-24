@@ -3,7 +3,7 @@
 
 @section('content')
 <style>
-.diag-hero { background:linear-gradient(135deg,#1a3a6b 0%,#6f42c1 100%); border-radius:.75rem; padding:1.25rem 1.75rem; margin-bottom:1.5rem; color:#fff; }
+.diag-hero { background:linear-gradient(135deg,#1a3a6b 0%,#c41230 100%); border-radius:.75rem; padding:1.25rem 1.75rem; margin-bottom:1.5rem; color:#fff; }
 .stat-pill  { border-radius:1rem; padding:.55rem 1.2rem; font-weight:700; font-size:.95rem; }
 .diag-card  { border-left:4px solid transparent; transition:box-shadow .15s; }
 .diag-card:hover { box-shadow:0 4px 14px rgba(0,0,0,.1); }

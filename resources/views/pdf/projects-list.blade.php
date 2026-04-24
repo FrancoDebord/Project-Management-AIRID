@@ -5,44 +5,86 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  @page {
+    size: A4 landscape;
+    margin: 14mm 20mm 16mm 20mm;
+  }
+
   body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 8pt;
     color: #111;
     background: #fff;
-    padding: 8mm 18mm 14mm 18mm;
+    padding: 0;
   }
 
-  /* ── Header ── */
-  .airid-header {
-    margin-bottom: 1mm;
-  }
-  .meta-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 7pt;
-    color: #555;
-    border-bottom: 2pt solid #1a3a6b;
-    padding-bottom: 2mm;
+  /* ── Header block ── */
+  .doc-header {
+    display: table;
+    width: 100%;
+    border-bottom: 3pt solid #1a3a6b;
+    padding-bottom: 3mm;
     margin-bottom: 3mm;
   }
-  .meta-bar .title {
-    font-size: 11pt;
+  .doc-header-logo  { display: table-cell; width: 52mm; vertical-align: middle; }
+  .doc-header-logo img { max-width: 50mm; max-height: 18mm; }
+  .doc-header-center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 0 4mm;
+  }
+  .doc-header-center .org-name {
+    font-size: 7.5pt;
     font-weight: bold;
     color: #1a3a6b;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .06em;
+    margin-bottom: 1.5mm;
   }
-  .meta-bar .right { text-align: right; line-height: 1.6; }
+  .doc-header-center .doc-title {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1a3a6b;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .doc-header-center .doc-subtitle {
+    font-size: 7pt;
+    color: #c41230;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-top: 1mm;
+  }
+  .doc-header-right {
+    display: table-cell;
+    width: 42mm;
+    vertical-align: middle;
+    text-align: right;
+    font-size: 7pt;
+    color: #555;
+    line-height: 1.7;
+    white-space: nowrap;
+  }
+  .doc-header-right .proj-count {
+    display: inline-block;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 1mm 3mm;
+    border-radius: 2mm;
+    margin-bottom: 1.5mm;
+  }
 
-  /* ── Filter summary ── */
+  /* ── Filter bar ── */
   .filter-bar {
     font-size: 7.5pt;
-    color: #555;
+    color: #444;
     margin-bottom: 3mm;
     padding: 1.5mm 3mm;
-    background: #f4f6fb;
+    background: #f0f3fa;
     border-left: 3pt solid #1a3a6b;
     border-radius: 1mm;
   }
@@ -57,15 +99,16 @@
     background: #1a3a6b;
     color: #fff;
     font-weight: bold;
-    font-size: 7pt;
+    font-size: 6.8pt;
     text-transform: uppercase;
     letter-spacing: .04em;
     padding: 2.5mm 2mm;
-    border: 1pt solid #1a3a6b;
+    border: 1pt solid #13294d;
     white-space: nowrap;
     vertical-align: middle;
+    text-align: center;
   }
-  tbody tr:nth-child(even) { background: #f7f8fc; }
+  tbody tr:nth-child(even) { background: #f5f6fb; }
   tbody tr:nth-child(odd)  { background: #fff; }
   tbody td {
     padding: 2mm 2mm;
@@ -73,16 +116,18 @@
     vertical-align: top;
     line-height: 1.4;
   }
+
+  /* Column widths — tuned for A4 landscape @ 20mm L/R margins ≈ 257mm usable */
   .col-num     { width: 5mm;  text-align: center; color: #888; }
   .col-proto   { width: 22mm; }
   .col-code    { width: 22mm; font-weight: bold; color: #1a3a6b; }
-  .col-title   { width: 50mm; }
-  .col-sponsor { width: 30mm; }
-  .col-manuf   { width: 24mm; }
+  .col-title   { width: 52mm; }
+  .col-sponsor { width: 28mm; }
+  .col-manuf   { width: 22mm; }
   .col-sd      { width: 30mm; }
-  .col-date    { width: 16mm; white-space: nowrap; color: #444; }
-  .col-repl    { width: 26mm; }
-  .col-pm      { width: 28mm; }
+  .col-date    { width: 15mm; white-space: nowrap; color: #444; text-align: center; }
+  .col-repl    { width: 25mm; }
+  .col-pm      { width: 26mm; }
   .col-status  { width: 18mm; text-align: center; }
 
   /* ── Status badges ── */
@@ -100,24 +145,24 @@
   .s-completed   { background: #d4edda; color: #155724; }
   .s-archived    { background: #cce5ff; color: #004085; }
 
-  /* ── Mini badges ── */
+  /* ── Mini tags ── */
   .tag {
     display: inline-block;
-    font-size: 6pt;
+    font-size: 5.8pt;
     font-weight: bold;
     padding: .3mm 1.5mm;
     border-radius: 2mm;
     vertical-align: middle;
   }
-  .tag-glp     { background: #1a3a6b; color: #fff; }
-  .tag-legacy  { background: #856404; color: #fff; }
+  .tag-glp    { background: #1a3a6b; color: #fff; }
+  .tag-legacy { background: #856404; color: #fff; }
 
   /* ── Footer ── */
   .page-footer {
     position: fixed;
-    bottom: 5mm;
-    left: 18mm;
-    right: 18mm;
+    bottom: 6mm;
+    left: 0;
+    right: 0;
     font-size: 6.5pt;
     color: #aaa;
     border-top: .5pt solid #ddd;
@@ -125,24 +170,25 @@
     display: flex;
     justify-content: space-between;
   }
-
-  @page { size: A4 landscape; margin: 12mm 18mm 14mm 18mm; }
+  .page-footer .page-num:after { content: counter(page); }
 </style>
 </head>
 <body>
 
-{{-- ── AIRID Header image ── --}}
-<div class="airid-header">
-  <img src="{{ public_path('storage/assets/header/entete_airid.png') }}"
-       style="width:100%;max-height:20mm;object-fit:contain;" alt="AIRID">
-</div>
-
-{{-- ── Meta bar ── --}}
-<div class="meta-bar">
-  <div class="title"><i>List of Projects</i></div>
-  <div class="right">
-    <strong>{{ $projects->count() }}</strong> project(s) &nbsp;·&nbsp;
-    Generated on {{ now()->format('d/m/Y H:i') }}
+{{-- ── Document Header ── --}}
+<div class="doc-header">
+  <div class="doc-header-logo">
+    <img src="{{ public_path('storage/assets/header/entete_airid.png') }}" alt="AIRID">
+  </div>
+  <div class="doc-header-center">
+    <div class="org-name">African Institute for Research in Infectious Diseases</div>
+    <div class="doc-title">List of Projects</div>
+    <div class="doc-subtitle">GLP &amp; Non-GLP Studies — Project Management System</div>
+  </div>
+  <div class="doc-header-right">
+    <div class="proj-count">{{ $projects->count() }} project(s)</div><br>
+    Generated: {{ now()->format('d/m/Y') }}<br>
+    Time: {{ now()->format('H:i') }}
   </div>
 </div>
 
@@ -212,7 +258,7 @@
       <td class="col-proto">{{ $p->protocol_code ?: '—' }}</td>
       <td class="col-code">
         {{ $p->project_code }}
-        @if($p->is_glp)<span class="tag tag-glp">GLP</span>@endif
+        @if($p->is_glp)<br><span class="tag tag-glp">GLP</span>@endif
         @if($p->is_legacy)<span class="tag tag-legacy">Legacy</span>@endif
       </td>
       <td class="col-title">{{ $p->project_title }}</td>
@@ -252,7 +298,8 @@
 @endif
 
 <div class="page-footer">
-  <span>AIRID Project Management System</span>
+  <span>AIRID Project Management System — Confidential</span>
+  <span>Page <span class="page-num"></span></span>
   <span>{{ now()->format('d/m/Y H:i') }}</span>
 </div>
 

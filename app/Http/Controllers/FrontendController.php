@@ -56,17 +56,53 @@ class FrontendController extends Controller
         $totalProjects = (clone $baseQuery)->count();
         $kpiInProgress = (clone $baseQuery)->where('project_stage', 'in progress')->count();
 
-        $kpiOpenNc = empty($glpProjectIds) ? 0 : DB::table('pro_qa_inspections_findings')
-            ->whereIn('project_id', $glpProjectIds)
-            ->where('is_conformity', 0)
-            ->where('status', '!=', 'complete')
-            ->count();
-
         $glpProjectIds = (clone $baseQuery)->where('is_glp', true)->pluck('id')->toArray();
-        $kpiPendingInspections = empty($glpProjectIds) ? 0 : DB::table('pro_qa_inspections')
-            ->whereIn('project_id', $glpProjectIds)
-            ->whereNull('date_performed')
-            ->count();
+
+        // Open NCs with project detail
+        $openNcRows = empty($glpProjectIds) ? collect() : DB::table('pro_qa_inspections_findings as f')
+            ->join('pro_projects as p', 'f.project_id', '=', 'p.id')
+            ->whereIn('f.project_id', $glpProjectIds)
+            ->where('f.is_conformity', 0)
+            ->where('f.status', '!=', 'complete')
+            ->select('p.id as project_id', 'p.project_code', 'p.project_title', DB::raw('COUNT(*) as nc_count'))
+            ->groupBy('p.id', 'p.project_code', 'p.project_title')
+            ->orderByDesc('nc_count')
+            ->get();
+        $kpiOpenNc = $openNcRows->sum('nc_count');
+
+        // Pending inspections with project detail
+        $pendingInspectionRows = empty($glpProjectIds) ? collect() : DB::table('pro_qa_inspections as qi')
+            ->join('pro_projects as p', 'qi.project_id', '=', 'p.id')
+            ->whereIn('qi.project_id', $glpProjectIds)
+            ->whereNull('qi.date_performed')
+            ->select('p.id as project_id', 'p.project_code', 'p.project_title', DB::raw('COUNT(*) as insp_count'))
+            ->groupBy('p.id', 'p.project_code', 'p.project_title')
+            ->orderByDesc('insp_count')
+            ->get();
+        $kpiPendingInspections = $pendingInspectionRows->sum('insp_count');
+
+        // Attach Study Directors to each detail row
+        $allProjectsForKpi = empty($glpProjectIds) ? collect() : Pro_Project::with([
+            'studyDirectorAppointmentForm.studyDirector',
+            'projectManager',
+        ])->whereIn('id', $glpProjectIds)->get()->keyBy('id');
+
+        foreach ($openNcRows as $row) {
+            $proj = $allProjectsForKpi->get($row->project_id);
+            $sd   = $proj?->studyDirectorAppointmentForm?->studyDirector;
+            $row->sd_name = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : '—';
+            $row->pm_name = $proj?->projectManager
+                ? trim(($proj->projectManager->titre_personnel ?? '') . ' ' . $proj->projectManager->prenom . ' ' . $proj->projectManager->nom)
+                : '—';
+        }
+        foreach ($pendingInspectionRows as $row) {
+            $proj = $allProjectsForKpi->get($row->project_id);
+            $sd   = $proj?->studyDirectorAppointmentForm?->studyDirector;
+            $row->sd_name = $sd ? trim(($sd->titre_personnel ?? '') . ' ' . $sd->prenom . ' ' . $sd->nom) : '—';
+            $row->pm_name = $proj?->projectManager
+                ? trim(($proj->projectManager->titre_personnel ?? '') . ' ' . $proj->projectManager->prenom . ' ' . $proj->projectManager->nom)
+                : '—';
+        }
 
         $kpiByStage = [
             'in_progress' => $kpiInProgress,
@@ -104,7 +140,8 @@ class FrontendController extends Controller
         return view("accueil", compact(
             "all_projects", "totalProjects", "stageFilter", "search",
             "kpiInProgress", "kpiOpenNc", "kpiPendingInspections", "kpiAvgCompletion", "kpiByStage",
-            'projectsNeedingInspection', 'projectScores'
+            'projectsNeedingInspection', 'projectScores',
+            'openNcRows', 'pendingInspectionRows'
         ));
     }
 

@@ -67,7 +67,12 @@
 
         {{-- KPI 2 : NC ouvertes --}}
         <div class="col-6 col-xl-3">
+            @if($kpiOpenNc > 0)
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 kpi-clickable" style="border-left:4px solid #dc3545 !important;cursor:pointer;"
+                 data-bs-toggle="modal" data-bs-target="#kpiNcModal" role="button">
+            @else
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #dc3545 !important;">
+            @endif
                 <div class="d-flex align-items-start gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
                          style="width:48px;height:48px;background:#f8d7da;">
@@ -76,11 +81,11 @@
                     <div class="flex-grow-1 min-w-0">
                         <div class="text-muted small mb-1">Non-conformités ouvertes</div>
                         <div class="fw-bold {{ $kpiOpenNc > 0 ? 'text-danger' : 'text-success' }}" style="font-size:1.6rem;line-height:1;">{{ $kpiOpenNc }}</div>
-                        <div class="text-muted mt-1" style="font-size:.72rem;">
+                        <div class="mt-1" style="font-size:.72rem;">
                             @if($kpiOpenNc === 0)
                                 <span class="text-success"><i class="bi bi-check-circle me-1"></i>Tout est résolu</span>
                             @else
-                                findings en attente de résolution
+                                <span class="text-danger fw-semibold"><i class="bi bi-arrow-right-circle me-1"></i>Voir les projets concernés</span>
                             @endif
                         </div>
                     </div>
@@ -90,7 +95,12 @@
 
         {{-- KPI 3 : Inspections en attente --}}
         <div class="col-6 col-xl-3">
+            @if($kpiPendingInspections > 0)
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 kpi-clickable" style="border-left:4px solid #6f42c1 !important;cursor:pointer;"
+                 data-bs-toggle="modal" data-bs-target="#kpiInspModal" role="button">
+            @else
             <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #6f42c1 !important;">
+            @endif
                 <div class="d-flex align-items-start gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
                          style="width:48px;height:48px;background:#e9d8fd;">
@@ -99,11 +109,11 @@
                     <div class="flex-grow-1 min-w-0">
                         <div class="text-muted small mb-1">Inspections QA en attente</div>
                         <div class="fw-bold" style="font-size:1.6rem;line-height:1;color:#6f42c1;">{{ $kpiPendingInspections }}</div>
-                        <div class="text-muted mt-1" style="font-size:.72rem;">
-                            @if(count($projectsNeedingInspection) > 0)
-                                <span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i>{{ count($projectsNeedingInspection) }} projet{{ count($projectsNeedingInspection) > 1 ? 's' : '' }} nécessitent une inspection</span>
+                        <div class="mt-1" style="font-size:.72rem;">
+                            @if($kpiPendingInspections === 0)
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>Tout est à jour</span>
                             @else
-                                inspections non encore clôturées
+                                <span class="text-warning fw-semibold"><i class="bi bi-arrow-right-circle me-1"></i>Voir les projets concernés</span>
                             @endif
                         </div>
                     </div>
@@ -428,4 +438,111 @@
         })();
         </script>
     @endif
+
+    {{-- ── Modal: Non-conformités ouvertes ── --}}
+    <div class="modal fade" id="kpiNcModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header" style="background:linear-gradient(135deg,#1a3a6b,#c41230);color:#fff;">
+            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Non-conformités ouvertes — {{ $kpiOpenNc }} finding(s)</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-0">
+            @if($openNcRows->isEmpty())
+              <div class="text-center py-4 text-muted"><i class="bi bi-check-circle-fill fs-4 text-success me-2"></i>Aucune non-conformité ouverte.</div>
+            @else
+            <table class="table table-hover table-sm mb-0" style="font-size:.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Code Projet</th>
+                  <th>Titre</th>
+                  <th>Study Director</th>
+                  <th>Project Manager</th>
+                  <th class="text-center">NC ouvertes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              @foreach($openNcRows as $row)
+              <tr>
+                <td class="fw-semibold text-primary">{{ $row->project_code }}</td>
+                <td>{{ Str::limit($row->project_title, 40) }}</td>
+                <td class="text-muted">{{ $row->sd_name }}</td>
+                <td class="text-muted">{{ $row->pm_name }}</td>
+                <td class="text-center">
+                  <span class="badge bg-danger rounded-pill">{{ $row->nc_count }}</span>
+                </td>
+                <td>
+                  <a href="{{ route('projectOverview', ['id' => $row->project_id]) }}" class="btn btn-sm btn-outline-primary py-0 px-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                  </a>
+                </td>
+              </tr>
+              @endforeach
+              </tbody>
+            </table>
+            @endif
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- ── Modal: Inspections QA en attente ── --}}
+    <div class="modal fade" id="kpiInspModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header" style="background:linear-gradient(135deg,#1a3a6b,#6f42c1);color:#fff;">
+            <h5 class="modal-title"><i class="bi bi-shield-exclamation me-2"></i>Inspections QA en attente — {{ $kpiPendingInspections }} inspection(s)</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-0">
+            @if($pendingInspectionRows->isEmpty())
+              <div class="text-center py-4 text-muted"><i class="bi bi-check-circle-fill fs-4 text-success me-2"></i>Aucune inspection en attente.</div>
+            @else
+            <table class="table table-hover table-sm mb-0" style="font-size:.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Code Projet</th>
+                  <th>Titre</th>
+                  <th>Study Director</th>
+                  <th>Project Manager</th>
+                  <th class="text-center">Inspections</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              @foreach($pendingInspectionRows as $row)
+              <tr>
+                <td class="fw-semibold text-primary">{{ $row->project_code }}</td>
+                <td>{{ Str::limit($row->project_title, 40) }}</td>
+                <td class="text-muted">{{ $row->sd_name }}</td>
+                <td class="text-muted">{{ $row->pm_name }}</td>
+                <td class="text-center">
+                  <span class="badge rounded-pill" style="background:#6f42c1;color:#fff;">{{ $row->insp_count }}</span>
+                </td>
+                <td>
+                  <a href="{{ route('projectOverview', ['id' => $row->project_id]) }}" class="btn btn-sm btn-outline-primary py-0 px-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                  </a>
+                </td>
+              </tr>
+              @endforeach
+              </tbody>
+            </table>
+            @endif
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+    .kpi-clickable { transition: box-shadow .15s, transform .1s; }
+    .kpi-clickable:hover { box-shadow: 0 6px 20px rgba(0,0,0,.15) !important; transform: translateY(-2px); }
+    </style>
 @endsection

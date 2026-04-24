@@ -100,7 +100,11 @@
       "Bash(xargs -I {} basename {})",
       "Bash(grep -r '$p\\\\|$personnel\\\\|$staff' resources/views/create-project.blade.php)",
       "Bash(del test_sd.pdf)",
-      "Bash(php -l app/Http/Controllers/FeaturesController.php)"
+      "Bash(php -l app/Http/Controllers/FeaturesController.php)",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app = require '\\\\''bootstrap/app.php'\\\\''; $app->make\\('\\\\''Illuminate\\\\Contracts\\\\Console\\\\Kernel'\\\\''\\)->bootstrap\\(\\); $postes = DB::table\\('\\\\''postes'\\\\''\\)->get\\(['\\\\''id'\\\\'','\\\\''libelle_poste'\\\\'']\\); echo json_encode\\($postes, JSON_PRETTY_PRINT\\);')",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app = require '\\\\''bootstrap/app.php'\\\\''; $app->make\\('\\\\''Illuminate\\\\Contracts\\\\Console\\\\Kernel'\\\\''\\)->bootstrap\\(\\); $postes = DB::table\\('\\\\''postes'\\\\''\\)->get\\(['\\\\''id'\\\\'','\\\\''libelle_poste'\\\\'']\\); echo json_encode\\($postes->filter\\(fn\\($p\\) => stripos\\($p->libelle_poste,'\\\\''data'\\\\''\\) !== false || stripos\\($p->libelle_poste,'\\\\''IT'\\\\''\\) !== false || stripos\\($p->libelle_poste,'\\\\''tech'\\\\''\\) !== false || stripos\\($p->libelle_poste,'\\\\''info'\\\\''\\) !== false\\)->values\\(\\), JSON_PRETTY_PRINT\\);')",
+      "Bash(php -l app/Http/Controllers/DataManagementController.php)",
+      "Bash(php -l app/Models/Pro_DmPc.php)"
     ]
   }
 }
