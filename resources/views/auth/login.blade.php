@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign In — Project Tracking Sheet</title>
+    <title>Connexion — AIRID Project Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -110,8 +110,8 @@
             <img src="{{ asset('storage/assets/logo/airid.jpg') }}"
                  alt="AIRID" style="height:48px;object-fit:contain;"
                  onerror="this.style.display='none'">
-            <div class="brand-title">Project Tracking Sheet</div>
-            <div class="brand-sub">AIRID — African Institute for Research in Infectious Diseases</div>
+            <div class="brand-title">AIRID — Project Management</div>
+            <div class="brand-sub">African Institute for Research in Infectious Diseases</div>
         </div>
 
         @if($errors->any())
